@@ -1,0 +1,44 @@
+# 🔒 Environment variables (Secrets like API keys)
+.env
+
+# ⚙️ Python-related files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 🐍 Virtual environment (local Python setup)
+venv/
+env/
+
+# 🗄️ Database files (ignore local SQLite, if used for testing)
+*.sqlite3
+*.db
+
+# 📦 Node.js dependencies (for React frontend)
+frontend/node_modules/
+frontend/.next/
+
+# 🔧 Build artifacts
+dist/
+build/
+*.egg-info/
+*.whl
+
+# 📝 Logs and temp files
+*.log
+logs/
+*.swp
+.DS_Store
+
+# 🛠️ IDE and editor settings (VS Code, PyCharm, JetBrains)
+.vscode/
+.idea/
+*.iml
+
+# 🐳 Docker (ignore local overrides, if used)
+docker-compose.override.yml
+
+# 📑 Documentation builds (Sphinx, MkDocs, etc.)
+docs/_build/
+
