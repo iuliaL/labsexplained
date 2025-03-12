@@ -24,7 +24,7 @@ This backend system allows **patients** to enter their **name, age, and lab test
 
 ## 📁 Project Folder Structure
 
-```
+```sh
 backend/
 │── app/
 │   ├── routes/

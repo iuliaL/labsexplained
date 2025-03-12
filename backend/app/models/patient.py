@@ -17,3 +17,7 @@ def get_patient(fhir_id):
 def search_patient(first_name, last_name):
     """Retrieves patient from MongoDB by first and lastname"""
     return patients_collection.find_one({"first_name": first_name, "last_name": last_name})
+
+def delete_patient(fhir_id):
+    """Deletes a patient from MongoDB"""
+    patients_collection.delete_one({"fhir_id": fhir_id})
