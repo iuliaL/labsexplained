@@ -2,10 +2,11 @@ from fastapi import APIRouter, UploadFile, File
 import pandas as pd
 import openai
 from app.services.fhir_service import send_lab_results_to_fhir
+from app.config import OPENAI_API_KEY
 
 router = APIRouter()
 
-openai.api_key = "YOUR_OPENAI_API_KEY"
+openai.api_key = OPENAI_API_KEY
 
 @router.post("/interpret-lab-results/")
 async def interpret_lab_results(file: UploadFile = File(...)):

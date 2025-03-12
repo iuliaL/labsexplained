@@ -1,6 +1,5 @@
 import requests
-
-FHIR_SERVER_URL = "https://hapi.fhir.org/baseR4"
+from app.config import FHIR_SERVER_URL
 
 def send_lab_results_to_fhir(patient_id, lab_results):
     """Send lab test results to a FHIR server."""
