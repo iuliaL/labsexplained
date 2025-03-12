@@ -3,7 +3,7 @@ import pandas as pd
 import openai
 from app.services.fhir_service import send_lab_results_to_fhir
 from app.config import OPENAI_API_KEY
-from app.utils.file_parser import extract_text, mock_parsed_lab_results, parse_lab_results
+from app.utils.file_parser import extract_text, mock_parsed_lab_results
 
 router = APIRouter()
 
