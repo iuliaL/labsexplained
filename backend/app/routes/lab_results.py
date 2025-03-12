@@ -9,7 +9,7 @@ router = APIRouter()
 openai.api_key = OPENAI_API_KEY
 
 @router.post("/interpret-lab-results/")
-async def interpret_lab_results(file: UploadFile = File(...)):
+async def interpret_lab_results(patient_id, file: UploadFile = File(...)):
     df = pd.read_csv(file.file)
     results = []
 
@@ -19,7 +19,7 @@ async def interpret_lab_results(file: UploadFile = File(...)):
         explanation = ai_response["choices"][0]["message"]["content"]
         
         # Send data to FHIR
-        fhir_response = send_lab_results_to_fhir(patient_id="12345", lab_results=explanation)
+        fhir_response = send_lab_results_to_fhir(patient_id, lab_results=explanation)
         
         results.append({"Test": row["Test Name"], "Value": row["Value"], "Explanation": explanation, "FHIR_Response": fhir_response})
 

@@ -4,9 +4,9 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["medical_dashboard"]
 patients_collection = db["patients"]
 
-def store_patient(first_name, last_name, age, fhir_id):
+def store_patient(first_name, last_name, birth_date, fhir_id):
     """Stores the patient in MongoDB"""
-    patient = {"first_name": first_name, "last_name": last_name, "age": age, "fhir_id": fhir_id}
+    patient = {"first_name": first_name, "last_name": last_name, "birth_date": birth_date, "fhir_id": fhir_id}
     patients_collection.insert_one(patient)
     return patient
 

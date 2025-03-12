@@ -9,7 +9,7 @@ router = APIRouter()
 class PatientInput(BaseModel):
     first_name: str
     last_name: str
-    age: int
+    birth_date: str
 
 @router.post("/patients/")
 async def register_patient(patient: PatientInput):
@@ -18,7 +18,7 @@ async def register_patient(patient: PatientInput):
     if existing_patient:
         return {"message": "Patient already registered", "fhir_id": existing_patient["fhir_id"]}
 
-    new_patient = create_fhir_patient(patient.first_name, patient.last_name, patient.age)
+    new_patient = create_fhir_patient(patient.first_name, patient.last_name, patient.birth_date)
     if new_patient:
         return {"message": "Patient registered successfully", "fhir_id": new_patient["fhir_id"]}
     
