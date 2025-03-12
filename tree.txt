@@ -2,12 +2,16 @@
 ├── README.md
 ├── backend
 │   ├── Dockerfile
+│   ├── README.md
 │   ├── app
 │   │   ├── config.py
 │   │   ├── main.py
 │   │   ├── models
+│   │   │   └── patient.py
 │   │   ├── routes
-│   │   │   └── lab_results.py
+│   │   │   ├── __init__.py
+│   │   │   ├── lab_results.py
+│   │   │   └── patients.py
 │   │   ├── services
 │   │   │   └── fhir_service.py
 │   │   └── utils
@@ -36,4 +40,4 @@
 │       └── setupTests.js
 └── tree.txt
 
-11 directories, 26 files
+11 directories, 30 files
