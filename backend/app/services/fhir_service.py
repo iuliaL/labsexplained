@@ -20,9 +20,7 @@ def create_fhir_patient(first_name, last_name, birth_date):
 def delete_fhir_patient(fhir_id):
     """Deletes a patient from the FHIR server and handles already deleted cases"""
     response = requests.delete(f"{FHIR_SERVER_URL}/Patient/{fhir_id}")
-    
-    print("FHIR DELETE Response:", response.status_code, response.text)  # ✅ Debugging output
-
+    # print("FHIR DELETE Response:", response.status_code, response.text)  # ✅ Debugging output
     if response.status_code in [204, 410]:  # ✅ Treat "HTTP 410 Gone" as a successful deletion
         return True
     
@@ -33,19 +31,49 @@ def delete_fhir_patient(fhir_id):
 
     return False  # ❌ Treat other failures as errors
 
-def send_lab_results_to_fhir(patient_id, lab_results):
-    """Send lab test results to a FHIR server."""
-    fhir_resource = {
-        "resourceType": "Observation",
-        "status": "final",
-        "category": [{"coding": [{"system": "http://terminology.hl7.org/CodeSystem/observation-category", "code": "laboratory"}]}],
-        "subject": {"reference": f"Patient/{patient_id}"},
-        "code": {"text": "Lab Test Results"},
-        "valueString": lab_results
-    }
-    
-    response = requests.post(f"{FHIR_SERVER_URL}/Observation", json=fhir_resource)
-    return response.json()
+
+def send_lab_results_to_fhir(patient_fhir_id: str, lab_tests: list):
+    """
+    Sends structured lab test results to the FHIR server as Observation resources.
+
+    Args:
+        patient_fhir_id (str): The FHIR ID of the patient to associate the observations with.
+        lab_tests (list): A list of dictionaries containing lab test results.
+
+    Returns:
+        list: A list of FHIR Observation IDs created.
+    """
+    observation_ids = []
+
+    for test in lab_tests:
+        observation_resource = {
+            "resourceType": "Observation",
+            "status": "final",
+            "category": [{
+                "coding": [{
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "laboratory"
+                }]
+            }],
+            "code": {"text": test["name"]},
+            "subject": {"reference": f"Patient/{patient_fhir_id}"},
+            "valueQuantity": {
+                "value": test["value"],
+                "unit": test["unit"]
+            }
+        }
+
+        response = requests.post(f"{FHIR_SERVER_URL}/Observation", json=observation_resource)
+
+        if response.status_code == 201:
+            observation_ids.append(response.json().get("id"))
+        else:
+            raise Exception(f"Failed to create FHIR Observation: {response.text}")
+
+    return [{"name": test["name"], "id": observation_id} for test, observation_id in zip(lab_tests, observation_ids)]
+
+
+
 
 
 
