@@ -33,25 +33,28 @@ async def upload_lab_results(file: UploadFile = File(...), patient_fhir_id: str 
     Upload a PDF or image containing lab test results, extract text using OCR, 
     and store structured lab data as FHIR Observations linked to a specific patient.
     """
-    if not patient_fhir_id:
-        raise HTTPException(status_code=400, detail="Patient FHIR ID is required.")
+    # TODO uncomment this
+    # if not patient_fhir_id:
+    #     raise HTTPException(status_code=400, detail="Patient FHIR ID is required.")
     try:
         contents = await file.read()
         extracted_text = extract_text(file.filename, contents)
+        print("Extracted OCR text:", extracted_text)
+
         # Parse extracted text into structured lab results
         lab_tests = mock_parsed_lab_results(extracted_text)
 
         # Send structured lab results to FHIR
-        observations = send_lab_results_to_fhir(patient_fhir_id, lab_tests)   
+        # observations = send_lab_results_to_fhir(patient_fhir_id, lab_tests)   
          
         # Format response with observation details
-        response_data = {
-            "message": "Lab results processed successfully.",
-            "observations": [
-                {"test_name": obs["name"], "observation_id": obs["id"]} for obs in observations
-            ]
-        }
-        return response_data
+        # response_data = {
+        #     "message": "Lab results processed successfully.",
+        #     "observations": [
+        #         {"test_name": obs["name"], "observation_id": obs["id"]} for obs in observations
+        #     ]
+        # }
+        # return response_data
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
