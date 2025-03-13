@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from typing import Literal
 from app.services.fhir_service import create_fhir_patient, delete_fhir_patient
 from app.models.patient import search_patient, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db
 
@@ -10,6 +11,9 @@ class PatientInput(BaseModel):
     first_name: str
     last_name: str
     birth_date: str
+    gender: Literal["male", "female", "other", "unknown"]
+
+
 
 @router.post("/patients/")
 async def register_patient(patient: PatientInput):
@@ -18,7 +22,7 @@ async def register_patient(patient: PatientInput):
     if existing_patient:
         return {"message": "Patient already registered", "fhir_id": existing_patient["fhir_id"]}
 
-    new_patient = create_fhir_patient(patient.first_name, patient.last_name, patient.birth_date)
+    new_patient = create_fhir_patient(patient.first_name, patient.last_name, patient.birth_date, patient.gender)
     if new_patient:
         return {"message": "Patient registered successfully", "fhir_id": new_patient["fhir_id"]}
     

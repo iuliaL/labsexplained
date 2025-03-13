@@ -2,22 +2,28 @@ import requests
 from app.config import FHIR_SERVER_URL
 from app.models.patient import store_patient
 
-def create_fhir_patient(first_name, last_name, birth_date):
+VALID_GENDER_VALUES = ["male", "female", "other", "unknown"]
+
+def create_fhir_patient(first_name: str, last_name: str, birth_date: str, gender: str):
     """Creates a new patient in FHIR and stores the FHIR ID in MongoDB"""
+    if gender.lower() not in VALID_GENDER_VALUES:
+        raise ValueError(f"Invalid gender. Allowed values: {', '.join(VALID_GENDER_VALUES)}")
+    
     patient_resource = {
         "resourceType": "Patient",
         "name": [{"use": "official", "family": last_name, "given": [first_name]}],
-        "birthDate": birth_date
+        "birthDate": birth_date,
+        "gender": gender.lower()
     }
     response = requests.post(f"{FHIR_SERVER_URL}/Patient", json=patient_resource)
     
     if response.status_code == 201:
         fhir_id = response.json()["id"]
-        return store_patient(first_name, last_name, birth_date, fhir_id)
+        return store_patient(first_name, last_name, birth_date, gender.lower(), fhir_id,)
     return None
 
 
-def delete_fhir_patient(fhir_id):
+def delete_fhir_patient(fhir_id: str):
     """Deletes a patient from the FHIR server and handles already deleted cases"""
     response = requests.delete(f"{FHIR_SERVER_URL}/Patient/{fhir_id}")
     # print("FHIR DELETE Response:", response.status_code, response.text)  # ✅ Debugging output
