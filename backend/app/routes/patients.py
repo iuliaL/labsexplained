@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Literal
-from app.services.fhir_service import create_fhir_patient, delete_fhir_patient
+from app.services.fhir import create_fhir_patient, delete_fhir_patient
 from app.models.patient import search_patient, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db
 
 router = APIRouter()

@@ -1,13 +1,12 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 import pandas as pd
 import openai
-from app.services.fhir_service import send_lab_results_to_fhir
-from app.config import OPENAI_API_KEY
-from app.utils.file_parser import extract_text, mock_parsed_lab_results
+from app.services.fhir import send_lab_results_to_fhir
+from app.utils.file_parser import extract_text
+from app.services.openai import extract_lab_results_with_gpt  # Import AI function
+
 
 router = APIRouter()
-
-openai.api_key = OPENAI_API_KEY
 
 # this is not used for now
 # @router.post("/interpret-lab-results/")
@@ -41,8 +40,10 @@ async def upload_lab_results(file: UploadFile = File(...), patient_fhir_id: str 
         extracted_text = extract_text(file.filename, contents)
         print("Extracted OCR text:", extracted_text)
 
+        # Use GPT-4 to extract structured lab results
+        structured_results = extract_lab_results_with_gpt(extracted_text)
         # Parse extracted text into structured lab results
-        lab_tests = mock_parsed_lab_results(extracted_text)
+        return structured_results
 
         # Send structured lab results to FHIR
         # observations = send_lab_results_to_fhir(patient_fhir_id, lab_tests)   

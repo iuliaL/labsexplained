@@ -13,8 +13,10 @@
 │   │   │   ├── lab_results.py
 │   │   │   └── patients.py
 │   │   ├── services
-│   │   │   └── fhir_service.py
+│   │   │   ├── fhir.py
+│   │   │   └── openai.py
 │   │   └── utils
+│   │       └── file_parser.py
 │   └── requirements.txt
 ├── docker-compose.yml
 ├── docs
@@ -40,4 +42,4 @@
 │       └── setupTests.js
 └── tree.txt
 
-11 directories, 30 files
+11 directories, 32 files
