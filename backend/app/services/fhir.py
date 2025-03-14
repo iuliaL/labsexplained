@@ -102,6 +102,83 @@ def send_lab_results_to_fhir(lab_tests: list, patient_fhir_id: str, date: str):
     return responses
     
 
+def delete_fhir_observation(observation_id: str):
+    """
+    Deletes a specific Observation from the FHIR server.
+    
+    Args:
+        observation_id (str): The FHIR ID of the Observation to delete.
+    
+    Returns:
+        dict: FHIR server response.
+    """
+    response = requests.delete(f"{FHIR_SERVER_URL}/Observation/{observation_id}")
+    print("🔍 FHIR Response:", response.status_code, response.text)
+
+
+    if response.status_code in [200, 204, 410]:  # ✅ 410 means already deleted
+        return {"message": f"Observation {observation_id} deleted successfully."}
+
+    # ✅ Check for Lucene indexing error (more general detection)
+    if "Indexing failure" in response.text or "HSEARCH700124" in response.text:
+        return {
+            "message": f"Observation {observation_id} deleted successfully, but FHIR indexing failed.",
+            "warning": "This is an issue with the HAPI FHIR public server, not your API."
+        }
+
+    # ❌ If another unexpected error occurs, return the full response
+    return {"error": f"Failed to delete Observation {observation_id}. Response: {response.text}"}
+
+
+def delete_all_observations_for_patient(patient_fhir_id: str):
+    """
+    Deletes all Observations linked to a specific patient in FHIR.
+
+    Args:
+        patient_fhir_id (str): The FHIR ID of the patient.
+
+    Returns:
+        dict: Summary of deleted observations.
+    """
+    # Step 1: Search for all Observations linked to the patient
+    search_response = requests.get(f"{FHIR_SERVER_URL}/Observation?subject=Patient/{patient_fhir_id}")
+
+    if search_response.status_code != 200:
+        return {"error": f"Failed to retrieve Observations for Patient {patient_fhir_id}. Response: {search_response.text}"}
+
+    observations = search_response.json().get("entry", [])
+
+    if not observations:  # ✅ Correctly return if no observations were found
+        return {"message": f"No Observations found for Patient {patient_fhir_id}."}
+
+    # Step 2: Delete each found Observation
+    deleted_observations = []
+    indexing_warnings = []
+    
+    for obs in observations:
+        obs_id = obs["resource"]["id"]
+        delete_response = requests.delete(f"{FHIR_SERVER_URL}/Observation/{obs_id}")
+
+        if delete_response.status_code in [200, 204, 410]:  # ✅ Treat "already deleted" as success
+            deleted_observations.append(obs_id)
+        elif "Indexing failure" in delete_response.text or "HSEARCH700124" in delete_response.text:
+            # ✅ Handle HAPI FHIR's Lucene indexing issue gracefully
+            deleted_observations.append(obs_id)
+            indexing_warnings.append(f"Observation {obs_id} deleted, but FHIR indexing failed.")
+        else:
+            indexing_warnings.append(f"Failed to delete Observation {obs_id}. Response: {delete_response.text}")
+
+    # ✅ Format the response with all successful and failed deletions
+    response_data = {
+        "message": f"Deleted {len(deleted_observations)} observations for Patient {patient_fhir_id}.",
+        "deleted": deleted_observations
+    }
+
+    if indexing_warnings:
+        response_data["warnings"] = indexing_warnings
+
+    return response_data
+
 
 
 

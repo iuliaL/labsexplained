@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from datetime import datetime
 import re
-from app.services.fhir import send_lab_results_to_fhir
+from app.services.fhir import send_lab_results_to_fhir, delete_all_observations_for_patient, delete_fhir_observation
 from app.utils.file_parser import extract_text
 from app.services.openai import extract_lab_results_with_gpt  # Import AI function
 
@@ -55,6 +55,19 @@ async def upload_lab_results(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+@router.delete("/observation/{observation_id}")
+async def delete_observation(observation_id: str):
+    """Deletes a specific Observation by its ID."""
+    result = delete_fhir_observation(observation_id)
+    return result
+
+
+@router.delete("/observations/patient/{patient_fhir_id}")
+async def delete_patient_observations(patient_fhir_id: str):
+    """Deletes all Observations linked to a specific patient."""
+    result = delete_all_observations_for_patient(patient_fhir_id)
+    return result
+
 
 
 # this is not used for now
