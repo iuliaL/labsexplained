@@ -1,7 +1,8 @@
 from pymongo import MongoClient
 from typing import Literal
+from app.config import MONGO_URI
 
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient(MONGO_URI)
 db = client.medical_dashboard
 patients_collection = db["patients"]
 
@@ -10,7 +11,7 @@ patient_schema = {
     "first_name": str,
     "last_name": str,
     "birth_date": str,
-    "gender": str,  # Ensure gender is stored
+    "gender": str,
     "fhir_id": str
 }
 

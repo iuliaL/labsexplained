@@ -82,7 +82,7 @@ def send_lab_results_to_fhir(lab_tests: list, patient_fhir_id: str, date: str):
             ]
         }
         fhir_observations.append(observation_resource)
-    print("Observations sent to FHIR", fhir_observations)
+    # print("Observations sent to FHIR", fhir_observations)
 
     # Send each Observation to the FHIR server
 
@@ -100,6 +100,30 @@ def send_lab_results_to_fhir(lab_tests: list, patient_fhir_id: str, date: str):
             responses.append({"error": "Invalid JSON response from FHIR"})
 
     return responses
+
+
+def get_fhir_observations(observation_ids: list):
+    """
+    Fetches full Observation details from the FHIR server using IDs.
+
+    Args:
+        observation_ids (list): List of Observation IDs.
+
+    Returns:
+        list: List of full Observation resources.
+    """
+    full_observations = []
+
+    for obs_id in observation_ids:
+        response = requests.get(f"{FHIR_SERVER_URL}/Observation/{obs_id}")
+
+        if response.status_code == 200:
+            full_observations.append(response.json())
+        else:
+            full_observations.append({"error": f"Observation {obs_id} not found in FHIR."})
+
+    return full_observations
+
     
 
 def delete_fhir_observation(observation_id: str):

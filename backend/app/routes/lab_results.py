@@ -1,15 +1,32 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from datetime import datetime
 import re
-from app.services.fhir import send_lab_results_to_fhir, delete_all_observations_for_patient, delete_fhir_observation
+from app.services.fhir import send_lab_results_to_fhir, delete_all_observations_for_patient, delete_fhir_observation, get_fhir_observations
 from app.utils.file_parser import extract_text
-from app.services.openai import extract_lab_results_with_gpt  # Import AI function
+from app.services.openai import extract_lab_results_with_gpt
+from app.models.lab_test_set import get_lab_test_sets_for_patient, delete_lab_test_set, store_lab_test_set
 
 
 router = APIRouter()
 
-@router.post("/lab_results/")
-async def upload_lab_results(
+@router.get("/lab_set/{patient_fhir_id}")
+async def get_all_patient_lab_sets(patient_fhir_id: str, include_observations: bool = False):
+    """
+    Retrieves all lab test sets for a specific patient.
+    
+    If `include_observations=True`, fetches full observation details from FHIR.
+    """
+    lab_test_sets = get_lab_test_sets_for_patient(patient_fhir_id)
+
+    if include_observations:
+        for test_set in lab_test_sets:
+            test_set["observations"] = get_fhir_observations(test_set["observation_ids"])
+
+    return {"lab_test_sets": lab_test_sets}
+
+
+@router.post("/lab_set/")
+async def upload_patient_lab_test_set(
     file: UploadFile = File(...),
     date: str = Form(...),
     patient_fhir_id: str = Form(None)
@@ -18,7 +35,7 @@ async def upload_lab_results(
     Upload a PDF or image containing lab test results, extract text using OCR, 
     and store structured lab data as FHIR Observations linked to a specific patient.
     """
-    # TODO uncomment this
+
     if not patient_fhir_id:
         raise HTTPException(status_code=400, detail="Patient FHIR ID is required.")
 
@@ -41,21 +58,33 @@ async def upload_lab_results(
         print("JSON structured lab tests", structured_results)
 
         # Send structured lab results to FHIR
-        observations = send_lab_results_to_fhir(structured_results, patient_fhir_id, date)   
-         
-        # Format response with observation details
+        observations = send_lab_results_to_fhir(structured_results, patient_fhir_id, date)
+        
+        # Store only observation IDs in MongoDB
+        observation_ids = [obs["id"] for obs in observations if "id" in obs]
+        lab_test_set = store_lab_test_set(patient_fhir_id, date, observation_ids)
+   
         response_data = {
             "message": "Lab results processed successfully.",
-            "observations": [
-                {"test_name": obs["code"]["text"], "observation_id": obs["id"]} for obs in observations
-            ]
+            "lab_test_set": lab_test_set
         }
         return response_data
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.delete("/observation/{observation_id}")
+
+@router.delete("/lab_set/{lab_test_set_id}")
+async def delete_lab_test_set(lab_test_set_id: str):
+    """
+    Deletes a specific lab test set.
+    """
+    result = delete_lab_test_set(lab_test_set_id)
+    return result
+
+
+    
+@router.delete("/observations/{observation_id}")
 async def delete_observation(observation_id: str):
     """Deletes a specific Observation by its ID."""
     result = delete_fhir_observation(observation_id)
@@ -63,10 +92,14 @@ async def delete_observation(observation_id: str):
 
 
 @router.delete("/observations/patient/{patient_fhir_id}")
-async def delete_patient_observations(patient_fhir_id: str):
+async def delete_all_observations_for_patient(patient_fhir_id: str):
     """Deletes all Observations linked to a specific patient."""
     result = delete_all_observations_for_patient(patient_fhir_id)
     return result
+
+
+
+
 
 
 
