@@ -1,4 +1,5 @@
 import requests
+import json
 from app.config import FHIR_SERVER_URL
 from app.models.patient import store_patient
 
@@ -38,19 +39,24 @@ def delete_fhir_patient(fhir_id: str):
     return False  # ❌ Treat other failures as errors
 
 
-def send_lab_results_to_fhir(patient_fhir_id: str, lab_tests: list):
+def send_lab_results_to_fhir(lab_tests: list, patient_fhir_id: str, date: str):
     """
     Sends structured lab test results to the FHIR server as Observation resources.
+    Includes the test date provided by the patient.
+
 
     Args:
         patient_fhir_id (str): The FHIR ID of the patient to associate the observations with.
         lab_tests (list): A list of dictionaries containing lab test results.
+        date: Date of the lab examination inputed by the patient.
 
     Returns:
-        list: A list of FHIR Observation IDs created.
+        list: A list of FHIR server responses for each Observation created.
     """
-    observation_ids = []
 
+    headers = {"Content-Type": "application/fhir+json"}
+
+    fhir_observations = []
     for test in lab_tests:
         observation_resource = {
             "resourceType": "Observation",
@@ -63,20 +69,38 @@ def send_lab_results_to_fhir(patient_fhir_id: str, lab_tests: list):
             }],
             "code": {"text": test["name"]},
             "subject": {"reference": f"Patient/{patient_fhir_id}"},
+            "effectiveDateTime": date,  # 🆕 Now adding the provided date!
             "valueQuantity": {
                 "value": test["value"],
                 "unit": test["unit"]
-            }
+            },
+             "referenceRange": [
+                {
+                    "low": {"value": float(test["reference_range"].split(" - ")[0]), "unit": test["unit"]},
+                    "high": {"value": float(test["reference_range"].split(" - ")[1]), "unit": test["unit"]}
+                }
+            ]
         }
+        fhir_observations.append(observation_resource)
+    print("Observations sent to FHIR", fhir_observations)
 
-        response = requests.post(f"{FHIR_SERVER_URL}/Observation", json=observation_resource)
+    # Send each Observation to the FHIR server
 
-        if response.status_code == 201:
-            observation_ids.append(response.json().get("id"))
-        else:
-            raise Exception(f"Failed to create FHIR Observation: {response.text}")
+    responses = []
+    for obs in fhir_observations:
+        response = requests.post(f"{FHIR_SERVER_URL}/Observation", headers=headers, data=json.dumps(obs))
+        # ✅ Print actual FHIR response
+        print("🔍 FHIR Response:", response.status_code, response.text)
+        
+        try:
+            response_json = response.json()
+            responses.append(response_json)
 
-    return [{"name": test["name"], "id": observation_id} for test, observation_id in zip(lab_tests, observation_ids)]
+        except json.JSONDecodeError:
+            responses.append({"error": "Invalid JSON response from FHIR"})
+
+    return responses
+    
 
 
 
