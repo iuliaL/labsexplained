@@ -33,3 +33,28 @@ def extract_text(filename: str, file_contents: bytes) -> str:
 
     else:
         raise ValueError("Unsupported file format. Upload a PDF or image.")
+    
+
+def parse_reference_range(reference_range: str, unit: str):
+    """
+    Parses the reference range into a FHIR-compatible format.
+    
+    Handles cases like:
+    - "70 - 100" → {"low": 70, "high": 100}
+    - ">59" → {"low": 59} (no high value)
+    - "<5" → {"high": 5} (no low value)
+    """
+    reference_range = reference_range.strip()
+
+    if " - " in reference_range:  # Standard range case "70 - 100"
+        low, high = reference_range.split(" - ")
+        return {
+            "low": {"value": float(low), "unit": unit},
+            "high": {"value": float(high), "unit": unit}
+        }
+    elif reference_range.startswith(">"):  # Case ">59"
+        return {"low": {"value": float(reference_range[1:]), "unit": unit}}
+    elif reference_range.startswith("<"):  # Case "<5"
+        return {"high": {"value": float(reference_range[1:]), "unit": unit}}
+
+    return None  # If format is unknown, return None

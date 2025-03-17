@@ -25,11 +25,11 @@ async def get_all_patient_lab_sets(patient_fhir_id: str, include_observations: b
     return {"lab_test_sets": lab_test_sets}
 
 
-@router.post("/lab_set/")
+@router.post("/lab_set")
 async def upload_patient_lab_test_set(
     file: UploadFile = File(...),
     date: str = Form(...),
-    patient_fhir_id: str = Form(None)
+    patient_fhir_id: str = Form(...)
     ):
     """
     Upload a PDF or image containing lab test results, extract text using OCR, 

@@ -15,7 +15,7 @@ class PatientInput(BaseModel):
 
 
 
-@router.post("/patients/")
+@router.post("/patients")
 async def register_patient(patient: PatientInput):
     """Registers a new patient in the FHIR system and stores their FHIR ID in MongoDB or retrieves the patient if already existing"""
     existing_patient = search_patient(patient.first_name, patient.last_name)

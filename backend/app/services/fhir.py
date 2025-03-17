@@ -2,6 +2,7 @@ import requests
 import json
 from app.config import FHIR_SERVER_URL
 from app.models.patient import store_patient
+from app.utils.file_parser import parse_reference_range
 
 VALID_GENDER_VALUES = ["male", "female", "other", "unknown"]
 
@@ -40,24 +41,12 @@ def delete_fhir_patient(fhir_id: str):
 
 
 def send_lab_results_to_fhir(lab_tests: list, patient_fhir_id: str, date: str):
-    """
-    Sends structured lab test results to the FHIR server as Observation resources.
-    Includes the test date provided by the patient.
-
-
-    Args:
-        patient_fhir_id (str): The FHIR ID of the patient to associate the observations with.
-        lab_tests (list): A list of dictionaries containing lab test results.
-        date: Date of the lab examination inputed by the patient.
-
-    Returns:
-        list: A list of FHIR server responses for each Observation created.
-    """
-
     headers = {"Content-Type": "application/fhir+json"}
-
     fhir_observations = []
+
     for test in lab_tests:
+        reference_range = parse_reference_range(test["reference_range"], test["unit"])
+        
         observation_resource = {
             "resourceType": "Observation",
             "status": "final",
@@ -69,37 +58,36 @@ def send_lab_results_to_fhir(lab_tests: list, patient_fhir_id: str, date: str):
             }],
             "code": {"text": test["name"]},
             "subject": {"reference": f"Patient/{patient_fhir_id}"},
-            "effectiveDateTime": date,  # 🆕 Now adding the provided date!
+            "effectiveDateTime": date,
             "valueQuantity": {
                 "value": test["value"],
                 "unit": test["unit"]
             },
-             "referenceRange": [
-                {
-                    "low": {"value": float(test["reference_range"].split(" - ")[0]), "unit": test["unit"]},
-                    "high": {"value": float(test["reference_range"].split(" - ")[1]), "unit": test["unit"]}
-                }
-            ]
         }
+
+        # ✅ Only add reference range if it's valid
+        if reference_range:
+            observation_resource["referenceRange"] = [reference_range]
+
         fhir_observations.append(observation_resource)
-    # print("Observations sent to FHIR", fhir_observations)
+
+    # ✅ Debug: Print observations before sending
+    print("🔍 Observations being sent to FHIR:", json.dumps(fhir_observations, indent=2))
 
     # Send each Observation to the FHIR server
-
     responses = []
     for obs in fhir_observations:
         response = requests.post(f"{FHIR_SERVER_URL}/Observation", headers=headers, data=json.dumps(obs))
         # ✅ Print actual FHIR response
         print("🔍 FHIR Response:", response.status_code, response.text)
-        
         try:
             response_json = response.json()
             responses.append(response_json)
-
         except json.JSONDecodeError:
             responses.append({"error": "Invalid JSON response from FHIR"})
 
     return responses
+
 
 
 def get_fhir_observations(observation_ids: list):

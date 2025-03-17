@@ -4,6 +4,41 @@ from openai import OpenAI
 import json
 
 
+def clean_reference_range(reference_range: str):
+    """
+    Cleans up reference range values extracted by GPT.
+    Ensures they are in a valid "low - high", ">X", or "<X" format.
+
+    Args:
+        reference_range (str): Raw extracted reference range.
+
+    Returns:
+        str: Cleaned reference range, or None if invalid.
+    """
+    if not reference_range or not isinstance(reference_range, str):
+        return None
+
+    reference_range = reference_range.strip()
+
+    # ✅ Fix common extraction issues: remove unwanted characters
+    reference_range = re.sub(r"[-–—]+>", ">", reference_range)  # Handle cases like "->59"
+    reference_range = re.sub(r"[-–—]+<", "<", reference_range)  # Handle cases like "-<5"
+    reference_range = re.sub(r"[-–—]+$", "", reference_range)  # Remove trailing hyphens
+
+    # ✅ Ensure it matches expected formats
+    if " - " in reference_range:  # Standard range case "70 - 100"
+        parts = reference_range.split(" - ")
+        if len(parts) == 2 and parts[0].replace('.', '', 1).isdigit() and parts[1].replace('.', '', 1).isdigit():
+            return reference_range
+
+    elif reference_range.startswith(">") or reference_range.startswith("<"):  # Handle ">59" and "<5"
+        numeric_part = reference_range[1:].strip()
+        if numeric_part.replace('.', '', 1).isdigit():
+            return reference_range
+
+    return None  # Return None if the format is invalid
+
+
 def extract_lab_results_with_gpt(ocr_text: str):
     """Uses OpenAI's GPT to extract structured lab results from OCR-extracted text."""
     
@@ -36,8 +71,10 @@ def extract_lab_results_with_gpt(ocr_text: str):
 
     **Guidelines:**
     - **Only extract lab test results** (ignore patient name, address, doctor name, etc.).
-    - **Ensure correct units** (e.g., mg/dL, mmol/L, UI/mL).
+    - **Ensure correct units** (e.g., mg/dL, mmol/L, IU/mL).
     - **Include reference ranges when available**.
+    - **Ensure reference ranges are properly formatted (`low - high`, `>X`, `<X`).**
+    - **If a reference range is missing or uncertain, return `null` instead.**
     - **Output only valid JSON.**
     - **Do not include markdown backticks (` ``` `) in the response.**
 
@@ -59,21 +96,32 @@ def extract_lab_results_with_gpt(ocr_text: str):
             messages=[{"role": "user", "content": prompt}],
             max_tokens=4096,
             temperature=0.2  # Low temperature for more deterministic responses
-            )
+        )
 
         if not ai_response or not ai_response.choices:
             raise ValueError("Received an empty response from OpenAI API.")
 
         result = ai_response.choices[0].message.content.strip()
 
-        # ✅ Fix: Remove any markdown backticks (```json ... ```) from the response
+        # ✅ Fix: Remove any markdown backticks (` ```json ... ```) from the response
         result = re.sub(r"```json|```", "", result).strip()
 
-        # Ensure output is valid JSON
-        return json.loads(result)
+        # ✅ Convert to JSON
+        extracted_results = json.loads(result)
+
+        # ✅ Clean up reference ranges before returning data
+        for test in extracted_results:
+            if "reference_range" in test:
+                test["reference_range"] = clean_reference_range(test["reference_range"])
+
+        # ✅ Remove any entries where reference range is invalid (optional)
+        extracted_results = [test for test in extracted_results if test["reference_range"] is not None]
+
+        return extracted_results
 
     except json.JSONDecodeError:
         raise ValueError(f"Invalid JSON response from OpenAI after cleanup: {result}")
 
     except Exception as e:
         raise ValueError(f"Error calling OpenAI API: {e}")
+
