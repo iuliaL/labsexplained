@@ -44,6 +44,9 @@ def parse_reference_range(reference_range: str, unit: str):
     - ">59" → {"low": 59} (no high value)
     - "<5" → {"high": 5} (no low value)
     """
+    if reference_range is None:
+            return None
+    
     reference_range = reference_range.strip()
 
     if " - " in reference_range:  # Standard range case "70 - 100"

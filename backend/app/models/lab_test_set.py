@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from app.config import MONGO_URI
+from bson import ObjectId 
 
 client = MongoClient(MONGO_URI)
 db = client.medical_dashboard
@@ -48,10 +49,17 @@ def get_lab_test_sets_for_patient(patient_fhir_id: str):
     Returns:
         list: A list of lab test sets.
     """
-    return list(lab_test_sets_collection.find({"patient_fhir_id": patient_fhir_id}, {"_id": 0}))
+    lab_test_sets = list(lab_test_sets_collection.find({"patient_fhir_id": patient_fhir_id}))
+
+    # Convert ObjectId to a string _id so FastAPI can serialize it
+    for test_set in lab_test_sets:
+        test_set["_id"] = str(test_set["_id"])  # Convert `_id` to string
+
+    return lab_test_sets
 
 
-def delete_lab_test_set(lab_test_set_id: str):
+
+def remove_lab_test_set(lab_test_set_id: str):
     """
     Deletes a lab test set from MongoDB.
 
@@ -61,8 +69,17 @@ def delete_lab_test_set(lab_test_set_id: str):
     Returns:
         dict: Deletion result.
     """
-    result = lab_test_sets_collection.delete_one({"_id": lab_test_set_id})
+    try:
+        # Convert lab_test_set_id to ObjectId
+        object_id = ObjectId(lab_test_set_id)
+    except Exception:
+        return {"error": "Invalid lab test set ID format."}
+
+    result = lab_test_sets_collection.delete_one({"_id": object_id})
+
     if result.deleted_count:
         return {"message": f"Lab test set {lab_test_set_id} deleted successfully."}
+
     return {"error": "Lab test set not found."}
+
 

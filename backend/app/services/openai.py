@@ -74,7 +74,7 @@ def extract_lab_results_with_gpt(ocr_text: str):
     - **Ensure correct units** (e.g., mg/dL, mmol/L, IU/mL).
     - **Include reference ranges when available**.
     - **Ensure reference ranges are properly formatted (`low - high`, `>X`, `<X`).**
-    - **If a reference range is missing or uncertain, return `null` instead.**
+    - **If a reference range is missing in the document, return `null` for `reference_range` (DO NOT GUESS IT).**
     - **Output only valid JSON.**
     - **Do not include markdown backticks (` ``` `) in the response.**
 
@@ -109,13 +109,13 @@ def extract_lab_results_with_gpt(ocr_text: str):
         # ✅ Convert to JSON
         extracted_results = json.loads(result)
 
-        # ✅ Clean up reference ranges before returning data
+        # ✅ Ensure GPT does not hallucinate reference ranges
         for test in extracted_results:
-            if "reference_range" in test:
+            if "reference_range" in test and test["reference_range"] not in [None, ""]:
                 test["reference_range"] = clean_reference_range(test["reference_range"])
+            else:
+                test["reference_range"] = None  # Explicitly set to None if missing
 
-        # ✅ Remove any entries where reference range is invalid (optional)
-        extracted_results = [test for test in extracted_results if test["reference_range"] is not None]
 
         return extracted_results
 

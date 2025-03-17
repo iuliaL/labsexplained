@@ -4,7 +4,7 @@ import re
 from app.services.fhir import send_lab_results_to_fhir, delete_all_observations_for_patient, delete_fhir_observation, get_fhir_observations
 from app.utils.file_parser import extract_text
 from app.services.openai import extract_lab_results_with_gpt
-from app.models.lab_test_set import get_lab_test_sets_for_patient, delete_lab_test_set, store_lab_test_set
+from app.models.lab_test_set import get_lab_test_sets_for_patient, remove_lab_test_set, store_lab_test_set
 
 
 router = APIRouter()
@@ -79,7 +79,7 @@ async def delete_lab_test_set(lab_test_set_id: str):
     """
     Deletes a specific lab test set.
     """
-    result = delete_lab_test_set(lab_test_set_id)
+    result = remove_lab_test_set(lab_test_set_id)
     return result
 
 
