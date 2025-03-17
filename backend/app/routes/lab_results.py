@@ -4,7 +4,7 @@ import re
 from app.services.fhir import send_lab_results_to_fhir, remove_all_observations_for_patient, remove_fhir_observation, get_fhir_observations
 from app.utils.file_parser import extract_text
 from app.services.openai import extract_lab_results_with_gpt
-from app.models.lab_test_set import get_lab_test_sets_for_patient, remove_lab_test_set, store_lab_test_set
+from app.models.lab_test_set import get_lab_test_sets_for_patient, remove_lab_test_set, store_lab_test_set, get_lab_test_set_by_id
 
 
 router = APIRouter()
@@ -86,13 +86,13 @@ async def delete_lab_test_set(lab_test_set_id: str):
         dict: Deletion result.
     """
     # Retrieve lab test set details to get the observation IDs
-    lab_test_sets = get_lab_test_sets_for_patient(lab_test_set_id)
+    lab_test_set = get_lab_test_set_by_id(lab_test_set_id)
 
-    if not lab_test_sets:
+    if not lab_test_set:
         raise HTTPException(status_code=404, detail="Lab test set not found.")
 
     # Extract FHIR observation IDs from the lab test set
-    observation_ids = lab_test_sets[0].get("observation_ids", [])
+    observation_ids = lab_test_set.get("observation_ids", [])
 
     # Delete observations from FHIR server
     deleted_observations = []

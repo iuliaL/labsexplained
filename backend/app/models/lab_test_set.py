@@ -57,6 +57,24 @@ def get_lab_test_sets_for_patient(patient_fhir_id: str):
 
     return lab_test_sets
 
+from bson import ObjectId
+
+def get_lab_test_set_by_id(lab_test_set_id: str):
+    """
+    Retrieves a specific lab test set from MongoDB using its _id.
+
+    Args:
+        lab_test_set_id (str): The MongoDB ID of the lab test set.
+
+    Returns:
+        dict or None: The lab test set if found, else None.
+    """
+    try:
+        object_id = ObjectId(lab_test_set_id)  # ✅ Convert to ObjectId
+    except Exception:
+        return None  # Return None if it's not a valid ObjectId
+
+    return lab_test_sets_collection.find_one({"_id": object_id})
 
 
 def remove_lab_test_set(lab_test_set_id: str):
