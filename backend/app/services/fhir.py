@@ -114,7 +114,7 @@ def get_fhir_observations(observation_ids: list):
 
     
 
-def delete_fhir_observation(observation_id: str):
+def remove_fhir_observation(observation_id: str):
     """
     Deletes a specific Observation from the FHIR server.
     
@@ -142,7 +142,7 @@ def delete_fhir_observation(observation_id: str):
     return {"error": f"Failed to delete Observation {observation_id}. Response: {response.text}"}
 
 
-def delete_all_observations_for_patient(patient_fhir_id: str):
+def remove_all_observations_for_patient(patient_fhir_id: str):
     """
     Deletes all Observations linked to a specific patient in FHIR.
 

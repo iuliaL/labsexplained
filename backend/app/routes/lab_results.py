@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from datetime import datetime
 import re
-from app.services.fhir import send_lab_results_to_fhir, delete_all_observations_for_patient, delete_fhir_observation, get_fhir_observations
+from app.services.fhir import send_lab_results_to_fhir, remove_all_observations_for_patient, remove_fhir_observation, get_fhir_observations
 from app.utils.file_parser import extract_text
 from app.services.openai import extract_lab_results_with_gpt
 from app.models.lab_test_set import get_lab_test_sets_for_patient, remove_lab_test_set, store_lab_test_set
@@ -99,7 +99,7 @@ async def delete_lab_test_set(lab_test_set_id: str):
     failed_observations = []
 
     for obs_id in observation_ids:
-        delete_result = delete_fhir_observation(obs_id)
+        delete_result = remove_fhir_observation(obs_id)
         if "message" in delete_result:
             deleted_observations.append(obs_id)
         else:
@@ -122,14 +122,14 @@ async def delete_lab_test_set(lab_test_set_id: str):
 @router.delete("/observations/{observation_id}")
 async def delete_observation(observation_id: str):
     """Deletes a specific Observation by its ID."""
-    result = delete_fhir_observation(observation_id)
+    result = remove_fhir_observation(observation_id)
     return result
 
 
 @router.delete("/observations/patient/{patient_fhir_id}")
 async def delete_all_observations_for_patient(patient_fhir_id: str):
     """Deletes all Observations linked to a specific patient."""
-    result = delete_all_observations_for_patient(patient_fhir_id)
+    result = remove_all_observations_for_patient(patient_fhir_id)
     return result
 
 
