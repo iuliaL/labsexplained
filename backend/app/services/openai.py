@@ -1,42 +1,77 @@
-from app.config import GITHUB_TOKEN
 import re
 from openai import OpenAI
 import json
+from app.config import GITHUB_TOKEN
+from app.utils.file_parser import clean_reference_range 
 
-
-def clean_reference_range(reference_range: str):
+def interpret_full_lab_set(lab_tests: list):
     """
-    Cleans up reference range values extracted by GPT.
-    Ensures they are in a valid "low - high", ">X", or "<X" format.
+    Uses OpenAI to generate an overall interpretation for the full lab test set.
 
     Args:
-        reference_range (str): Raw extracted reference range.
+        lab_tests (list): A list of lab test results, each containing:
+            - name (str): Test name
+            - value (float): Test result value
+            - unit (str): Measurement unit
+            - reference_range (str, optional): Normal reference range
 
     Returns:
-        str: Cleaned reference range, or None if invalid.
+        str: AI-generated interpretation.
     """
-    if not reference_range or not isinstance(reference_range, str):
-        return None
+    if not GITHUB_TOKEN:
+        raise ValueError("Missing Github Token. Set GITHUB_TOKEN as an environment variable.")
 
-    reference_range = reference_range.strip()
+    # ✅ Extract relevant lab test details from FHIR Observations
+    extracted_tests = []
+    for obs in lab_tests:
+        if "resourceType" in obs and obs["resourceType"] == "Observation":
+            extracted_tests.append({
+                "name": obs["code"]["text"],
+                "value": obs.get("valueQuantity", {}).get("value", "N/A"),
+                "unit": obs.get("valueQuantity", {}).get("unit", "N/A"),
+                "reference_range": obs.get("referenceRange", [{}])[0].get("low", {}).get("value", "N/A")
+            })
 
-    # ✅ Fix common extraction issues: remove unwanted characters
-    reference_range = re.sub(r"[-–—]+>", ">", reference_range)  # Handle cases like "->59"
-    reference_range = re.sub(r"[-–—]+<", "<", reference_range)  # Handle cases like "-<5"
-    reference_range = re.sub(r"[-–—]+$", "", reference_range)  # Remove trailing hyphens
+    # ✅ Convert to JSON for AI processing
+    lab_results_json = json.dumps(extracted_tests, indent=2)
 
-    # ✅ Ensure it matches expected formats
-    if " - " in reference_range:  # Standard range case "70 - 100"
-        parts = reference_range.split(" - ")
-        if len(parts) == 2 and parts[0].replace('.', '', 1).isdigit() and parts[1].replace('.', '', 1).isdigit():
-            return reference_range
 
-    elif reference_range.startswith(">") or reference_range.startswith("<"):  # Handle ">59" and "<5"
-        numeric_part = reference_range[1:].strip()
-        if numeric_part.replace('.', '', 1).isdigit():
-            return reference_range
+    # ✅ Define the GPT prompt
+    prompt = f"""
+    You are an experienced medical doctor analyzing a patient's lab test results.
+    The following is a full set of lab tests for a single patient:
 
-    return None  # Return None if the format is invalid
+    ```json
+    {lab_results_json}
+    ```
+
+    Please analyze these results as a doctor would and provide:
+    - A summary of whether the results are within normal ranges or indicate health concerns.
+    - Any patterns, correlations, or possible medical conditions suggested by the values.
+    - A simple explanation that a patient can understand.
+    - If any values are abnormal, explain their significance.
+
+    **Provide a structured response, including medical insights.**
+    """
+
+   
+    client = OpenAI(
+        base_url="https://models.inference.ai.azure.com",
+        api_key=GITHUB_TOKEN
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=4096,
+            temperature=0.2  # Lower temperature for a more factual, deterministic response
+        )
+
+        return response.choices[0].message.content.strip()
+    
+    except Exception as e:
+        return f"Error generating interpretation: {str(e)}"
 
 
 def extract_lab_results_with_gpt(ocr_text: str):

@@ -1,5 +1,6 @@
 from paddleocr import PaddleOCR
 import cv2
+import re
 import numpy as np
 from pdf2image import convert_from_bytes
 
@@ -61,3 +62,39 @@ def parse_reference_range(reference_range: str, unit: str):
         return {"high": {"value": float(reference_range[1:]), "unit": unit}}
 
     return None  # If format is unknown, return None
+
+
+
+def clean_reference_range(reference_range: str):
+    """
+    Cleans up reference range values extracted by GPT.
+    Ensures they are in a valid "low - high", ">X", or "<X" format.
+
+    Args:
+        reference_range (str): Raw extracted reference range.
+
+    Returns:
+        str: Cleaned reference range, or None if invalid.
+    """
+    if not reference_range or not isinstance(reference_range, str):
+        return None
+
+    reference_range = reference_range.strip()
+
+    # ✅ Fix common extraction issues: remove unwanted characters
+    reference_range = re.sub(r"[-–—]+>", ">", reference_range)  # Handle cases like "->59"
+    reference_range = re.sub(r"[-–—]+<", "<", reference_range)  # Handle cases like "-<5"
+    reference_range = re.sub(r"[-–—]+$", "", reference_range)  # Remove trailing hyphens
+
+    # ✅ Ensure it matches expected formats
+    if " - " in reference_range:  # Standard range case "70 - 100"
+        parts = reference_range.split(" - ")
+        if len(parts) == 2 and parts[0].replace('.', '', 1).isdigit() and parts[1].replace('.', '', 1).isdigit():
+            return reference_range
+
+    elif reference_range.startswith(">") or reference_range.startswith("<"):  # Handle ">59" and "<5"
+        numeric_part = reference_range[1:].strip()
+        if numeric_part.replace('.', '', 1).isdigit():
+            return reference_range
+
+    return None  # Return None if the format is invalid

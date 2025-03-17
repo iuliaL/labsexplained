@@ -3,8 +3,8 @@ from datetime import datetime
 import re
 from app.services.fhir import send_lab_results_to_fhir, remove_all_observations_for_patient, remove_fhir_observation, get_fhir_observations
 from app.utils.file_parser import extract_text
-from app.services.openai import extract_lab_results_with_gpt
-from app.models.lab_test_set import get_lab_test_sets_for_patient, remove_lab_test_set, store_lab_test_set, get_lab_test_set_by_id
+from app.services.openai import extract_lab_results_with_gpt, interpret_full_lab_set
+from app.models.lab_test_set import get_lab_test_sets_for_patient, remove_lab_test_set, store_lab_test_set, get_lab_test_set_by_id, update_lab_test_set
 
 
 router = APIRouter()
@@ -135,24 +135,41 @@ async def delete_all_observations_for_patient(patient_fhir_id: str):
 
 
 
+@router.post("/lab_set/{lab_test_set_id}/interpret")
+def interpret_lab_test_set(lab_test_set_id: str):
+    """
+    Generates an AI-based interpretation for the entire lab test set.
 
-# this is not used for now
-# @router.post("/interpret-lab-results/")
-# async def interpret_lab_results(patient_id, file: UploadFile = File(...)):
-#     df = pd.read_csv(file.file)
-#     results = []
+    Args:
+        lab_test_set_id (str): The MongoDB ID of the lab test set.
 
-#     for _, row in df.iterrows():
-#         prompt = f"Explain {row['Test Name']} level of {row['Value']} {row['Unit']} in layman's terms."
-#         ai_response = openai.ChatCompletion.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])
-#         explanation = ai_response["choices"][0]["message"]["content"]
-        
-#         # Send data to FHIR
-#         fhir_response = send_lab_results_to_fhir(patient_id, lab_results=explanation)
-        
-#         results.append({"Test": row["Test Name"], "Value": row["Value"], "Explanation": explanation, "FHIR_Response": fhir_response})
+    Returns:
+        dict: Updated lab test set with AI interpretation.
+    """
+    # ✅ Retrieve the full lab test set
+    lab_test_set = get_lab_test_set_by_id(lab_test_set_id)
 
-#     return {"message": "Lab results interpreted", "results": results}
+    if not lab_test_set:
+        raise HTTPException(status_code=404, detail="Lab test set not found.")
+
+    # ✅ Fetch full lab set results from FHIR using the stored observation IDs
+    observation_ids = lab_test_set.get("observation_ids", [])
+    full_lab_tests = get_fhir_observations(observation_ids)  # ✅ Now we have real test results
+
+    if not full_lab_tests:
+        raise HTTPException(status_code=400, detail="No lab test results found in FHIR.")
+
+    # ✅ Generate AI-based summary using OpenAI
+    interpretation = interpret_full_lab_set(full_lab_tests)
+
+    # ✅ Store the interpretation in MongoDB
+    lab_test_set["interpretation"] = interpretation
+    update_lab_test_set(lab_test_set_id, {"interpretation": interpretation})
+
+    return {
+        "message": f"Interpretation added to lab test set {lab_test_set_id}",
+        "interpretation": interpretation
+    }
     
 
     
