@@ -72,15 +72,50 @@ async def upload_patient_lab_test_set(
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 
 @router.delete("/lab_set/{lab_test_set_id}")
 async def delete_lab_test_set(lab_test_set_id: str):
     """
-    Deletes a specific lab test set.
+    Deletes a specific lab test set and removes its observations from the FHIR server.
+
+    Args:
+        lab_test_set_id (str): The MongoDB ID of the lab test set.
+
+    Returns:
+        dict: Deletion result.
     """
+    # Retrieve lab test set details to get the observation IDs
+    lab_test_sets = get_lab_test_sets_for_patient(lab_test_set_id)
+
+    if not lab_test_sets:
+        raise HTTPException(status_code=404, detail="Lab test set not found.")
+
+    # Extract FHIR observation IDs from the lab test set
+    observation_ids = lab_test_sets[0].get("observation_ids", [])
+
+    # Delete observations from FHIR server
+    deleted_observations = []
+    failed_observations = []
+
+    for obs_id in observation_ids:
+        delete_result = delete_fhir_observation(obs_id)
+        if "message" in delete_result:
+            deleted_observations.append(obs_id)
+        else:
+            failed_observations.append(delete_result)
+
+    # Now delete the lab test set from MongoDB
     result = remove_lab_test_set(lab_test_set_id)
-    return result
+
+    if "error" in result:
+        raise HTTPException(status_code=500, detail=result["error"])
+
+    return {
+        "message": f"Lab test set {lab_test_set_id} deleted successfully.",
+        "deleted_observations": deleted_observations,
+        "failed_observations": failed_observations
+    }
 
 
     
@@ -96,8 +131,6 @@ async def delete_all_observations_for_patient(patient_fhir_id: str):
     """Deletes all Observations linked to a specific patient."""
     result = delete_all_observations_for_patient(patient_fhir_id)
     return result
-
-
 
 
 
