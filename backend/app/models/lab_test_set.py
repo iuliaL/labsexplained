@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from app.config import MONGO_URI
+from app.models.patient import get_patient
 from bson import ObjectId 
 
 client = MongoClient(MONGO_URI)
@@ -9,9 +10,11 @@ lab_test_sets_collection = db["lab_test_sets"]
 # MongoDB Lab Test Set Schema
 lab_test_set_schema = {
     "patient_fhir_id": str,  # Links to the patient
-    "test_date": str,  # Date of the test set
+    "test_date": str,  # Date of the test set,
+    "birth_date": str,  # Patient's birth date for context
+    "gender": str,  # Patient's gender for context
     "observation_ids": list,  # Store only FHIR Observation IDs
-    "interpretation": str
+    "interpretation": str # AI summary
 }
 
 def store_lab_test_set(patient_fhir_id: str, test_date: str, observation_ids: list):
@@ -26,9 +29,20 @@ def store_lab_test_set(patient_fhir_id: str, test_date: str, observation_ids: li
     Returns:
         dict: The saved lab test set.
     """
+    # ✅ Fetch patient details directly from MongoDB
+    patient_details = get_patient(patient_fhir_id)
+
+    if not patient_details:
+        return {"error": "Patient not found in MongoDB."}
+
+    # ✅ Extract birth date & gender from the patient record
+    birth_date = patient_details.get("birth_date", "Unknown")
+    gender = patient_details.get("gender", "Unknown")
     lab_test_set = {
         "patient_fhir_id": patient_fhir_id,
         "test_date": test_date,
+        "birth_date": birth_date,
+        "gender": gender,
         "observation_ids": observation_ids,  # Store only FHIR IDs
         "interpretation": None  # Placeholder for future AI summary
     }

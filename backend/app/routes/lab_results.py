@@ -151,6 +151,10 @@ def interpret_lab_test_set(lab_test_set_id: str):
 
     if not lab_test_set:
         raise HTTPException(status_code=404, detail="Lab test set not found.")
+    
+    # ✅ Retrieve birth date & gender from lab test set
+    birth_date = lab_test_set.get("birth_date", "Unknown")
+    gender = lab_test_set.get("gender", "Unknown")
 
     # ✅ Fetch full lab set results from FHIR using the stored observation IDs
     observation_ids = lab_test_set.get("observation_ids", [])
@@ -160,7 +164,7 @@ def interpret_lab_test_set(lab_test_set_id: str):
         raise HTTPException(status_code=400, detail="No lab test results found in FHIR.")
 
     # ✅ Generate AI-based summary using OpenAI
-    interpretation = interpret_full_lab_set(full_lab_tests)
+    interpretation = interpret_full_lab_set(full_lab_tests, birth_date, gender)
 
     # ✅ Store the interpretation in MongoDB
     lab_test_set["interpretation"] = interpretation

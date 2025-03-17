@@ -4,7 +4,7 @@ import json
 from app.config import GITHUB_TOKEN
 from app.utils.file_parser import clean_reference_range 
 
-def interpret_full_lab_set(lab_tests: list):
+def interpret_full_lab_set(lab_tests: list, birth_date: str, gender: str):
     """
     Uses OpenAI to generate an overall interpretation for the full lab test set.
 
@@ -39,19 +39,23 @@ def interpret_full_lab_set(lab_tests: list):
     # ✅ Define the GPT prompt
     prompt = f"""
     You are an experienced medical doctor analyzing a patient's lab test results.
-    The following is a full set of lab tests for a single patient:
+    - **Patient Gender**: {gender}
+    - **Patient Birth Date**: {birth_date}
+    - **Lab Test Results**:
 
     ```json
     {lab_results_json}
     ```
 
-    Please analyze these results as a doctor would and provide:
-    - A summary of whether the results are within normal ranges or indicate health concerns.
-    - Any patterns, correlations, or possible medical conditions suggested by the values.
-    - A simple explanation that a patient can understand.
-    - If any values are abnormal, explain their significance.
-
-    **Provide a structured response, including medical insights.**
+    Your task:
+    - Consider the patient's age and gender when analyzing the results.
+    - Clearly state in your response that you are taking these factors into account.
+    - Identify patterns, correlations, and potential health concerns.
+    - Explain any abnormal values and their significance.
+    - Provide a structured, easy-to-understand explanation for the patient.
+    - Ensure your response explicitly acknowledges how gender and age influence the interpretation.
+    - Ensure the interpretation is medically informative, neutral in tone, and structured in a clear and professional manner.
+    - Avoid direct references to a speaker (e.g., "I will analyze" or "You should be concerned"). Instead, present findings in an objective and clinically relevant format. 
     """
 
    
