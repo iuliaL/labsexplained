@@ -53,21 +53,42 @@ export function UploadStep({ onFileSelect, onBack, onSubmit }: UploadStepProps) 
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-slate-700">Upload Lab Results</label>
-        <div
-          className={`
-            mt-1 flex justify-center px-6 pt-5 pb-6 
-            border-2 border-dashed rounded-lg
-            transition-colors duration-200
-            ${isDragging ? "border-blue-500 bg-blue-50/50" : "border-slate-200 hover:border-slate-300"}
-          `}
-          onDragEnter={handleDragIn}
-          onDragLeave={handleDragOut}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-        >
-          <div className="space-y-1 text-center">
-            <svg className="mx-auto h-12 w-12 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+        <label className="block text-sm font-medium text-slate-700">Upload lab results</label>
+        {!selectedFile ? (
+          <div
+            className={`
+              mt-1 flex justify-center px-6 pt-5 pb-6 
+              border-2 border-dashed rounded-lg
+              transition-colors duration-200
+              ${isDragging ? "border-blue-500 bg-blue-50/50" : "border-slate-200 hover:border-slate-300"}
+            `}
+            onDragEnter={handleDragIn}
+            onDragLeave={handleDragOut}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            <div className="space-y-1 text-center">
+              <svg className="mx-auto h-12 w-12 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path
+                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <div className="flex text-sm text-slate-600">
+                <label className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                  <span>Upload a file</span>
+                  <input type="file" className="sr-only" accept=".pdf,image/*" onChange={handleFileChange} />
+                </label>
+                <p className="pl-1">or drag and drop</p>
+              </div>
+              <p className="text-xs text-slate-500">PDF or image files</p>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-1 flex items-center space-x-3 px-4 py-3 border border-slate-200 rounded-lg bg-slate-50">
+            <svg className="h-8 w-8 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
               <path
                 d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
                 strokeWidth={2}
@@ -75,17 +96,16 @@ export function UploadStep({ onFileSelect, onBack, onSubmit }: UploadStepProps) 
                 strokeLinejoin="round"
               />
             </svg>
-            <div className="flex text-sm text-slate-600">
-              <label className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
-                <span>Upload a file</span>
-                <input type="file" className="sr-only" accept=".pdf,image/*" onChange={handleFileChange} />
-              </label>
-              <p className="pl-1">or drag and drop</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-900 truncate">{selectedFile.name}</p>
+              <p className="text-sm text-slate-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
-            <p className="text-xs text-slate-500">PDF or image files</p>
+            <label className="cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-500">
+              Change file
+              <input type="file" className="sr-only" accept=".pdf,image/*" onChange={handleFileChange} />
+            </label>
           </div>
-        </div>
-        {selectedFile && <p className="mt-2 text-sm text-slate-600">Selected file: {selectedFile.name}</p>}
+        )}
       </div>
       <div className="flex space-x-4">
         <button
