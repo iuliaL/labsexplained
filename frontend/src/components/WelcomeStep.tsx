@@ -54,9 +54,6 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => (
       className="w-full max-w-sm mx-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
     >
       Try It Now
-      <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
     </button>
   </div>
 );
