@@ -1,4 +1,4 @@
-import { Input } from "./ui/Input";
+import { DateInput } from "./ui/DateInput";
 import { Select } from "./ui/Select";
 
 interface DemographicsStepProps {
@@ -20,18 +20,17 @@ export function DemographicsStep({ dateOfBirth, gender, onChange, onNext, onBack
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <Input
-          type="date"
+        <DateInput
           id="dateOfBirth"
           label="Date of Birth"
           value={dateOfBirth}
-          onChange={(e) => onChange({ dateOfBirth: e.target.value, gender })}
+          onChange={(value) => onChange({ dateOfBirth: value, gender })}
         />
         <Select
           id="gender"
           label="Gender"
           value={gender}
-          onChange={(e) => onChange({ dateOfBirth, gender: e.target.value })}
+          onChange={(value) => onChange({ dateOfBirth, gender: value })}
           options={genderOptions}
         />
       </div>

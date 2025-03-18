@@ -23,13 +23,15 @@ export const Input: React.FC<InputProps> = ({ label, error, className = "", ...p
           placeholder:text-slate-400
           rounded-lg
           transition-colors
+          border border-slate-200
           focus:outline-none
           focus:ring-2
           focus:ring-blue-500/20
+          focus:border-transparent
           focus:bg-blue-50/50
           disabled:bg-slate-50
           disabled:text-slate-500
-          ${error ? "ring-2 ring-red-500/20 bg-red-50/50" : ""}
+          ${error ? "ring-2 ring-red-500/20 bg-red-50/50 border-transparent" : ""}
           ${className}
         `}
       />
