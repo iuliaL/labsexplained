@@ -48,6 +48,7 @@ def send_lab_results_to_fhir(lab_tests: list, patient_fhir_id: str, date: str):
         reference_range = parse_reference_range(test["reference_range"], test["unit"])
         
         observation_resource = {
+            # Specifies the type of FHIR resource being created, in this case, an Observation.
             "resourceType": "Observation",
             "status": "final",
             "category": [{
