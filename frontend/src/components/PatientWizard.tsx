@@ -4,7 +4,7 @@ import { DemographicsStep } from "./DemographicsStep";
 import { UploadStep } from "./UploadStep";
 import doctorImage from "../assets/supawork-medic.png";
 
-type Step = "name" | "demographics" | "upload";
+type Step = "welcome" | "name" | "demographics" | "upload";
 
 interface PatientData {
   firstName: string;
@@ -15,7 +15,7 @@ interface PatientData {
 }
 
 export default function PatientWizard() {
-  const [currentStep, setCurrentStep] = useState<Step>("name");
+  const [currentStep, setCurrentStep] = useState<Step>("welcome");
   const [patientData, setPatientData] = useState<PatientData>({
     firstName: "",
     lastName: "",
@@ -24,17 +24,21 @@ export default function PatientWizard() {
   });
 
   const nextStep = () => {
-    if (currentStep === "name") setCurrentStep("demographics");
+    if (currentStep === "welcome") setCurrentStep("name");
+    else if (currentStep === "name") setCurrentStep("demographics");
     else if (currentStep === "demographics") setCurrentStep("upload");
   };
 
   const prevStep = () => {
-    if (currentStep === "demographics") setCurrentStep("name");
+    if (currentStep === "name") setCurrentStep("welcome");
+    else if (currentStep === "demographics") setCurrentStep("name");
     else if (currentStep === "upload") setCurrentStep("demographics");
   };
 
   const getStepTitle = (step: Step) => {
     switch (step) {
+      case "welcome":
+        return "Welcome";
       case "name":
         return "Patient Information";
       case "demographics":
@@ -43,6 +47,59 @@ export default function PatientWizard() {
         return "Upload Lab Results";
     }
   };
+
+  const WelcomeStep = () => (
+    <div className="text-center space-y-8">
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-slate-900">Understand your lab results with AI</h2>
+        <p className="text-slate-600 max-w-md mx-auto">
+          Upload your lab results and get instant, personalized interpretations powered by advanced AI. Our system helps
+          you understand your health data in plain language.
+        </p>
+        <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 text-blue-700 font-medium text-sm">
+          ✨ Free service - No credit card required
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-center space-x-6">
+          <div className="flex items-center text-slate-600">
+            <svg className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Quick Analysis</span>
+          </div>
+          <div className="flex items-center text-slate-600">
+            <svg className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Easy to Understand</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-center space-x-6">
+          <div className="flex items-center text-slate-600">
+            <svg className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Secure & Private</span>
+          </div>
+          <div className="flex items-center text-slate-600">
+            <svg className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>24/7 Available</span>
+          </div>
+        </div>
+      </div>
+
+      <button
+        onClick={nextStep}
+        className="w-full max-w-sm mx-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+      >
+        Try It Now
+      </button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -81,14 +138,17 @@ export default function PatientWizard() {
           {/* Form Card */}
           <div className="relative z-10 bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6">
             {/* Current Step Indicator */}
-            <div className="mb-6 text-center">
-              <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
-                Step {currentStep === "name" ? "1" : currentStep === "demographics" ? "2" : "3"} of 3:&nbsp;
-                {getStepTitle(currentStep)}
-              </span>
-            </div>
+            {currentStep !== "welcome" && (
+              <div className="mb-6 text-center">
+                <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
+                  Step {currentStep === "name" ? "1" : currentStep === "demographics" ? "2" : "3"} of 3:&nbsp;
+                  {getStepTitle(currentStep)}
+                </span>
+              </div>
+            )}
 
-            {/* Form Steps */}
+            {/* Steps */}
+            {currentStep === "welcome" && <WelcomeStep />}
             {currentStep === "name" && (
               <NameStep
                 firstName={patientData.firstName}
