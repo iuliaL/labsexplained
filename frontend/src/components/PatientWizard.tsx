@@ -73,8 +73,9 @@ export default function PatientWizard() {
 
         <div className="w-full max-w-md">
           {/* Logo and Title */}
-          <div className="text-center mb-8">
-            <div className="h-12 w-12 mx-auto text-blue-600 mb-6">
+          <div className="text-center mb-7">
+            <div className="h-12 w-12 mx-auto text-blue-600 mb-5
+            ">
               <UserIcon className="w-full h-full" />
             </div>
             <h1 className="text-3xl font-bold text-slate-900">Your AI-Powered Lab Interpreter</h1>
@@ -85,7 +86,7 @@ export default function PatientWizard() {
           <div className="relative z-10 bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6">
             {/* Current Step Indicator */}
             {currentStep !== "welcome" && (
-              <div className="mb-6 text-center">
+              <div className="mb-4 text-center">
                 <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
                   Step {currentStep === "name" ? "1" : currentStep === "demographics" ? "2" : "3"} of 3:&nbsp;
                   {getStepTitle(currentStep)}
