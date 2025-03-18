@@ -67,13 +67,13 @@ export default function PatientWizard() {
             <svg className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <span>Quick Analysis</span>
+            <span>Quick analysis</span>
           </div>
           <div className="flex items-center text-slate-600">
             <svg className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <span>Easy to Understand</span>
+            <span>Easy to understand</span>
           </div>
         </div>
         <div className="flex items-center justify-center space-x-6">
@@ -81,7 +81,7 @@ export default function PatientWizard() {
             <svg className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <span>Secure & Private</span>
+            <span>Secure</span>
           </div>
           <div className="flex items-center text-slate-600">
             <svg className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -178,9 +178,9 @@ export default function PatientWizard() {
       </div>
 
       {/* Right side - Image */}
-      <div className="hidden lg:block w-1/2 relative">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <img src={doctorImage} alt="Medical Professional" className="h-screen w-auto object-contain" />
+      <div className="hidden lg:block w-1/2 relative bg-slate-50">
+        <div className="absolute inset-0">
+          <img src={doctorImage} alt="Medical Professional" className="h-full w-full object-cover object-center" />
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-slate-50/80 to-transparent pointer-events-none" />
       </div>
