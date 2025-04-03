@@ -20,7 +20,8 @@ async def get_all_patient_lab_sets(patient_fhir_id: str, include_observations: b
 
     if include_observations:
         for test_set in lab_test_sets:
-            test_set["observations"] = get_fhir_observations(test_set["observation_ids"])
+            observations = get_fhir_observations(test_set["observation_ids"])
+            test_set["observations"] = observations
 
     return {"lab_test_sets": lab_test_sets}
 

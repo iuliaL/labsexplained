@@ -7,12 +7,12 @@ interface Patient {
   fhir_id: string;
 }
 
-interface LabTest {
+interface LabTestSet {
   id: string;
-  date: string;
-  type: string;
-  result: string;
-  interpretation: string;
+  patient_fhir_id: string;
+  test_date: string;
+  observation_ids: string[];
+  interpretation: string | null;
 }
 
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:8000";
@@ -52,11 +52,10 @@ export const adminService = {
     return data.patient;
   },
 
-  async getPatientLabTests(patientId: string): Promise<LabTest[]> {
-    const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/lab-tests`, {
+  async getPatientLabTests(patientFhirId: string): Promise<LabTestSet[]> {
+    const response = await fetch(`${API_BASE_URL}/api/lab_set/${patientFhirId}`, {
       headers: {
         "Content-Type": "application/json",
-        // Add any auth headers here
       },
     });
 
@@ -64,6 +63,7 @@ export const adminService = {
       throw new Error("Failed to fetch patient lab tests");
     }
 
-    return response.json();
+    const data = await response.json();
+    return data.lab_test_sets;
   },
 };

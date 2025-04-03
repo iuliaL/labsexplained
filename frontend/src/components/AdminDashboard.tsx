@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { adminService } from "../services/admin";
 import { formatDate } from "../utils/dateFormatter";
 
@@ -12,6 +13,7 @@ interface Patient {
 }
 
 export function AdminDashboard() {
+  const navigate = useNavigate();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +31,10 @@ export function AdminDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewPatient = (fhirId: string) => {
+    navigate(`/admin/patients/${fhirId}`);
   };
 
   if (loading) {
@@ -65,6 +71,12 @@ export function AdminDashboard() {
                 </p>
                 <p className="text-sm text-slate-500">FHIR ID: {patient.fhir_id}</p>
               </div>
+              <button
+                onClick={() => handleViewPatient(patient.fhir_id)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                View Details
+              </button>
             </div>
           </div>
         ))}

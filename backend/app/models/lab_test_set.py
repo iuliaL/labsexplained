@@ -65,11 +65,19 @@ def get_lab_test_sets_for_patient(patient_fhir_id: str):
     """
     lab_test_sets = list(lab_test_sets_collection.find({"patient_fhir_id": patient_fhir_id}))
 
-    # Convert ObjectId to a string _id so FastAPI can serialize it
+    # Convert ObjectId to string and remove _id field
+    formatted_sets = []
     for test_set in lab_test_sets:
-        test_set["id"] = str(test_set["_id"])  # Convert `_id` to string
+        formatted_set = {
+            "id": str(test_set["_id"]),
+            "patient_fhir_id": test_set["patient_fhir_id"],
+            "test_date": test_set["test_date"],
+            "observation_ids": test_set["observation_ids"],
+            "interpretation": test_set.get("interpretation")
+        }
+        formatted_sets.append(formatted_set)
 
-    return lab_test_sets
+    return formatted_sets
 
 
 def get_lab_test_set_by_id(lab_test_set_id: str):
