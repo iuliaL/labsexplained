@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { adminService } from "../services/admin";
 import { formatDate } from "../utils/dateFormatter";
+import { LabSet } from "./LabSet";
 
 interface Patient {
   id: string;
@@ -12,12 +13,30 @@ interface Patient {
   fhir_id: string;
 }
 
+interface Observation {
+  id: string;
+  code: {
+    text: string;
+  };
+  valueQuantity?: {
+    value: number;
+    unit: string;
+  };
+  valueString?: string;
+  referenceRange?: Array<{
+    low?: { value: number; unit: string };
+    high?: { value: number; unit: string };
+    text?: string;
+  }>;
+}
+
 interface LabTestSet {
   id: string;
   patient_fhir_id: string;
   test_date: string;
   observation_ids: string[];
   interpretation: string | null;
+  observations?: Observation[];
 }
 
 export function PatientDetail() {
@@ -35,7 +54,7 @@ export function PatientDetail() {
         const patientData = await adminService.getPatient(fhirId);
         setPatient(patientData);
 
-        const labTestData = await adminService.getPatientLabTests(fhirId);
+        const labTestData = await adminService.getPatientLabTests(fhirId, true);
         setLabTestSets(labTestData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -76,53 +95,51 @@ export function PatientDetail() {
       <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8 mb-8">
         <h1 className="text-2xl font-bold text-slate-900 mb-6">Patient details</h1>
 
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Personal information</h2>
-            <div className="space-y-2">
-              <p className="text-sm">
-                <span className="text-slate-500">Name:</span>{" "}
-                <span className="font-medium">
-                  {patient.first_name} {patient.last_name}
-                </span>
+        {/* Personal Information Row */}
+        <div className="bg-slate-50 rounded-lg p-6 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div>
+              <p className="text-sm text-slate-500">Name</p>
+              <p className="text-sm font-medium text-slate-900">
+                {patient.first_name} {patient.last_name}
               </p>
-              <p className="text-sm">
-                <span className="text-slate-500">Date of birth:</span>{" "}
-                <span className="font-medium">{formatDate(patient.birth_date)}</span>
+            </div>
+            <div>
+              <p className="text-sm text-slate-500">Date of birth</p>
+              <p className="text-sm font-medium text-slate-900">{formatDate(patient.birth_date)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-slate-500">Gender</p>
+              <p className="text-sm font-medium text-slate-900">
+                {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}
               </p>
-              <p className="text-sm">
-                <span className="text-slate-500">Gender:</span>{" "}
-                <span className="font-medium">{patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}</span>
-              </p>
-              <p className="text-sm">
-                <span className="text-slate-500">FHIR ID:</span> <span className="font-medium">{patient.fhir_id}</span>
-              </p>
+            </div>
+            <div>
+              <p className="text-sm text-slate-500">FHIR ID</p>
+              <p className="text-sm font-medium text-slate-900">{patient.fhir_id}</p>
             </div>
           </div>
         </div>
 
+        {/* Lab Sets Section */}
         <div>
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Lab Sets</h2>
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="text-lg font-semibold text-slate-900">Lab Sets</h2>
+            <span className="px-2 py-0.5 text-xs font-medium bg-slate-200 text-slate-700 rounded-full">
+              {labTestSets.length} total
+            </span>
+          </div>
           {labTestSets.length === 0 ? (
             <p className="text-sm text-slate-500">No lab sets available</p>
           ) : (
             <div className="space-y-6">
               {labTestSets.map((testSet) => (
-                <div key={testSet.id} className="bg-slate-50 rounded-lg p-6">
-                  <div className="mb-4">
-                    <h3 className="text-md font-semibold text-slate-900">
-                      Test Set from {formatDate(testSet.test_date)}
-                    </h3>
-                    <p className="text-sm text-slate-500">Number of tests in this set: {testSet.observation_ids.length}</p>
-                  </div>
-
-                  {testSet.interpretation && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-semibold text-slate-900 mb-2">Interpretation</h4>
-                      <p className="text-sm text-slate-600 whitespace-pre-wrap">{testSet.interpretation}</p>
-                    </div>
-                  )}
-                </div>
+                <LabSet
+                  key={testSet.id}
+                  testDate={testSet.test_date}
+                  observations={testSet.observations || []}
+                  interpretation={testSet.interpretation}
+                />
               ))}
             </div>
           )}

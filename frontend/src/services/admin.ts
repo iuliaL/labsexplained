@@ -52,18 +52,21 @@ export const adminService = {
     return data.patient;
   },
 
-  async getPatientLabTests(patientFhirId: string): Promise<LabTestSet[]> {
-    const response = await fetch(`${API_BASE_URL}/api/lab_set/${patientFhirId}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  async getPatientLabTests(patientFhirId: string, includeObservations: boolean = false): Promise<LabTestSet[]> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/patients/${patientFhirId}?include_observations=${includeObservations}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to fetch patient lab tests");
     }
 
     const data = await response.json();
-    return data.lab_test_sets;
+    return data.patient.lab_test_sets || [];
   },
 };

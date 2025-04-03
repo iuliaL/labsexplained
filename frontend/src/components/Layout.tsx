@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PatientWizard from "./PatientWizard";
 import { AdminDashboard } from "./AdminDashboard";
-import { PatientDetail } from "./PatientDetail";
+import { PatientDetail } from "./PatientDetails";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 export function Layout() {

@@ -44,13 +44,31 @@ async def get_patients():
     raise HTTPException(status_code=404, detail="Patient not found")
 
 @router.get("/patients/{fhir_id}")
-async def get_patient(fhir_id: str):
-    """Retrieves the patient from MongoDB using the FHIR ID"""
+async def get_patient(fhir_id: str, include_observations: bool = False):
+    """
+    Retrieves the patient from MongoDB using the FHIR ID.
+    If include_observations=True, includes all lab test sets with their FHIR observations.
+    """
     patient = get_patient_from_db(fhir_id)
     if patient:
         # Convert ObjectId to string and return as id
         patient_dict = dict(patient)
         patient_dict['id'] = str(patient_dict.pop('_id'))
+        
+        if include_observations:
+            # Get all lab test sets for the patient
+            from app.models.lab_test_set import get_lab_test_sets_for_patient
+            from app.services.fhir import get_fhir_observations
+            
+            lab_test_sets = get_lab_test_sets_for_patient(fhir_id)
+            
+            # Include full observation details for each lab test set
+            for test_set in lab_test_sets:
+                observations = get_fhir_observations(test_set["observation_ids"])
+                test_set["observations"] = observations
+            
+            patient_dict["lab_test_sets"] = lab_test_sets
+        
         return {"message": "Patient found", "patient": patient_dict}
     
     raise HTTPException(status_code=404, detail="Patient not found")
