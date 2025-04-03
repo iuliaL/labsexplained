@@ -118,60 +118,86 @@ export function LabSet({ id, testDate, observations = [], interpretation, classN
           <div className="text-sm text-red-600 py-2">{error}</div>
         ) : (
           fullObservations.length > 0 && (
-            <div className="mb-6">
-              <h4 className="text-sm font-semibold text-slate-900 mb-4">Test Results</h4>
-              <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Test
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Value
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Unit
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Reference Range
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-slate-200">
-                    {fullObservations.map((observation) => (
-                      <tr key={observation.id} className="hover:bg-slate-50/50 transition-colors duration-150">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{observation.code.text}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                          {observation.valueQuantity
-                            ? observation.valueQuantity.value
-                            : observation.valueString || "N/A"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                          {observation.valueQuantity?.unit || "-"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                          {observation.referenceRange?.[0]?.text ||
-                            (observation.referenceRange?.[0] &&
-                              (observation.referenceRange[0].low && observation.referenceRange[0].high
-                                ? `${observation.referenceRange[0].low.value} - ${observation.referenceRange[0].high.value}`
-                                : observation.referenceRange[0].low
-                                ? `>${observation.referenceRange[0].low.value}`
-                                : observation.referenceRange[0].high
-                                ? `<${observation.referenceRange[0].high.value}`
-                                : "N/A")) ||
-                            "N/A"}
-                        </td>
+            <>
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-slate-900 mb-4">Test Results</h4>
+                <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                  <table className="min-w-full divide-y divide-slate-200">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          Test
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          Value
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          Unit
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          Reference Range
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-slate-200">
+                      {fullObservations.map((observation) => (
+                        <tr key={observation.id} className="hover:bg-slate-50/50 transition-colors duration-150">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                            {observation.code.text}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                            {observation.valueQuantity
+                              ? observation.valueQuantity.value
+                              : observation.valueString || "N/A"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {observation.valueQuantity?.unit || "-"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {observation.referenceRange?.[0]?.text ||
+                              (observation.referenceRange?.[0] &&
+                                (observation.referenceRange[0].low && observation.referenceRange[0].high
+                                  ? `${observation.referenceRange[0].low.value} - ${observation.referenceRange[0].high.value}`
+                                  : observation.referenceRange[0].low
+                                  ? `>${observation.referenceRange[0].low.value}`
+                                  : observation.referenceRange[0].high
+                                  ? `<${observation.referenceRange[0].high.value}`
+                                  : "N/A")) ||
+                              "N/A"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+
+              {interpretation ? (
+                <Interpretation content={interpretation} />
+              ) : (
+                <div className="text-sm text-slate-500 py-2">
+                  <div>No interpretation available.</div>
+                  <button className="inline-flex items-center mt-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 mr-1.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                      <path
+                        fillRule="evenodd"
+                        d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Interpret now
+                  </button>
+                </div>
+              )}
+            </>
           )
         )}
-
-        {interpretation && <Interpretation content={interpretation} />}
       </div>
     </details>
   );
