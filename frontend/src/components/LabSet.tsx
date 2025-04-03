@@ -41,7 +41,7 @@ export function LabSet({ testDate, observations, interpretation, className = "" 
                 {observations.length} tests
               </span>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 group-open:hidden">
               {previewTests.map((test) => (
                 <span
                   key={test.id}
