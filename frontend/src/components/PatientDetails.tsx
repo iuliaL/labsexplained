@@ -1,43 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { adminService } from "../services/admin";
+import { Link, useParams } from "react-router-dom";
+import { adminService, Patient, LabTestSet } from "../services/admin";
 import { formatDate } from "../utils/dateFormatter";
 import { LabSet } from "./LabSet";
-
-interface Patient {
-  id: string;
-  first_name: string;
-  last_name: string;
-  birth_date: string;
-  gender: string;
-  fhir_id: string;
-}
-
-interface Observation {
-  id: string;
-  code: {
-    text: string;
-  };
-  valueQuantity?: {
-    value: number;
-    unit: string;
-  };
-  valueString?: string;
-  referenceRange?: Array<{
-    low?: { value: number; unit: string };
-    high?: { value: number; unit: string };
-    text?: string;
-  }>;
-}
-
-interface LabTestSet {
-  id: string;
-  patient_fhir_id: string;
-  test_date: string;
-  observation_ids: string[];
-  interpretation: string | null;
-  observations?: Observation[];
-}
 
 export function PatientDetail() {
   const { fhirId } = useParams<{ fhirId: string }>();
@@ -51,10 +16,12 @@ export function PatientDetail() {
 
     const fetchPatientData = async () => {
       try {
+        // First get the patient data
         const patientData = await adminService.getPatient(fhirId);
         setPatient(patientData);
 
-        const labTestData = await adminService.getPatientLabTests(fhirId, true);
+        // Then get the lab test sets
+        const labTestData = await adminService.getPatientLabTests(fhirId);
         setLabTestSets(labTestData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -90,6 +57,12 @@ export function PatientDetail() {
     );
   }
 
+  // Helper function to safely capitalize a string
+  const capitalize = (str: string | undefined | null) => {
+    if (!str) return "Unknown";
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
@@ -124,22 +97,22 @@ export function PatientDetail() {
             <div>
               <p className="text-sm text-slate-500">Name</p>
               <p className="text-sm font-medium text-slate-900">
-                {patient.first_name} {patient.last_name}
+                {patient.first_name || "Unknown"} {patient.last_name || ""}
               </p>
             </div>
             <div>
               <p className="text-sm text-slate-500">Date of birth</p>
-              <p className="text-sm font-medium text-slate-900">{formatDate(patient.birth_date)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-500">Gender</p>
               <p className="text-sm font-medium text-slate-900">
-                {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}
+                {patient.birth_date ? formatDate(patient.birth_date) : "Unknown"}
               </p>
             </div>
             <div>
+              <p className="text-sm text-slate-500">Gender</p>
+              <p className="text-sm font-medium text-slate-900">{capitalize(patient.gender)}</p>
+            </div>
+            <div>
               <p className="text-sm text-slate-500">FHIR ID</p>
-              <p className="text-sm font-medium text-slate-900">{patient.fhir_id}</p>
+              <p className="text-sm font-medium text-slate-900">{patient.fhir_id || "Unknown"}</p>
             </div>
           </div>
         </div>
@@ -159,8 +132,9 @@ export function PatientDetail() {
               {labTestSets.map((testSet) => (
                 <LabSet
                   key={testSet.id}
+                  id={testSet.id}
                   testDate={testSet.test_date}
-                  observations={testSet.observations || []}
+                  testNames={testSet.observations.map((obs) => obs.name)}
                   interpretation={testSet.interpretation}
                 />
               ))}

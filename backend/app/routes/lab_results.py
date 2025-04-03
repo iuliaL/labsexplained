@@ -20,57 +20,47 @@ async def get_all_patient_lab_sets(patient_fhir_id: str, include_observations: b
 
     if include_observations:
         for test_set in lab_test_sets:
-            observations = get_fhir_observations(test_set["observation_ids"])
-            test_set["observations"] = observations
+            # Get observation IDs from the observations array
+            observation_ids = [obs["id"] for obs in test_set["observations"]]
+            full_observations = get_fhir_observations(observation_ids)
+            test_set["full_observations"] = full_observations
 
     return {"lab_test_sets": lab_test_sets}
 
 
 @router.post("/lab_set")
 async def upload_patient_lab_test_set(
-    file: UploadFile = File(...),
-    date: str = Form(...),
-    patient_fhir_id: str = Form(...)
-    ):
+    patient_fhir_id: str = Form(...),
+    test_date: str = Form(...),
+    file: UploadFile = File(...)
+):
     """
-    Upload a PDF or image containing lab test results, extract text using OCR, 
-    and store structured lab data as FHIR Observations linked to a specific patient.
+    Uploads and processes a lab test set for a patient.
+    Stores both observation IDs and test names in MongoDB.
     """
-
-    if not patient_fhir_id:
-        raise HTTPException(status_code=400, detail="Patient FHIR ID is required.")
-
-    # If date is missing or empty, use today's date
-    if not date or date.strip() == "":
-        date = datetime.today().strftime('%Y-%m-%d')
-
-    # Validate the date format (YYYY-MM-DD)
-    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date):
-        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
-
     try:
+        # Read the file content and extract text
         contents = await file.read()
         extracted_text = extract_text(file.filename, contents)
-        print("Extracted OCR text:", extracted_text)
 
-        # Use GPT-4 to extract structured lab results
-        structured_results = extract_lab_results_with_gpt(extracted_text)
-        # Parse extracted text into structured lab results
-        print("JSON structured lab tests", structured_results)
-
-        # Send structured lab results to FHIR
-        observations = send_lab_results_to_fhir(structured_results, patient_fhir_id, date)
+        # Extract lab results using GPT
+        lab_results = extract_lab_results_with_gpt(extracted_text)
         
-        # Store only observation IDs in MongoDB
-        observation_ids = [obs["id"] for obs in observations if "id" in obs]
-        lab_test_set = store_lab_test_set(patient_fhir_id, date, observation_ids)
-   
-        response_data = {
-            "message": "Lab results processed successfully.",
-            "lab_test_set": lab_test_set
-        }
-        return response_data
-    
+        # Send results to FHIR and get responses
+        fhir_responses = send_lab_results_to_fhir(lab_results, patient_fhir_id, test_date)
+        
+        # Store lab test set in MongoDB with full observation data
+        lab_test_set = store_lab_test_set(
+            patient_fhir_id=patient_fhir_id,
+            test_date=test_date,
+            observations=fhir_responses
+        )
+
+        # Convert ObjectId to string for JSON response
+        lab_test_set["id"] = str(lab_test_set.pop("_id"))
+        
+        return lab_test_set
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -93,7 +83,7 @@ async def delete_lab_test_set(lab_test_set_id: str):
         raise HTTPException(status_code=404, detail="Lab test set not found.")
 
     # Extract FHIR observation IDs from the lab test set
-    observation_ids = lab_test_set.get("observation_ids", [])
+    observation_ids = [obs["id"] for obs in lab_test_set.get("observations", [])]
 
     # Delete observations from FHIR server
     deleted_observations = []
@@ -147,29 +137,29 @@ def interpret_lab_test_set(lab_test_set_id: str):
     Returns:
         dict: Updated lab test set with AI interpretation.
     """
-    # ✅ Retrieve the full lab test set
+    # Retrieve the lab test set
     lab_test_set = get_lab_test_set_by_id(lab_test_set_id)
 
     if not lab_test_set:
         raise HTTPException(status_code=404, detail="Lab test set not found.")
-    
-    # ✅ Retrieve birth date & gender from lab test set
-    birth_date = lab_test_set.get("birth_date", "Unknown")
-    gender = lab_test_set.get("gender", "Unknown")
 
-    # ✅ Fetch full lab set results from FHIR using the stored observation IDs
-    observation_ids = lab_test_set.get("observation_ids", [])
-    full_lab_tests = get_fhir_observations(observation_ids)  # ✅ Now we have real test results
+    # Get observation IDs from the observations array
+    observation_ids = [obs["id"] for obs in lab_test_set.get("observations", [])]
+    
+    # Fetch full lab test results from FHIR
+    full_lab_tests = get_fhir_observations(observation_ids)
 
     if not full_lab_tests:
         raise HTTPException(status_code=400, detail="No lab test results found in FHIR.")
 
-    # ✅ Generate AI-based summary using OpenAI
-    interpretation = interpret_full_lab_set(full_lab_tests, birth_date, gender)
+    # Generate AI-based summary using OpenAI
+    interpretation = interpret_full_lab_set(full_lab_tests, "Unknown", "Unknown")
 
-    # ✅ Store the interpretation in MongoDB
-    lab_test_set["interpretation"] = interpretation
-    update_lab_test_set(lab_test_set_id, {"interpretation": interpretation})
+    # Store the interpretation in MongoDB
+    update_result = update_lab_test_set(lab_test_set_id, {"interpretation": interpretation})
+    
+    if "error" in update_result:
+        raise HTTPException(status_code=500, detail=update_result["error"])
 
     return {
         "message": f"Interpretation added to lab test set {lab_test_set_id}",
