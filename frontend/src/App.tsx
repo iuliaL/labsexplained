@@ -1,8 +1,8 @@
 import React from "react";
-import PatientWizard from "./components/PatientWizard";
+import { Layout } from "./components/Layout";
 
 function App() {
-  return <PatientWizard />;
+  return <Layout />;
 }
 
 export default App;

@@ -48,7 +48,7 @@ def store_lab_test_set(patient_fhir_id: str, test_date: str, observation_ids: li
     }
 
     result = lab_test_sets_collection.insert_one(lab_test_set)
-    lab_test_set["_id"] = str(result.inserted_id)
+    lab_test_set["id"] = str(result.inserted_id)
     return lab_test_set
 
 
@@ -67,7 +67,7 @@ def get_lab_test_sets_for_patient(patient_fhir_id: str):
 
     # Convert ObjectId to a string _id so FastAPI can serialize it
     for test_set in lab_test_sets:
-        test_set["_id"] = str(test_set["_id"])  # Convert `_id` to string
+        test_set["id"] = str(test_set["_id"])  # Convert `_id` to string
 
     return lab_test_sets
 

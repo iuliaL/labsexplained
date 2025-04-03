@@ -33,6 +33,9 @@ def store_patient(first_name:str, last_name: str, birth_date: str, gender: VALID
     patients_collection.insert_one(patient)
     return patient
 
+def get_patients():
+    """Retrieves patients from MongoDB"""
+    return patients_collection.find()
 
 def get_patient(fhir_id):
     """Retrieves patient from MongoDB by fhir_id"""

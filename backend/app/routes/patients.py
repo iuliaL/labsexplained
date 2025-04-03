@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Literal
 from app.services.fhir import create_fhir_patient, delete_fhir_patient
-from app.models.patient import search_patient, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db
+from app.models.patient import search_patient, get_patients as get_patients_from_db, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db
 
 router = APIRouter()
 
@@ -28,14 +28,30 @@ async def register_patient(patient: PatientInput):
     
     raise HTTPException(status_code=500, detail="Failed to register patient")
 
+@router.get("/patients")
+async def get_patients():
+    """Retrieves the patient from MongoDB using the FHIR ID"""
+    patients = get_patients_from_db()
+    if patients:
+        # Convert ObjectId to string and return as id
+        formatted_patients = []
+        for patient in patients:
+            patient_dict = dict(patient)
+            patient_dict['id'] = str(patient_dict.pop('_id'))
+            formatted_patients.append(patient_dict)
+        return {"message": "Patients retrieved", "patients": formatted_patients}
+    
+    raise HTTPException(status_code=404, detail="Patient not found")
+
 @router.get("/patients/{fhir_id}")
 async def get_patient(fhir_id: str):
     """Retrieves the patient from MongoDB using the FHIR ID"""
     patient = get_patient_from_db(fhir_id)
     if patient:
-        # Convert ObjectId to string before returning
-        patient["_id"] = str(patient["_id"])
-        return {"message": "Patient found", "patient": patient}
+        # Convert ObjectId to string and return as id
+        patient_dict = dict(patient)
+        patient_dict['id'] = str(patient_dict.pop('_id'))
+        return {"message": "Patient found", "patient": patient_dict}
     
     raise HTTPException(status_code=404, detail="Patient not found")
 
