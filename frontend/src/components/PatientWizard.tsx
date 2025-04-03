@@ -14,6 +14,7 @@ interface PatientData {
   dateOfBirth: string;
   gender: string;
   file?: File;
+  testDate?: string;
 }
 
 export default function PatientWizard() {
@@ -50,6 +51,13 @@ export default function PatientWizard() {
     }
   };
 
+  const handleSubmit = async () => {
+    console.log("Submit:", {
+      ...patientData,
+      testDate: patientData.testDate || new Date().toISOString().split("T")[0],
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Left side - Content */}
@@ -74,8 +82,10 @@ export default function PatientWizard() {
         <div className="w-full max-w-md">
           {/* Logo and Title */}
           <div className="text-center mb-7">
-            <div className="h-12 w-12 mx-auto text-blue-600 mb-5
-            ">
+            <div
+              className="h-12 w-12 mx-auto text-blue-600 mb-5
+            "
+            >
               <UserIcon className="w-full h-full" />
             </div>
             <h1 className="text-3xl font-bold text-slate-900">Your AI-Powered Lab Interpreter</h1>
@@ -116,8 +126,9 @@ export default function PatientWizard() {
             {currentStep === "upload" && (
               <UploadStep
                 onFileSelect={(file) => setPatientData({ ...patientData, file })}
+                onDateSelect={(date) => setPatientData({ ...patientData, testDate: date })}
                 onBack={prevStep}
-                onSubmit={() => console.log("Submit:", patientData)}
+                onSubmit={handleSubmit}
               />
             )}
           </div>
