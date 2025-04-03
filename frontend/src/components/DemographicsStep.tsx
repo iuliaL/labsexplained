@@ -25,6 +25,7 @@ export function DemographicsStep({ dateOfBirth, gender, onChange, onNext, onBack
           label="Date of Birth"
           value={dateOfBirth}
           onChange={(value) => onChange({ dateOfBirth: value, gender })}
+          required
         />
         <Select
           id="gender"
@@ -32,6 +33,7 @@ export function DemographicsStep({ dateOfBirth, gender, onChange, onNext, onBack
           value={gender}
           onChange={(value) => onChange({ dateOfBirth, gender: value })}
           options={genderOptions}
+          required
         />
       </div>
 

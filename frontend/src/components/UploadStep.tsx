@@ -6,11 +6,20 @@ interface UploadStepProps {
   onDateSelect: (date: string) => void;
   onBack: () => void;
   onSubmit: () => void;
+  initialDate?: string;
+  initialFile?: File | null;
 }
 
-export function UploadStep({ onFileSelect, onDateSelect, onBack, onSubmit }: UploadStepProps) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>("");
+export function UploadStep({
+  onFileSelect,
+  onDateSelect,
+  onBack,
+  onSubmit,
+  initialDate = "",
+  initialFile = null,
+}: UploadStepProps) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(initialFile);
+  const [selectedDate, setSelectedDate] = useState<string>(initialDate);
   const [isDragging, setIsDragging] = useState(false);
 
   const handleFile = (file: File) => {
@@ -59,7 +68,7 @@ export function UploadStep({ onFileSelect, onDateSelect, onBack, onSubmit }: Upl
         {/* Date picker */}
         <DateInput
           id="test-date"
-          label="Lab Test Date"
+          label="Lab set date"
           value={selectedDate}
           onChange={(date) => {
             setSelectedDate(date);

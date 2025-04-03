@@ -3,18 +3,21 @@ import React from "react";
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  required?: boolean;
 }
 
-export const Input: React.FC<InputProps> = ({ label, error, className = "", ...props }) => {
+export const Input: React.FC<InputProps> = ({ label, error, required = false, className = "", ...props }) => {
   return (
     <div className="w-full">
       {label && (
         <label htmlFor={props.id} className="block text-sm font-medium text-slate-700 mb-1">
           {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       <input
         {...props}
+        required={required}
         className={`
           w-full px-3 py-2
           bg-white

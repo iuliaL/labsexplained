@@ -129,6 +129,8 @@ export default function PatientWizard() {
                 onDateSelect={(date) => setPatientData({ ...patientData, testDate: date })}
                 onBack={prevStep}
                 onSubmit={handleSubmit}
+                initialDate={patientData.testDate}
+                initialFile={patientData.file}
               />
             )}
           </div>

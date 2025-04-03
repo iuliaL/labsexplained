@@ -42,6 +42,7 @@ export function NameStep({ firstName, lastName, onChange, onNext }: NameStepProp
           value={firstName}
           onChange={(e) => onChange({ firstName: e.target.value, lastName })}
           placeholder="First name"
+          required
         />
         <Input
           id="lastName"
@@ -49,6 +50,7 @@ export function NameStep({ firstName, lastName, onChange, onNext }: NameStepProp
           value={lastName}
           onChange={(e) => onChange({ firstName, lastName: e.target.value })}
           placeholder="Last name"
+          required
         />
       </div>
 
