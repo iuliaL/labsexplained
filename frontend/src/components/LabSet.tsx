@@ -87,7 +87,10 @@ export function LabSet({ testDate, observations, interpretation, className = "" 
                       Test
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                      Result
+                      Value
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Unit
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                       Reference Range
@@ -99,15 +102,22 @@ export function LabSet({ testDate, observations, interpretation, className = "" 
                     <tr key={observation.id} className="hover:bg-slate-50/50 transition-colors duration-150">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{observation.code.text}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                        {observation.valueQuantity
-                          ? `${observation.valueQuantity.value} ${observation.valueQuantity.unit}`
-                          : observation.valueString || "N/A"}
+                        {observation.valueQuantity ? observation.valueQuantity.value : observation.valueString || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        {observation.valueQuantity?.unit || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                         {observation.referenceRange?.[0]?.text ||
-                          (observation.referenceRange?.[0]?.low && observation.referenceRange?.[0]?.high
-                            ? `${observation.referenceRange[0].low.value} - ${observation.referenceRange[0].high.value} ${observation.referenceRange[0].low.unit}`
-                            : "N/A")}
+                          (observation.referenceRange?.[0] &&
+                            (observation.referenceRange[0].low && observation.referenceRange[0].high
+                              ? `${observation.referenceRange[0].low.value} - ${observation.referenceRange[0].high.value}`
+                              : observation.referenceRange[0].low
+                              ? `>${observation.referenceRange[0].low.value}`
+                              : observation.referenceRange[0].high
+                              ? `<${observation.referenceRange[0].high.value}`
+                              : "N/A")) ||
+                          "N/A"}
                       </td>
                     </tr>
                   ))}
