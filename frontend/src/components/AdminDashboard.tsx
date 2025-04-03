@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { adminService } from "../services/admin";
+import { formatDate } from "../utils/dateFormatter";
 
 interface Patient {
   id: string;
@@ -58,7 +59,7 @@ export function AdminDashboard() {
                 <h2 className="text-lg font-semibold text-slate-900">
                   {patient.first_name} {patient.last_name}
                 </h2>
-                <p className="text-sm text-slate-500">Born: {new Date(patient.birth_date).toLocaleDateString()}</p>
+                <p className="text-sm text-slate-500">Born: {formatDate(patient.birth_date)}</p>
                 <p className="text-sm text-slate-500">
                   Gender: {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}
                 </p>
