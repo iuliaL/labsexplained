@@ -134,7 +134,7 @@ export function PatientDetail() {
                   key={testSet.id}
                   id={testSet.id}
                   testDate={testSet.test_date}
-                  testNames={testSet.observations.map((obs) => obs.name)}
+                  observations={testSet.observations}
                   interpretation={testSet.interpretation}
                 />
               ))}

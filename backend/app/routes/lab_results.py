@@ -167,4 +167,25 @@ def interpret_lab_test_set(lab_test_set_id: str):
     }
     
 
+@router.get("/observations/{observation_id}")
+async def get_observation(observation_id: str):
+    """
+    Retrieves a specific observation from FHIR by its ID.
+
+    Args:
+        observation_id (str): The FHIR ID of the observation.
+
+    Returns:
+        dict: The observation data.
+    """
+    try:
+        observations = get_fhir_observations([observation_id])
+        if not observations:
+            raise HTTPException(status_code=404, detail="Observation not found")
+        return {"observations": observations}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
     
+
+

@@ -23,29 +23,34 @@ interface Observation {
 interface LabSetProps {
   id: string;
   testDate: string;
-  testNames: string[];
+  observations: Array<{ id: string; name: string }>;
   interpretation: string | null;
   className?: string;
 }
 
-export function LabSet({ id, testDate, testNames = [], interpretation, className = "" }: LabSetProps) {
+export function LabSet({ id, testDate, observations = [], interpretation, className = "" }: LabSetProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [observations, setObservations] = useState<Observation[]>([]);
+  const [fullObservations, setFullObservations] = useState<Observation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Ensure testNames is an array
-  const safeTestNames = Array.isArray(testNames) ? testNames : [];
-  const previewTests = safeTestNames.slice(0, 3);
-  const remainingTests = Math.max(0, safeTestNames.length - 3);
+  // Ensure observations is an array and extract test names
+  const safeObservations = Array.isArray(observations) ? observations : [];
+  const testNames = safeObservations.map((obs) => obs.name);
+  const previewTests = testNames.slice(0, 3);
+  const remainingTests = Math.max(0, testNames.length - 3);
 
   const handleExpand = async () => {
-    if (!isExpanded && observations.length === 0) {
+    if (!isExpanded && fullObservations.length === 0) {
       setLoading(true);
       setError(null);
       try {
-        const fetchedObservations = await adminService.getLabSetObservations(id);
-        setObservations(fetchedObservations);
+        // Fetch each observation individually
+        const observationPromises = safeObservations.map((obs) => adminService.getLabSetObservations(obs.id));
+        const observationResults = await Promise.all(observationPromises);
+        // Flatten the array of arrays into a single array
+        const allObservations = observationResults.flat();
+        setFullObservations(allObservations);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load test results");
       } finally {
@@ -67,7 +72,7 @@ export function LabSet({ id, testDate, testNames = [], interpretation, className
             <div className="flex items-center gap-3 mb-2">
               <h3 className="text-md font-semibold text-slate-900">Set from {formatDate(testDate)}</h3>
               <span className="px-2.5 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full ring-1 ring-indigo-700/10">
-                {safeTestNames.length} tests
+                {safeObservations.length} tests
               </span>
             </div>
             <div className="flex flex-wrap gap-2 group-open:hidden">
@@ -112,7 +117,7 @@ export function LabSet({ id, testDate, testNames = [], interpretation, className
         ) : error ? (
           <div className="text-sm text-red-600 py-2">{error}</div>
         ) : (
-          observations.length > 0 && (
+          fullObservations.length > 0 && (
             <div className="mb-6">
               <h4 className="text-sm font-semibold text-slate-900 mb-4">Test Results</h4>
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
@@ -134,7 +139,7 @@ export function LabSet({ id, testDate, testNames = [], interpretation, className
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-200">
-                    {observations.map((observation) => (
+                    {fullObservations.map((observation) => (
                       <tr key={observation.id} className="hover:bg-slate-50/50 transition-colors duration-150">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{observation.code.text}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">

@@ -87,15 +87,15 @@ export const adminService = {
     return data.lab_test_sets;
   },
 
-  async getLabSetObservations(labSetId: string): Promise<Observation[]> {
-    const response = await fetch(`${API_BASE_URL}/api/lab_set/${labSetId}/observations`, {
+  async getLabSetObservations(observationId: string): Promise<Observation[]> {
+    const response = await fetch(`${API_BASE_URL}/api/observations/${observationId}`, {
       headers: {
         "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch lab set observations");
+      throw new Error("Failed to fetch test result");
     }
 
     const data = await response.json();
