@@ -74,11 +74,11 @@ export function PatientDetail() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8 mb-8">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">Patient Details</h1>
+        <h1 className="text-2xl font-bold text-slate-900 mb-6">Patient details</h1>
 
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Personal Information</h2>
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">Personal information</h2>
             <div className="space-y-2">
               <p className="text-sm">
                 <span className="text-slate-500">Name:</span>{" "}
@@ -87,7 +87,7 @@ export function PatientDetail() {
                 </span>
               </p>
               <p className="text-sm">
-                <span className="text-slate-500">Date of Birth:</span>{" "}
+                <span className="text-slate-500">Date of birth:</span>{" "}
                 <span className="font-medium">{formatDate(patient.birth_date)}</span>
               </p>
               <p className="text-sm">
@@ -102,9 +102,9 @@ export function PatientDetail() {
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Lab Test Sets</h2>
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Lab Sets</h2>
           {labTestSets.length === 0 ? (
-            <p className="text-sm text-slate-500">No lab test sets available</p>
+            <p className="text-sm text-slate-500">No lab sets available</p>
           ) : (
             <div className="space-y-6">
               {labTestSets.map((testSet) => (
@@ -113,12 +113,12 @@ export function PatientDetail() {
                     <h3 className="text-md font-semibold text-slate-900">
                       Test Set from {formatDate(testSet.test_date)}
                     </h3>
-                    <p className="text-sm text-slate-500">Number of observations: {testSet.observation_ids.length}</p>
+                    <p className="text-sm text-slate-500">Number of tests in this set: {testSet.observation_ids.length}</p>
                   </div>
 
                   {testSet.interpretation && (
                     <div className="mt-4">
-                      <h4 className="text-sm font-semibold text-slate-900 mb-2">AI Interpretation</h4>
+                      <h4 className="text-sm font-semibold text-slate-900 mb-2">Interpretation</h4>
                       <p className="text-sm text-slate-600 whitespace-pre-wrap">{testSet.interpretation}</p>
                     </div>
                   )}

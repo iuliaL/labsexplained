@@ -22,7 +22,7 @@ export function DemographicsStep({ dateOfBirth, gender, onChange, onNext, onBack
       <div className="space-y-4">
         <DateInput
           id="dateOfBirth"
-          label="Date of Birth"
+          label="Date of birth"
           value={dateOfBirth}
           onChange={(value) => onChange({ dateOfBirth: value, gender })}
           required
