@@ -31,13 +31,13 @@ export function LabSet({ testDate, observations, interpretation, className = "" 
   const remainingTests = observations.length - 3;
 
   return (
-    <details className={`group bg-slate-50 rounded-lg ${className}`}>
+    <details className={`group bg-slate-50 hover:bg-blue-50/50 rounded-lg transition-colors duration-200 ${className}`}>
       <summary className="p-6 cursor-pointer list-none">
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h3 className="text-md font-semibold text-slate-900">Set from {formatDate(testDate)}</h3>
-              <span className="px-2 py-0.5 text-xs font-medium bg-slate-200 text-slate-700 rounded-full">
+              <span className="px-2.5 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full ring-1 ring-indigo-700/10">
                 {observations.length} tests
               </span>
             </div>
@@ -51,13 +51,13 @@ export function LabSet({ testDate, observations, interpretation, className = "" 
                 </span>
               ))}
               {remainingTests > 0 && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-600">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 ring-1 ring-slate-600/10">
                   +{remainingTests} more
                 </span>
               )}
             </div>
           </div>
-          <div className="text-slate-400 group-open:rotate-180 transition-transform duration-200">
+          <div className="text-indigo-400 group-open:rotate-180 transition-transform duration-200">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -79,7 +79,7 @@ export function LabSet({ testDate, observations, interpretation, className = "" 
         {observations.length > 0 && (
           <div className="mb-6">
             <h4 className="text-sm font-semibold text-slate-900 mb-4">Test Results</h4>
-            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
               <table className="min-w-full divide-y divide-slate-200">
                 <thead className="bg-slate-50">
                   <tr>
@@ -96,7 +96,7 @@ export function LabSet({ testDate, observations, interpretation, className = "" 
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-200">
                   {observations.map((observation) => (
-                    <tr key={observation.id}>
+                    <tr key={observation.id} className="hover:bg-slate-50/50 transition-colors duration-150">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{observation.code.text}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                         {observation.valueQuantity
