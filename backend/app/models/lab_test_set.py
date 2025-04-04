@@ -2,6 +2,8 @@ from typing import Optional, List, Dict
 from bson import ObjectId
 from pymongo import MongoClient
 from app.config import MONGO_URI
+from app.models.patient import get_patient
+
 
 client = MongoClient(MONGO_URI)
 db = client.medical_dashboard
@@ -9,7 +11,9 @@ lab_test_sets_collection = db["lab_test_sets"]
 
 # MongoDB Lab Test Set Schema
 lab_test_set_schema = {
-    "patient_fhir_id": str,  # Links to the patient
+    "patient_fhir_id": str,  # Links to the patient,
+    "birth_date": str,  # Patient's birth date for context
+    "gender": str,  # Patient's gender for context
     "test_date": str,  # Date of the test set
     "observations": list,  # Store both FHIR Observation IDs and test names
     "interpretation": str  # AI summary
@@ -27,6 +31,16 @@ def store_lab_test_set(patient_fhir_id: str, test_date: str, observations: list)
     Returns:
         dict: The saved lab test set.
     """
+    # ✅ Fetch patient details directly from MongoDB
+    patient_details = get_patient(patient_fhir_id)
+
+    if not patient_details:
+        return {"error": "Patient not found in MongoDB."}
+
+    # ✅ Extract birth date & gender from the patient record
+    birth_date = patient_details.get("birth_date", "Unknown")
+    gender = patient_details.get("gender", "Unknown")
+
     # Extract observation IDs and names
     observation_data = []
     for obs in observations:
@@ -39,6 +53,8 @@ def store_lab_test_set(patient_fhir_id: str, test_date: str, observations: list)
     lab_test_set = {
         "patient_fhir_id": patient_fhir_id,
         "test_date": test_date,
+        "birth_date": birth_date,
+        "gender": gender,
         "observations": observation_data,  # Store both IDs and names
         "interpretation": None  # Placeholder for future AI summary
     }
@@ -67,6 +83,8 @@ def get_lab_test_sets_for_patient(patient_fhir_id: str):
             "patient_fhir_id": test_set["patient_fhir_id"],
             "test_date": test_set["test_date"],
             "observations": test_set.get("observations", []),
+            "birth_date": test_set.get("birth_date", "Unknown"),
+            "gender": test_set.get("gender", "Unknown"),
             "interpretation": test_set.get("interpretation")
         }
         formatted_sets.append(formatted_set)

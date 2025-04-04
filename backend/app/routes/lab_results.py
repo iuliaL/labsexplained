@@ -124,8 +124,6 @@ async def delete_all_observations_for_patient(patient_fhir_id: str):
     return result
 
 
-
-
 @router.post("/lab_set/{lab_test_set_id}/interpret")
 def interpret_lab_test_set(lab_test_set_id: str):
     """
@@ -142,18 +140,22 @@ def interpret_lab_test_set(lab_test_set_id: str):
 
     if not lab_test_set:
         raise HTTPException(status_code=404, detail="Lab test set not found.")
+     
+    # Retrieve birth date & gender from lab test set
+    birth_date = lab_test_set.get("birth_date", "Unknown")
+    gender = lab_test_set.get("gender", "Unknown")
 
     # Get observation IDs from the observations array
     observation_ids = [obs["id"] for obs in lab_test_set.get("observations", [])]
     
-    # Fetch full lab test results from FHIR
+    # Fetch full lab set results from FHIR using the stored observation IDs
     full_lab_tests = get_fhir_observations(observation_ids)
 
     if not full_lab_tests:
         raise HTTPException(status_code=400, detail="No lab test results found in FHIR.")
 
     # Generate AI-based summary using OpenAI
-    interpretation = interpret_full_lab_set(full_lab_tests, "Unknown", "Unknown")
+    interpretation = interpret_full_lab_set(full_lab_tests, birth_date, gender)
 
     # Store the interpretation in MongoDB
     update_result = update_lab_test_set(lab_test_set_id, {"interpretation": interpretation})
