@@ -194,6 +194,9 @@ export function LabSet({ labSet, onDelete, onInterpretationUpdated }: LabSetProp
                           <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                             Reference Range
                           </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                            FHIR ID
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-slate-200">
@@ -221,6 +224,9 @@ export function LabSet({ labSet, onDelete, onInterpretationUpdated }: LabSetProp
                                     ? `<${observation.referenceRange[0].high.value}`
                                     : "N/A")) ||
                                 "N/A"}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                              {observation.id}
                             </td>
                           </tr>
                         ))}
