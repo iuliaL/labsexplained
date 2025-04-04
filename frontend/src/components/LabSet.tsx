@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { formatDate } from "../utils/dateFormatter";
 import { Interpretation } from "./Interpretation";
 import { adminService } from "../services/admin";
+import { LabTestIcon } from "./icons/LabTestIcon";
 
 interface Observation {
   id: string;
@@ -26,13 +27,22 @@ interface LabSetProps {
   observations: Array<{ id: string; name: string }>;
   interpretation: string | null;
   className?: string;
+  onInterpretationUpdated?: (newInterpretation: string) => void;
 }
 
-export function LabSet({ id, testDate, observations = [], interpretation, className = "" }: LabSetProps) {
+export function LabSet({
+  id,
+  testDate,
+  observations = [],
+  interpretation,
+  className = "",
+  onInterpretationUpdated,
+}: LabSetProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [fullObservations, setFullObservations] = useState<Observation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [interpreting, setInterpreting] = useState(false);
 
   // Ensure observations is an array and extract test names
   const safeObservations = Array.isArray(observations) ? observations : [];
@@ -60,6 +70,24 @@ export function LabSet({ id, testDate, observations = [], interpretation, classN
     setIsExpanded(!isExpanded);
   };
 
+  const handleInterpret = async () => {
+    if (interpreting) return;
+
+    setInterpreting(true);
+    setError(null);
+
+    try {
+      const result = await adminService.interpretLabTestSet(id);
+      if (onInterpretationUpdated) {
+        onInterpretationUpdated(result.interpretation);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to interpret lab test set");
+    } finally {
+      setInterpreting(false);
+    }
+  };
+
   return (
     <details
       className={`group bg-slate-50 hover:bg-blue-50/50 rounded-lg transition-colors duration-200 ${className}`}
@@ -70,9 +98,15 @@ export function LabSet({ id, testDate, observations = [], interpretation, classN
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-md font-semibold text-slate-900">Set from {formatDate(testDate)}</h3>
+            <LabTestIcon className="h-5 w-5 text-indigo-600" />
+
+              <h3 className="text-md font-semibold text-slate-900">Lab set from {formatDate(testDate)}</h3>
               <span className="px-2.5 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full ring-1 ring-indigo-700/10">
                 {safeObservations.length} tests
+              </span>
+              {/* Display Lab Set ID */}
+              <span className="px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-full ring-1 ring-gray-700/10">
+                ID: {id}
               </span>
             </div>
             <div className="flex flex-wrap gap-2 group-open:hidden">
@@ -109,7 +143,7 @@ export function LabSet({ id, testDate, observations = [], interpretation, classN
         </div>
       </summary>
 
-      <div className="px-6 pb-6">
+      <div className="px-6 pb-6 relative">
         {loading ? (
           <div className="flex justify-center py-4">
             <div className="text-sm text-slate-500">Loading test results...</div>
@@ -177,26 +211,85 @@ export function LabSet({ id, testDate, observations = [], interpretation, classN
               ) : (
                 <div className="text-sm text-slate-500 py-2">
                   <div>No interpretation available.</div>
-                  <button className="inline-flex items-center mt-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 mr-1.5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                      <path
-                        fillRule="evenodd"
-                        d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Interpret now
+                  <button
+                    onClick={handleInterpret}
+                    disabled={interpreting}
+                    className="inline-flex items-center mt-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {interpreting ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Interpreting...
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 mr-1.5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                          <path
+                            fillRule="evenodd"
+                            d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Interpret now
+                      </>
+                    )}
                   </button>
                 </div>
               )}
             </>
           )
+        )}
+
+        {/* Loading overlay for interpretation */}
+        {interpreting && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 pointer-events-none">
+            <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full mx-4 pointer-events-auto">
+              <div className="flex flex-col items-center">
+                <svg
+                  className="animate-spin h-10 w-10 text-indigo-600 mb-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <h3 className="text-lg font-medium text-slate-900 mb-2">Generating interpretation</h3>
+                <p className="text-sm text-slate-500 text-center">
+                  Analyzing your lab test results. This may take a moment...
+                </p>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </details>

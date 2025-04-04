@@ -101,4 +101,19 @@ export const adminService = {
     const data = await response.json();
     return data.observations;
   },
+
+  async interpretLabTestSet(labTestSetId: string): Promise<{ interpretation: string }> {
+    const response = await fetch(`${API_BASE_URL}/api/lab_set/${labTestSetId}/interpret`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to interpret lab test set");
+    }
+
+    return await response.json();
+  },
 };

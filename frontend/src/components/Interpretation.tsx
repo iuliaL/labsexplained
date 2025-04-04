@@ -1,6 +1,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
+import { UserIcon } from "./icons/UserIcon";
 
 interface InterpretationProps {
   content: string;
@@ -17,7 +18,11 @@ export function Interpretation({ content, className = "" }: InterpretationProps)
 
   return (
     <div className={`bg-white rounded-lg border border-slate-200 p-6 ${className}`}>
-      <h4 className="text-sm font-semibold text-slate-900 mb-4">Interpretation</h4>
+      <div className="flex gap-3 mb-2">
+        <UserIcon className="h-5 w-5 text-indigo-600" />
+        <h4 className="text-sm font-semibold text-slate-900">Interpretation</h4>
+      </div>
+
       <div className="prose prose-sm max-w-none">
         <ReactMarkdown components={interpretationStyles}>{content}</ReactMarkdown>
       </div>

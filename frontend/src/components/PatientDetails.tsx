@@ -33,6 +33,12 @@ export function PatientDetail() {
     fetchPatientData();
   }, [fhirId]);
 
+  const handleInterpretationUpdated = (labTestSetId: string, newInterpretation: string) => {
+    setLabTestSets((prevSets) =>
+      prevSets.map((set) => (set.id === labTestSetId ? { ...set, interpretation: newInterpretation } : set))
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -136,6 +142,9 @@ export function PatientDetail() {
                   testDate={testSet.test_date}
                   observations={testSet.observations}
                   interpretation={testSet.interpretation}
+                  onInterpretationUpdated={(newInterpretation) =>
+                    handleInterpretationUpdated(testSet.id, newInterpretation)
+                  }
                 />
               ))}
             </div>
