@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PatientWizard from "./PatientWizard";
 import { AdminDashboard } from "./AdminDashboard";
-import { PatientDetail } from "./PatientDetails";
+import { PatientDetails } from "./PatientDetails";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 export function Layout() {
@@ -23,7 +23,7 @@ export function Layout() {
             path="/admin/patients/:fhirId"
             element={
               <ProtectedRoute requiredRole="admin">
-                <PatientDetail />
+                <PatientDetails />
               </ProtectedRoute>
             }
           />

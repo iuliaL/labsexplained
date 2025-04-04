@@ -4,7 +4,7 @@ import { adminService, Patient, LabTestSet } from "../services/admin";
 import { formatDate } from "../utils/dateFormatter";
 import { LabSet } from "./LabSet";
 
-export function PatientDetail() {
+export function PatientDetails() {
   const { fhirId } = useParams<{ fhirId: string }>();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [labTestSets, setLabTestSets] = useState<LabTestSet[]>([]);
@@ -32,6 +32,13 @@ export function PatientDetail() {
 
     fetchPatientData();
   }, [fhirId]);
+
+  const handleLabSetDeleted = () => {
+    // Refresh the lab test sets after deletion
+    if (fhirId) {
+      adminService.getPatientLabTests(fhirId).then(setLabTestSets);
+    }
+  };
 
   const handleInterpretationUpdated = (labTestSetId: string, newInterpretation: string) => {
     setLabTestSets((prevSets) =>
@@ -138,13 +145,11 @@ export function PatientDetail() {
               {labTestSets.map((testSet) => (
                 <LabSet
                   key={testSet.id}
-                  id={testSet.id}
-                  testDate={testSet.test_date}
-                  observations={testSet.observations}
-                  interpretation={testSet.interpretation}
+                  labSet={testSet}
                   onInterpretationUpdated={(newInterpretation) =>
                     handleInterpretationUpdated(testSet.id, newInterpretation)
                   }
+                  onDelete={handleLabSetDeleted}
                 />
               ))}
             </div>

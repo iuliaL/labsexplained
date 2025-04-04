@@ -160,4 +160,17 @@ export const adminService = {
 
     return await response.json();
   },
+
+  async deleteLabTestSet(labTestSetId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/lab_set/${labTestSetId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete lab test set");
+    }
+  },
 };
