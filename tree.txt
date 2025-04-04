@@ -44,7 +44,6 @@
 │   │   │   ├── DemographicsStep.tsx
 │   │   │   ├── Interpretation.tsx
 │   │   │   ├── LabSet.tsx
-│   │   │   ├── LabTestIcon.tsx
 │   │   │   ├── Layout.tsx
 │   │   │   ├── NameStep.tsx
 │   │   │   ├── PatientDetails.tsx
@@ -75,4 +74,4 @@
 │   └── tsconfig.json
 └── tree.txt
 
-17 directories, 59 files
+17 directories, 58 files
