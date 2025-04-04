@@ -52,12 +52,9 @@ export function AdminDashboard() {
     setIsDeletingPatient(true);
     setShowDeleteConfirm(false); // Close the dialog immediately when starting deletion
     try {
-      console.log("Attempting to delete patient with FHIR ID:", selectedPatientId);
       await adminService.deletePatient(selectedPatientId);
-      console.log("Patient deleted successfully");
       await fetchPatients(); // Refresh the list
     } catch (err) {
-      console.error("Delete patient error:", err);
       const errorMessage = err instanceof Error ? err.message : "Failed to delete patient";
       setError(errorMessage);
       // Show the error for 3 seconds then clear it
