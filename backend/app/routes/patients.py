@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Literal
-from app.services.fhir import create_fhir_patient, delete_fhir_patient
+from app.services.fhir import create_fhir_patient, delete_fhir_patient, remove_all_observations_for_patient
 from app.models.patient import search_patient, get_patients as get_patients_from_db, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db
 
 router = APIRouter()
@@ -81,12 +81,17 @@ async def delete_patient(fhir_id: str):
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
 
-    # Delete patient from FHIR (handles already deleted cases)
+    # First delete all observations for this patient
+    obs_result = remove_all_observations_for_patient(fhir_id)
+    if "error" in obs_result:
+        raise HTTPException(status_code=500, detail=f"Failed to delete patient's observations: {obs_result['error']}")
+
+    # Now delete patient from FHIR
     fhir_response = delete_fhir_patient(fhir_id)
     if fhir_response is False:
         raise HTTPException(status_code=500, detail="Failed to delete patient from FHIR")
 
-    # Delete patient from MongoDB
+    # Finally delete patient from MongoDB
     delete_patient_from_db(fhir_id)
 
-    return {"message": "Patient deleted successfully", "fhir_id": fhir_id}
+    return {"message": "Patient and all associated data deleted successfully", "fhir_id": fhir_id}

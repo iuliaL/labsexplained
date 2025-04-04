@@ -173,4 +173,25 @@ export const adminService = {
       throw new Error("Failed to delete lab test set");
     }
   },
+
+  async deletePatient(fhirId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/patients/${fhirId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error("Delete patient response:", {
+        status: response.status,
+        statusText: response.statusText,
+        errorData,
+      });
+      throw new Error(
+        `Failed to delete patient: ${response.status} ${response.statusText}${errorData ? ` - ${errorData}` : ""}`
+      );
+    }
+  },
 };
