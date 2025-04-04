@@ -7,6 +7,7 @@
 │   │   ├── config.py
 │   │   ├── main.py
 │   │   ├── models
+│   │   │   ├── lab_test_set.py
 │   │   │   └── patient.py
 │   │   ├── routes
 │   │   │   ├── __init__.py
@@ -24,6 +25,7 @@
 │   ├── README.md
 │   ├── package-lock.json
 │   ├── package.json
+│   ├── postcss.config.js
 │   ├── public
 │   │   ├── favicon.ico
 │   │   ├── index.html
@@ -31,15 +33,46 @@
 │   │   ├── logo512.png
 │   │   ├── manifest.json
 │   │   └── robots.txt
-│   └── src
-│       ├── App.css
-│       ├── App.js
-│       ├── App.test.js
-│       ├── index.css
-│       ├── index.js
-│       ├── logo.svg
-│       ├── reportWebVitals.js
-│       └── setupTests.js
+│   ├── src
+│   │   ├── App.css
+│   │   ├── App.test.tsx
+│   │   ├── App.tsx
+│   │   ├── assets
+│   │   │   └── supawork-medic.png
+│   │   ├── components
+│   │   │   ├── AdminDashboard.tsx
+│   │   │   ├── DemographicsStep.tsx
+│   │   │   ├── Interpretation.tsx
+│   │   │   ├── LabSet.tsx
+│   │   │   ├── LabTestIcon.tsx
+│   │   │   ├── Layout.tsx
+│   │   │   ├── NameStep.tsx
+│   │   │   ├── PatientDetails.tsx
+│   │   │   ├── PatientWizard.tsx
+│   │   │   ├── ProtectedRoute.tsx
+│   │   │   ├── UploadStep.tsx
+│   │   │   ├── UserIcon.tsx
+│   │   │   ├── WelcomeStep.tsx
+│   │   │   ├── icons
+│   │   │   │   ├── LabTestIcon.tsx
+│   │   │   │   └── UserIcon.tsx
+│   │   │   └── ui
+│   │   │       ├── ConfirmDialog.tsx
+│   │   │       ├── DateInput.tsx
+│   │   │       ├── Input.tsx
+│   │   │       └── Select.tsx
+│   │   ├── index.css
+│   │   ├── index.tsx
+│   │   ├── logo.svg
+│   │   ├── react-app-env.d.ts
+│   │   ├── reportWebVitals.ts
+│   │   ├── services
+│   │   │   └── admin.ts
+│   │   ├── setupTests.ts
+│   │   └── utils
+│   │       └── dateFormatter.ts
+│   ├── tailwind.config.js
+│   └── tsconfig.json
 └── tree.txt
 
-11 directories, 32 files
+17 directories, 59 files
