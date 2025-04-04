@@ -116,4 +116,48 @@ export const adminService = {
 
     return await response.json();
   },
+
+  async createPatient(patientData: {
+    firstName: string;
+    lastName: string;
+    dateOfBirth: string;
+    gender: string;
+  }): Promise<{ fhir_id: string; message: string }> {
+    const response = await fetch(`${API_BASE_URL}/api/patients`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        first_name: patientData.firstName,
+        last_name: patientData.lastName,
+        birth_date: new Date(patientData.dateOfBirth).toISOString().split("T")[0], // Convert to YYYY-MM-DD
+        gender: patientData.gender,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create patient");
+    }
+
+    return await response.json();
+  },
+
+  async uploadLabTestSet(patientFhirId: string, testDate: string, file: File): Promise<LabTestSet> {
+    const formData = new FormData();
+    formData.append("patient_fhir_id", patientFhirId);
+    formData.append("test_date", new Date(testDate).toISOString().split("T")[0]); // Convert to YYYY-MM-DD
+    formData.append("file", file);
+
+    const response = await fetch(`${API_BASE_URL}/api/lab_set`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to upload lab test set");
+    }
+
+    return await response.json();
+  },
 };

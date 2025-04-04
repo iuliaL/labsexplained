@@ -5,6 +5,7 @@ import { UploadStep } from "./UploadStep";
 import { WelcomeStep } from "./WelcomeStep";
 import doctorImage from "../assets/supawork-medic.png";
 import { UserIcon } from "./icons/UserIcon";
+import { adminService } from "../services/admin";
 
 type Step = "welcome" | "name" | "demographics" | "upload";
 
@@ -25,6 +26,8 @@ export default function PatientWizard() {
     dateOfBirth: "",
     gender: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const nextStep = () => {
     if (currentStep === "welcome") setCurrentStep("name");
@@ -52,10 +55,63 @@ export default function PatientWizard() {
   };
 
   const handleSubmit = async () => {
-    console.log("Submit:", {
-      ...patientData,
-      testDate: patientData.testDate || new Date().toISOString().split("T")[0],
-    });
+    if (!patientData.file) {
+      setError("Please select a file to upload");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log("Starting patient creation process...");
+      // Step 1: Create the patient
+      const { fhir_id, message } = await adminService.createPatient({
+        firstName: patientData.firstName,
+        lastName: patientData.lastName,
+        dateOfBirth: patientData.dateOfBirth,
+        gender: patientData.gender,
+      });
+      console.log("Patient created successfully:", { fhir_id, message });
+
+      if (!fhir_id) {
+        throw new Error("Patient creation succeeded but no FHIR ID was returned");
+      }
+
+      console.log("Starting lab test upload for patient:", fhir_id);
+      // Step 2: Upload the lab test set
+      const uploadResponse = await adminService.uploadLabTestSet(
+        fhir_id,
+        patientData.testDate || new Date().toISOString().split("T")[0],
+        patientData.file!
+      );
+      console.log("Lab test upload response:", uploadResponse);
+
+      if (!uploadResponse?.id) {
+        throw new Error("Lab test upload succeeded but no lab set ID was returned");
+      }
+
+      console.log("Starting interpretation for lab set:", uploadResponse.id);
+      // Step 3: Generate interpretation
+      const interpretResponse = await adminService.interpretLabTestSet(uploadResponse.id);
+      console.log("Interpretation completed:", interpretResponse);
+
+      // Handle success
+      setError(null);
+      // TODO: Add success message or redirect
+      console.log("All steps completed successfully");
+    } catch (err) {
+      console.error("Error during process:", err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === "object" && err !== null) {
+        setError(JSON.stringify(err));
+      } else {
+        setError("An unexpected error occurred during the process");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -131,6 +187,7 @@ export default function PatientWizard() {
                 onSubmit={handleSubmit}
                 initialDate={patientData.testDate}
                 initialFile={patientData.file}
+                loading={loading}
               />
             )}
           </div>
@@ -144,6 +201,10 @@ export default function PatientWizard() {
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-slate-50/80 to-transparent pointer-events-none" />
       </div>
+
+      {error && (
+        <div className="absolute top-4 right-4 bg-red-50 text-red-600 px-4 py-2 rounded-md shadow-sm">{error}</div>
+      )}
     </div>
   );
 }

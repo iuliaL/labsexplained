@@ -8,6 +8,7 @@ interface UploadStepProps {
   onSubmit: () => void;
   initialDate?: string;
   initialFile?: File | null;
+  loading?: boolean;
 }
 
 export function UploadStep({
@@ -17,6 +18,7 @@ export function UploadStep({
   onSubmit,
   initialDate = "",
   initialFile = null,
+  loading = false,
 }: UploadStepProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(initialFile);
   const [selectedDate, setSelectedDate] = useState<string>(initialDate);
@@ -76,6 +78,7 @@ export function UploadStep({
           }}
           max={new Date().toISOString().split("T")[0]}
           required
+          disabled={loading}
         />
 
         {/* File upload */}
@@ -88,11 +91,12 @@ export function UploadStep({
                 border-2 border-dashed rounded-lg
                 transition-colors duration-200
                 ${isDragging ? "border-blue-500 bg-blue-50/50" : "border-slate-200 hover:border-slate-300"}
+                ${loading ? "opacity-50 cursor-not-allowed" : ""}
               `}
-              onDragEnter={handleDragIn}
-              onDragLeave={handleDragOut}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
+              onDragEnter={!loading ? handleDragIn : undefined}
+              onDragLeave={!loading ? handleDragOut : undefined}
+              onDragOver={!loading ? handleDrag : undefined}
+              onDrop={!loading ? handleDrop : undefined}
             >
               <div className="space-y-1 text-center">
                 <div className="flex justify-center space-x-4">
@@ -122,9 +126,19 @@ export function UploadStep({
                   </svg>
                 </div>
                 <div className="flex text-sm text-slate-600">
-                  <label className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                  <label
+                    className={`relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none ${
+                      loading ? "pointer-events-none opacity-50" : ""
+                    }`}
+                  >
                     <span>Upload a file</span>
-                    <input type="file" className="sr-only" accept=".pdf,image/*" onChange={handleFileChange} />
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept=".pdf,image/*"
+                      onChange={handleFileChange}
+                      disabled={loading}
+                    />
                   </label>
                   <p className="pl-1">or drag and drop</p>
                 </div>
@@ -158,9 +172,19 @@ export function UploadStep({
                 <p className="text-sm font-medium text-slate-900 truncate">{selectedFile.name}</p>
                 <p className="text-sm text-slate-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
-              <label className="cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-500">
+              <label
+                className={`cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-500 ${
+                  loading ? "pointer-events-none opacity-50" : ""
+                }`}
+              >
                 Change file
-                <input type="file" className="sr-only" accept=".pdf,image/*" onChange={handleFileChange} />
+                <input
+                  type="file"
+                  className="sr-only"
+                  accept=".pdf,image/*"
+                  onChange={handleFileChange}
+                  disabled={loading}
+                />
               </label>
             </div>
           )}
@@ -170,16 +194,36 @@ export function UploadStep({
       <div className="flex space-x-4">
         <button
           onClick={onBack}
-          className="flex-1 py-2 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          disabled={loading}
+          className="flex-1 py-2 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Back
         </button>
         <button
           onClick={onSubmit}
-          disabled={!selectedFile || !selectedDate}
+          disabled={!selectedFile || !selectedDate || loading}
           className="flex-1 py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-400"
         >
-          Submit
+          {loading ? (
+            <span className="flex items-center justify-center">
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Processing...
+            </span>
+          ) : (
+            "Submit"
+          )}
         </button>
       </div>
     </div>
