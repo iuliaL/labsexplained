@@ -5,6 +5,8 @@ export interface Patient {
   birth_date: string;
   gender: string;
   fhir_id: string;
+  lab_test_count: number;
+  interpreted_count: number;
 }
 
 export interface LabTestSet {
@@ -35,6 +37,11 @@ export interface Observation {
   }>;
 }
 
+interface PatientsResponse {
+  message: string;
+  patients: Patient[];
+}
+
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:8000";
 
 if (!process.env.API_BASE_URL) {
@@ -42,19 +49,12 @@ if (!process.env.API_BASE_URL) {
 }
 
 export const adminService = {
-  async getPatients(): Promise<Patient[]> {
-    const response = await fetch(`${API_BASE_URL}/api/patients`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
+  async getPatients(): Promise<PatientsResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/patients`);
     if (!response.ok) {
       throw new Error("Failed to fetch patients");
     }
-
-    const data = await response.json();
-    return data.patients;
+    return response.json();
   },
 
   async getPatient(fhirId: string): Promise<Patient> {

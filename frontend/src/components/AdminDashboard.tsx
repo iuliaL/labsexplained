@@ -11,6 +11,13 @@ interface Patient {
   birth_date: string;
   gender: string;
   fhir_id: string;
+  lab_test_count: number;
+  interpreted_count: number;
+}
+
+interface PatientsResponse {
+  message: string;
+  patients: Patient[];
 }
 
 export function AdminDashboard() {
@@ -28,8 +35,8 @@ export function AdminDashboard() {
 
   const fetchPatients = async () => {
     try {
-      const data = await adminService.getPatients();
-      setPatients(data);
+      const response = (await adminService.getPatients()) as PatientsResponse;
+      setPatients(response.patients);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -100,6 +107,20 @@ export function AdminDashboard() {
                       Gender: {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}
                     </span>
                     <span className="text-sm text-slate-500">FHIR ID: {patient.fhir_id}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 rounded-full">
+                        {patient.lab_test_count} Lab Tests
+                      </span>
+                      {patient.interpreted_count === patient.lab_test_count ? (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full">
+                          {patient.interpreted_count} Interpreted
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-red-50 text-red-700 rounded-full">
+                          {patient.lab_test_count - patient.interpreted_count} Not interpreted yet
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

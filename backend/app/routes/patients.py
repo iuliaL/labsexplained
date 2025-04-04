@@ -35,10 +35,24 @@ async def get_patients():
     if patients:
         # Convert ObjectId to string and return as id
         formatted_patients = []
+        from app.models.lab_test_set import get_lab_test_sets_for_patient
+        
         for patient in patients:
             patient_dict = dict(patient)
             patient_dict['id'] = str(patient_dict.pop('_id'))
+            
+            # Get lab test sets for this patient
+            lab_test_sets = get_lab_test_sets_for_patient(patient_dict['fhir_id'])
+            
+            # Count total lab sets and interpreted sets
+            total_lab_sets = len(lab_test_sets)
+            interpreted_sets = sum(1 for test_set in lab_test_sets if test_set.get('interpretation'))
+            
+            patient_dict['lab_test_count'] = total_lab_sets
+            patient_dict['interpreted_count'] = interpreted_sets
+            
             formatted_patients.append(patient_dict)
+            
         return {"message": "Patients retrieved", "patients": formatted_patients}
     
     raise HTTPException(status_code=404, detail="Patient not found")
