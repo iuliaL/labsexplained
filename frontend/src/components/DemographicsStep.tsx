@@ -25,6 +25,7 @@ export function DemographicsStep({ dateOfBirth, gender, onChange, onNext, onBack
           label="Date of birth"
           value={dateOfBirth}
           onChange={(value) => onChange({ dateOfBirth: value, gender })}
+          max={new Date().toISOString().split("T")[0]}
           required
         />
         <Select
