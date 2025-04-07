@@ -152,7 +152,7 @@ export function AdminDashboard() {
                 </button>
                 <button
                   onClick={() => handleViewPatient(patient.fhir_id)}
-                  className="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
                 >
                   View Details
                 </button>

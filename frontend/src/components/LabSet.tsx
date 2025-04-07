@@ -95,9 +95,9 @@ export function LabSet({ labSet, onDelete, onInterpretationUpdated }: LabSetProp
           <div className="flex items-center gap-2">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <LabTestIcon className="h-5 w-5 text-indigo-600" />
+                <LabTestIcon className="h-5 w-5 text-blue-600" />
                 <h3 className="text-md font-semibold text-slate-900">Lab set from {formatDate(labSet.test_date)}</h3>
-                <span className="px-2.5 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full ring-1 ring-indigo-700/10">
+                <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full ring-1 ring-blue-700/10">
                   {labSet.observations.length} tests
                 </span>
                 <span className="px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-full ring-1 ring-gray-700/10">
@@ -148,7 +148,7 @@ export function LabSet({ labSet, onDelete, onInterpretationUpdated }: LabSetProp
                 )}
               </div>
             </div>
-            <div className="text-indigo-400 group-open:rotate-180 transition-transform duration-200">
+            <div className="text-blue-400 group-open:rotate-180 transition-transform duration-200">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -225,9 +225,7 @@ export function LabSet({ labSet, onDelete, onInterpretationUpdated }: LabSetProp
                                     : "N/A")) ||
                                 "N/A"}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                              {observation.id}
-                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{observation.id}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -243,7 +241,7 @@ export function LabSet({ labSet, onDelete, onInterpretationUpdated }: LabSetProp
                     <button
                       onClick={handleInterpret}
                       disabled={interpreting}
-                      className="inline-flex items-center mt-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center mt-2 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {interpreting ? (
                         <>
@@ -300,7 +298,7 @@ export function LabSet({ labSet, onDelete, onInterpretationUpdated }: LabSetProp
               <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full mx-4 pointer-events-auto">
                 <div className="flex flex-col items-center">
                   <svg
-                    className="animate-spin h-10 w-10 text-indigo-600 mb-4"
+                    className="animate-spin h-10 w-10 text-blue-600 mb-4"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"

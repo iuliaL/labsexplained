@@ -24,7 +24,7 @@ export function ConfirmDialog({
   if (!isOpen) return null;
 
   const buttonVariants = {
-    primary: "bg-indigo-600 hover:bg-indigo-700",
+    primary: "bg-blue-600 hover:bg-blue-700",
     danger: "bg-red-600 hover:bg-red-700",
   };
 

@@ -81,7 +81,7 @@ export function PatientDetails() {
       <div className="mb-6">
         <Link
           to="/admin"
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors duration-200"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -134,7 +134,7 @@ export function PatientDetails() {
         <div>
           <div className="flex items-center gap-3 mb-4">
             <h2 className="text-lg font-semibold text-slate-900">Lab Sets</h2>
-            <span className="px-2.5 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full ring-1 ring-indigo-700/10">
+            <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full ring-1 ring-blue-700/10">
               {labTestSets.length} total
             </span>
           </div>
