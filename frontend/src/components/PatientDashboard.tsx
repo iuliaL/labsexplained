@@ -38,6 +38,7 @@ export function PatientDashboard() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingSetId, setDeletingSetId] = useState<string | null>(null);
   const [isDeletingSet, setIsDeletingSet] = useState(false);
+  const [interpretingSetId, setInterpretingSetId] = useState<string | null>(null);
 
   // Calculate age
   const calculateAge = (birthDate: string) => {
@@ -100,6 +101,20 @@ export function PatientDashboard() {
       setError(err instanceof Error ? err.message : "Failed to delete lab test set");
     } finally {
       setIsDeletingSet(false);
+    }
+  };
+
+  const handleInterpret = async (setId: string) => {
+    setInterpretingSetId(setId);
+    try {
+      const result = await adminService.interpretLabTestSet(setId);
+      setLabTestSets((prev) =>
+        prev.map((set) => (set.id === setId ? { ...set, interpretation: result.interpretation } : set))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to interpret lab test set");
+    } finally {
+      setInterpretingSetId(null);
     }
   };
 
@@ -261,6 +276,24 @@ export function PatientDashboard() {
                           {testSet.observations.length} tests
                         </span>
 
+                        {!testSet.interpretation && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-orange-50 text-orange-700 rounded-full ring-1 ring-orange-700/10">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              className="w-3.5 h-3.5"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Needs interpretation
+                          </span>
+                        )}
+
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -390,8 +423,60 @@ export function PatientDashboard() {
                       {(loadingInitialObservations && testSet.id === labTestSets[0]?.id) ||
                       !observations[testSet.id] ? (
                         <InterpretationSkeleton />
+                      ) : testSet.interpretation ? (
+                        <Interpretation content={testSet.interpretation} />
                       ) : (
-                        <Interpretation content={testSet.interpretation || "Not interpreted yet"} />
+                        <div className="text-sm text-slate-500 py-2">
+                          <div>No interpretation available.</div>
+                          <button
+                            onClick={() => handleInterpret(testSet.id)}
+                            disabled={interpretingSetId === testSet.id}
+                            className="inline-flex items-center mt-2 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {interpretingSetId === testSet.id ? (
+                              <>
+                                <svg
+                                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
+                                </svg>
+                                Interpreting...
+                              </>
+                            ) : (
+                              <>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-4 w-4 mr-1.5"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                >
+                                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                Interpret now
+                              </>
+                            )}
+                          </button>
+                        </div>
                       )}
                     </div>
                   </>
@@ -436,6 +521,33 @@ export function PatientDashboard() {
                 </svg>
                 <h3 className="text-lg font-medium text-slate-900 mb-2">Deleting lab test set</h3>
                 <p className="text-sm text-slate-500 text-center">Removing the lab test set and associated data...</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Loading overlay for interpretation */}
+        {interpretingSetId && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full mx-4">
+              <div className="flex flex-col items-center">
+                <svg
+                  className="animate-spin h-10 w-10 text-blue-600 mb-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <h3 className="text-lg font-medium text-slate-900 mb-2">Generating interpretation</h3>
+                <p className="text-sm text-slate-500 text-center">
+                  Analyzing your lab test results. This may take a moment...
+                </p>
               </div>
             </div>
           </div>
