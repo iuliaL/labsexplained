@@ -239,11 +239,21 @@ export function PatientDashboard() {
             labTestSets.map((testSet) => (
               <div key={testSet.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                 {/* Lab Set Header - always visible */}
-                <div className="p-6 border-b border-slate-200">
+                <div
+                  className="p-6 border-b border-slate-200 cursor-pointer hover:bg-slate-50/80 transition-colors duration-200"
+                  onClick={() => {
+                    if (expandedSetId !== testSet.id) {
+                      setExpandedSetId(testSet.id);
+                      loadObservationsForSet(testSet.id);
+                    } else {
+                      setExpandedSetId(null);
+                    }
+                  }}
+                >
                   <div className="flex items-center gap-2">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <LabTestIcon className="h-5 w-5  text-blue-600" />
+                        <LabTestIcon className="h-5 w-5 text-blue-600" />
                         <h3 className="text-md font-semibold text-slate-900">
                           Lab set from {formatDate(testSet.test_date)}
                         </h3>
@@ -253,7 +263,7 @@ export function PatientDashboard() {
 
                         <button
                           onClick={(e) => {
-                            e.preventDefault();
+                            e.stopPropagation();
                             setDeletingSetId(testSet.id);
                             setShowDeleteConfirm(true);
                           }}
@@ -297,16 +307,10 @@ export function PatientDashboard() {
                         )}
                       </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        if (expandedSetId !== testSet.id) {
-                          setExpandedSetId(testSet.id);
-                          loadObservationsForSet(testSet.id);
-                        } else {
-                          setExpandedSetId(null);
-                        }
-                      }}
-                      className="text-blue-400 transform transition-transform duration-200"
+                    <div
+                      className={`text-blue-400 transform transition-transform duration-200 ${
+                        expandedSetId === testSet.id ? "rotate-180" : ""
+                      }`}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -318,13 +322,10 @@ export function PatientDashboard() {
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className={`transform transition-transform duration-200 ${
-                          expandedSetId === testSet.id ? "rotate-180" : ""
-                        }`}
                       >
                         <path d="m6 9 6 6 6-6" />
                       </svg>
-                    </button>
+                    </div>
                   </div>
                 </div>
 

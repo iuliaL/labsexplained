@@ -89,9 +89,14 @@ export function LabSet({ labSet, onDelete, onInterpretationUpdated }: LabSetProp
       <details
         className="group bg-slate-50 hover:bg-blue-50/50 rounded-lg transition-colors duration-200"
         open={isExpanded}
-        onToggle={handleExpand}
       >
-        <summary className="p-6 cursor-pointer list-none">
+        <summary
+          className="p-6 cursor-pointer list-none"
+          onClick={(e) => {
+            e.preventDefault();
+            handleExpand();
+          }}
+        >
           <div className="flex items-center gap-2">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
@@ -105,6 +110,7 @@ export function LabSet({ labSet, onDelete, onInterpretationUpdated }: LabSetProp
                 </span>
                 <button
                   onClick={(e) => {
+                    e.stopPropagation();
                     e.preventDefault();
                     setShowDeleteConfirm(true);
                   }}
