@@ -263,7 +263,7 @@ export function PatientDashboard() {
                   clipRule="evenodd"
                 />
               </svg>
-              Upload More Tests
+              Upload more tests
             </Link>
           </div>
           {labTestSets.length === 0 ? (
