@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PatientWizard from "./PatientWizard";
 import { AdminDashboard } from "./AdminDashboard";
 import { PatientDetails } from "./PatientDetails";
+import { PatientDashboard } from "./PatientDashboard";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 export function Layout() {
@@ -11,6 +12,7 @@ export function Layout() {
       <div className="min-h-screen bg-slate-50">
         <Routes>
           <Route path="/" element={<PatientWizard />} />
+          <Route path="/patient/:fhirId" element={<PatientDashboard />} />
           <Route
             path="/admin/patients"
             element={

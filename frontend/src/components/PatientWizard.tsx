@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { NameStep } from "./NameStep";
 import { DemographicsStep } from "./DemographicsStep";
 import { UploadStep } from "./UploadStep";
@@ -19,6 +20,7 @@ interface PatientData {
 }
 
 export default function PatientWizard() {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<Step>("welcome");
   const [patientData, setPatientData] = useState<PatientData>({
     firstName: "",
@@ -96,10 +98,8 @@ export default function PatientWizard() {
       const interpretResponse = await adminService.interpretLabTestSet(uploadResponse.id);
       console.log("Interpretation completed:", interpretResponse);
 
-      // Handle success
-      setError(null);
-      // TODO: Add success message or redirect
-      console.log("All steps completed successfully");
+      // Navigate to the patient dashboard
+      navigate(`/patient/${fhir_id}`);
     } catch (err) {
       console.error("Error during process:", err);
       if (err instanceof Error) {
