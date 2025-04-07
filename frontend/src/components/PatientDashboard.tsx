@@ -111,33 +111,6 @@ export function PatientDashboard() {
     fetchPatientData();
   }, [fhirId]);
 
-  // Loading skeleton for table rows
-  const TableRowSkeleton = () => (
-    <tr className="animate-pulse">
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="h-4 bg-slate-300 rounded w-32"></div>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="h-4 bg-slate-300 rounded w-16"></div>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="h-4 bg-slate-300 rounded w-12"></div>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="h-4 bg-slate-300 rounded w-24"></div>
-      </td>
-    </tr>
-  );
-
-  // Loading skeleton for interpretation
-  const InterpretationSkeleton = () => (
-    <div className="animate-pulse space-y-3">
-      <div className="h-4 bg-slate-300 rounded w-3/4"></div>
-      <div className="h-4 bg-slate-300 rounded w-1/2"></div>
-      <div className="h-4 bg-slate-300 rounded w-2/3"></div>
-    </div>
-  );
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -174,8 +147,7 @@ export function PatientDashboard() {
               alt="Lab equipment"
               className="w-full h-full object-contain"
               style={{
-                maskImage:
-                  "linear-gradient(to left, black, transparent)",
+                maskImage: "linear-gradient(to left, black, transparent)",
                 WebkitMaskImage: "linear-gradient(to left, black, transparent)",
               }}
             />
@@ -270,22 +242,7 @@ export function PatientDashboard() {
                           {(loadingInitialObservations && testSet.id === labTestSets[0]?.id) ||
                           !observations[testSet.id]
                             ? // Show loading skeleton rows
-                              Array.from({ length: 5 }).map((_, i) => (
-                                <tr key={i} className="animate-pulse">
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="h-4 bg-slate-300 rounded w-32"></div>
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="h-4 bg-slate-300 rounded w-16"></div>
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="h-4 bg-slate-300 rounded w-12"></div>
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="h-4 bg-slate-300 rounded w-24"></div>
-                                  </td>
-                                </tr>
-                              ))
+                              TableSkeleton
                             : observations[testSet.id].map((observation) => (
                                 <tr key={observation.id} className="hover:bg-slate-50/50">
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
@@ -323,14 +280,10 @@ export function PatientDashboard() {
                       </div>
                       {(loadingInitialObservations && testSet.id === labTestSets[0]?.id) ||
                       !observations[testSet.id] ? (
-                        <div className="animate-pulse space-y-3">
-                          <div className="h-4 bg-slate-300 rounded w-3/4"></div>
-                          <div className="h-4 bg-slate-300 rounded w-1/2"></div>
-                          <div className="h-4 bg-slate-300 rounded w-2/3"></div>
-                        </div>
+                        <InterpretationSkeleton />
                       ) : (
                         <div className="prose prose-sm max-w-none text-slate-600">
-                          {testSet.interpretation || "Interpretation will be available soon."}
+                          {testSet.interpretation || "Not interpreted yet"}
                         </div>
                       )}
                     </div>
@@ -344,3 +297,30 @@ export function PatientDashboard() {
     </div>
   );
 }
+
+// Loading skeleton for interpretation
+const InterpretationSkeleton = () => (
+  <div className="animate-pulse space-y-3">
+    <div className="h-4 bg-slate-300 rounded w-3/4"></div>
+    <div className="h-4 bg-slate-300 rounded w-1/2"></div>
+    <div className="h-4 bg-slate-300 rounded w-2/3"></div>
+  </div>
+);
+
+// Loading skeleton for table rows
+const TableSkeleton = Array.from({ length: 4 }).map((_, i) => (
+  <tr key={i} className="animate-pulse">
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div className="h-4 bg-slate-300 rounded w-32"></div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div className="h-4 bg-slate-300 rounded w-16"></div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div className="h-4 bg-slate-300 rounded w-12"></div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap">
+      <div className="h-4 bg-slate-300 rounded w-24"></div>
+    </td>
+  </tr>
+));
