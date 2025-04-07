@@ -154,8 +154,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
 
         console.log("Starting interpretation for lab set:", uploadResponse.id);
         // Step 3: Generate interpretation
-        const interpretResponse = await adminService.interpretLabTestSet(uploadResponse.id);
-        console.log("Interpretation completed:", interpretResponse);
+        await adminService.interpretLabTestSet(uploadResponse.id);
         // Navigate to the patient dashboard
         navigate(`/patient/${fhir_id}`);
       }
