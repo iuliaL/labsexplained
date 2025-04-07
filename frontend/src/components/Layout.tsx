@@ -12,7 +12,7 @@ export function Layout() {
         <Routes>
           <Route path="/" element={<PatientWizard />} />
           <Route
-            path="/admin"
+            path="/admin/patients"
             element={
               <ProtectedRoute requiredRole="admin">
                 <AdminDashboard />
