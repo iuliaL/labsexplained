@@ -4,8 +4,9 @@ import { adminService, Patient, LabTestSet } from "../services/admin";
 import { formatDate } from "../utils/dateFormatter";
 import { UserIcon } from "./icons/UserIcon";
 import { LabTestIcon } from "./icons/LabTestIcon";
-import labTestImage from "../assets/lab-test.jpeg";
+import labTestImage from "../assets/lab-test1.jpeg";
 import { Interpretation } from "./Interpretation";
+import { ConfirmDialog } from "./ui/ConfirmDialog";
 
 interface Observation {
   id: string;
@@ -34,6 +35,9 @@ export function PatientDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [loadingInitialObservations, setLoadingInitialObservations] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingSetId, setDeletingSetId] = useState<string | null>(null);
+  const [isDeletingSet, setIsDeletingSet] = useState(false);
 
   // Calculate age from birth date with months
   const calculateAge = (birthDate: string) => {
@@ -83,6 +87,20 @@ export function PatientDashboard() {
       setLastUpdated(new Date());
     } catch (err) {
       console.error("Failed to load observations:", err);
+    }
+  };
+
+  const handleDelete = async (setId: string) => {
+    setIsDeletingSet(true);
+    try {
+      await adminService.deleteLabTestSet(setId);
+      setLabTestSets((prev) => prev.filter((set) => set.id !== setId));
+      setShowDeleteConfirm(false);
+      setDeletingSetId(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete lab test set");
+    } finally {
+      setIsDeletingSet(false);
     }
   };
 
@@ -207,34 +225,92 @@ export function PatientDashboard() {
             labTestSets.map((testSet) => (
               <div key={testSet.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                 {/* Lab Set Header - always visible */}
-                <div
-                  className="p-6 border-b border-slate-200 cursor-pointer hover:bg-slate-50"
-                  onClick={() => {
-                    if (expandedSetId !== testSet.id) {
-                      setExpandedSetId(testSet.id);
-                      loadObservationsForSet(testSet.id);
-                    } else {
-                      setExpandedSetId(null);
-                    }
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <LabTestIcon className="h-5 w-5 text-blue-600" />
-                      <h3 className="text-lg font-semibold text-slate-900">
-                        Lab results from {formatDate(testSet.test_date)}
-                      </h3>
+                <div className="p-6 border-b border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <LabTestIcon className="h-5 w-5  text-blue-600" />
+                        <h3 className="text-md font-semibold text-slate-900">
+                          Lab set from {formatDate(testSet.test_date)}
+                        </h3>
+                        <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full ring-1 ring-blue-700/10">
+                          {testSet.observations.length} tests
+                        </span>
+
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setDeletingSetId(testSet.id);
+                            setShowDeleteConfirm(true);
+                          }}
+                          disabled={isDeletingSet}
+                          className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md disabled:opacity-50 transition-colors duration-200"
+                          title="Delete lab set"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            <line x1="10" y1="11" x2="10" y2="17" />
+                            <line x1="14" y1="11" x2="14" y2="17" />
+                          </svg>
+                          {isDeletingSet && deletingSetId === testSet.id ? "Deleting..." : "Delete"}
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {testSet.observations.slice(0, 3).map((obs, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white border border-slate-200 text-slate-700"
+                          >
+                            {obs.name}
+                          </span>
+                        ))}
+                        {testSet.observations.length > 3 && (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 ring-1 ring-slate-600/10">
+                            +{testSet.observations.length - 3} more
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <svg
-                      className={`h-5 w-5 text-slate-400 transform transition-transform duration-200 ${
-                        expandedSetId === testSet.id ? "rotate-180" : ""
-                      }`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                    <button
+                      onClick={() => {
+                        if (expandedSetId !== testSet.id) {
+                          setExpandedSetId(testSet.id);
+                          loadObservationsForSet(testSet.id);
+                        } else {
+                          setExpandedSetId(null);
+                        }
+                      }}
+                      className="text-blue-400 transform transition-transform duration-200"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className={`transform transition-transform duration-200 ${
+                          expandedSetId === testSet.id ? "rotate-180" : ""
+                        }`}
+                      >
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
 
@@ -309,6 +385,46 @@ export function PatientDashboard() {
             ))
           )}
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={showDeleteConfirm}
+          onClose={() => {
+            setShowDeleteConfirm(false);
+            setDeletingSetId(null);
+          }}
+          onConfirm={() => deletingSetId && handleDelete(deletingSetId)}
+          title="Delete Lab Test Set"
+          message="Are you sure you want to delete this lab test set? This action cannot be undone."
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          variant="danger"
+        />
+
+        {/* Loading overlay for deletion */}
+        {isDeletingSet && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full mx-4">
+              <div className="flex flex-col items-center">
+                <svg
+                  className="animate-spin h-10 w-10 text-red-600 mb-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <h3 className="text-lg font-medium text-slate-900 mb-2">Deleting lab test set</h3>
+                <p className="text-sm text-slate-500 text-center">Removing the lab test set and associated data...</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
