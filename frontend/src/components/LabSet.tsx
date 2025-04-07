@@ -40,6 +40,7 @@ export function LabSet({ labSet, onDelete, onInterpretationUpdated }: LabSetProp
 
   const handleExpand = async () => {
     if (!isExpanded && fullObservations.length === 0) {
+      setIsExpanded(true);
       setIsLoadingResults(true);
       setError(null);
       try {
@@ -54,8 +55,9 @@ export function LabSet({ labSet, onDelete, onInterpretationUpdated }: LabSetProp
       } finally {
         setIsLoadingResults(false);
       }
+    } else {
+      setIsExpanded(!isExpanded);
     }
-    setIsExpanded(!isExpanded);
   };
 
   const handleInterpret = async () => {
@@ -109,22 +111,22 @@ export function LabSet({ labSet, onDelete, onInterpretationUpdated }: LabSetProp
                   ID: {labSet.id}
                 </span>
                 {!labSet.interpretation && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-orange-50 text-orange-700 rounded-full ring-1 ring-orange-700/10">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                              className="w-3.5 h-3.5"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                            Needs interpretation
-                          </span>
-                        )}
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-orange-50 text-orange-700 rounded-full ring-1 ring-orange-700/10">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      className="w-3.5 h-3.5"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Needs interpretation
+                  </span>
+                )}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
