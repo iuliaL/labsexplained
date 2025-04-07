@@ -5,6 +5,7 @@ import { formatDate } from "../utils/dateFormatter";
 import { UserIcon } from "./icons/UserIcon";
 import { LabTestIcon } from "./icons/LabTestIcon";
 import labTestImage from "../assets/lab-test.jpeg";
+import { Interpretation } from "./Interpretation";
 
 interface Observation {
   id: string;
@@ -34,16 +35,36 @@ export function PatientDashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [loadingInitialObservations, setLoadingInitialObservations] = useState(false);
 
-  // Calculate age from birth date
+  // Calculate age from birth date with months
   const calculateAge = (birthDate: string) => {
     const today = new Date();
     const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--;
+
+    let years = today.getFullYear() - birth.getFullYear();
+    let months = today.getMonth() - birth.getMonth();
+
+    // Adjust years and months if birth month hasn't occurred this year
+    if (months < 0) {
+      years--;
+      months += 12;
     }
-    return age;
+
+    // Handle edge case when birth day hasn't occurred this month
+    if (today.getDate() < birth.getDate()) {
+      months--;
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+    }
+
+    // Format the age string based on the age
+    if (years === 0) {
+      return `${months} month${months !== 1 ? "s" : ""} old`;
+    } else {
+      const monthString = months > 0 ? ` and ${months} month${months !== 1 ? "s" : ""}` : "";
+      return `${years} year${years !== 1 ? "s" : ""}${monthString}`;
+    }
   };
 
   // Load observations for a specific lab set
@@ -163,10 +184,10 @@ export function PatientDashboard() {
                 <h1 className="text-2xl font-semibold text-slate-900">
                   Welcome, {patient?.first_name.toUpperCase()} {patient?.last_name.toUpperCase()}
                 </h1>
-                <div className="text-xl font-medium text-blue-600 mt-1">
-                  {patient ? calculateAge(patient.birth_date) : "--"}
+                <div className="text-sm font-medium text-blue-600 mt-1">
+                  Your age is {patient ? calculateAge(patient.birth_date) : "--"}
                 </div>
-                <p className="text-slate-600 mt-2">Here are your lab test results and their interpretations</p>
+                <p className="text-slate-600 mt-2">Below are your lab test results and their interpretations</p>
                 <div className="text-sm text-slate-500 mt-2">
                   Last updated: {formatDate(lastUpdated.toISOString(), "DD.MM.YYYY HH:mm")}
                 </div>
@@ -275,17 +296,11 @@ export function PatientDashboard() {
 
                     {/* Interpretation Section */}
                     <div className="p-6 bg-slate-50">
-                      <div className="flex gap-3 mb-3">
-                        <UserIcon className="h-5 w-5 text-blue-600" />
-                        <h4 className="text-sm font-semibold text-slate-900">Interpretation</h4>
-                      </div>
                       {(loadingInitialObservations && testSet.id === labTestSets[0]?.id) ||
                       !observations[testSet.id] ? (
                         <InterpretationSkeleton />
                       ) : (
-                        <div className="prose prose-sm max-w-none text-slate-600">
-                          {testSet.interpretation || "Not interpreted yet"}
-                        </div>
+                        <Interpretation content={testSet.interpretation || "Not interpreted yet"} />
                       )}
                     </div>
                   </>
@@ -301,11 +316,17 @@ export function PatientDashboard() {
 
 // Loading skeleton for interpretation
 const InterpretationSkeleton = () => (
-  <div className="animate-pulse space-y-3">
-    <div className="h-4 bg-slate-300 rounded w-3/4"></div>
-    <div className="h-4 bg-slate-300 rounded w-1/2"></div>
-    <div className="h-4 bg-slate-300 rounded w-2/3"></div>
-  </div>
+  <>
+    <div className="flex gap-3 mb-3">
+      <UserIcon className="h-5 w-5 text-blue-600" />
+      <h4 className="text-sm font-semibold text-slate-900">Interpretation</h4>
+    </div>
+    <div className="animate-pulse space-y-3">
+      <div className="h-4 bg-slate-300 rounded w-3/4"></div>
+      <div className="h-4 bg-slate-300 rounded w-1/2"></div>
+      <div className="h-4 bg-slate-300 rounded w-2/3"></div>
+    </div>
+  </>
 );
 
 // Loading skeleton for table rows
