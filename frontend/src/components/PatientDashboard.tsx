@@ -4,7 +4,7 @@ import { adminService, Patient, LabTestSet } from "../services/admin";
 import { formatDate } from "../utils/dateFormatter";
 import { UserIcon } from "./icons/UserIcon";
 import { LabTestIcon } from "./icons/LabTestIcon";
-import labTestImage from "../assets/lab-test1.jpeg";
+import labTestImage from "../assets/lab-test.jpeg";
 import { Interpretation } from "./Interpretation";
 import { ConfirmDialog } from "./ui/ConfirmDialog";
 
@@ -39,7 +39,7 @@ export function PatientDashboard() {
   const [deletingSetId, setDeletingSetId] = useState<string | null>(null);
   const [isDeletingSet, setIsDeletingSet] = useState(false);
 
-  // Calculate age from birth date with months
+  // Calculate age
   const calculateAge = (birthDate: string) => {
     const today = new Date();
     const birth = new Date(birthDate);
@@ -66,8 +66,7 @@ export function PatientDashboard() {
     if (years === 0) {
       return `${months} month${months !== 1 ? "s" : ""} old`;
     } else {
-      const monthString = months > 0 ? ` and ${months} month${months !== 1 ? "s" : ""}` : "";
-      return `${years} year${years !== 1 ? "s" : ""}${monthString}`;
+      return `${years} year${years !== 1 ? "s" : ""}`;
     }
   };
 
@@ -178,39 +177,54 @@ export function PatientDashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Header with lab test background */}
+        {/* Header with curved edge */}
         <div className="bg-white rounded-lg shadow-sm mb-8 overflow-hidden relative">
-          {/* Lab test image with gradient mask */}
-          <div className="absolute inset-y-0 right-0">
-            <img
-              src={labTestImage}
-              alt="Lab equipment"
-              className="w-full h-full object-contain"
-              style={{
-                maskImage: "linear-gradient(to left, black, transparent)",
-                WebkitMaskImage: "linear-gradient(to left, black, transparent)",
-              }}
-            />
+          {/* Curved shape on the right */}
+          <div className="absolute top-0 right-0 h-full w-1/2">
+            <div className="absolute inset-0 bg-gradient-to-l from-blue-50/80 to-white/20"></div>
+            <svg
+              className="absolute top-0 right-0 h-full w-32 text-white"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              fill="currentColor"
+            >
+              <path d="M0 0 C 40 0 60 50 60 50 C 60 50 40 100 0 100 Z" />
+            </svg>
           </div>
 
+          {/* Content */}
           <div className="p-6 relative z-10">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
-                <UserIcon className="h-12 w-12 text-blue-600" />
+                <UserIcon className="h-12 w-12 text-gray-600" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h1 className="text-2xl font-semibold text-slate-900">
                   Welcome, {patient?.first_name.toUpperCase()} {patient?.last_name.toUpperCase()}
                 </h1>
                 <div className="text-sm font-medium text-blue-600 mt-1">
-                  Your age is {patient ? calculateAge(patient.birth_date) : "--"}
+                  {patient ? calculateAge(patient.birth_date) : "--"}
                 </div>
-                <p className="text-slate-600 mt-2">Below are your lab test results and their interpretations</p>
+                <br></br>
+                <p className="text-xl text-slate-600 mt-2">Here are your lab test results and their interpretations</p>
                 <div className="text-sm text-slate-500 mt-2">
                   Last updated: {formatDate(lastUpdated.toISOString(), "DD.MM.YYYY HH:mm")}
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Background image positioned absolutely */}
+          <div className="absolute top-0 right-0 h-full w-1/2 pointer-events-none">
+            <img
+              src={labTestImage}
+              alt="Lab equipment"
+              className="h-full w-full object-cover object-center opacity-90"
+              style={{
+                maskImage: "linear-gradient(to left, black 40%, transparent 100%)",
+                WebkitMaskImage: "linear-gradient(to left, black 40%, transparent 100%)",
+              }}
+            />
           </div>
         </div>
 
