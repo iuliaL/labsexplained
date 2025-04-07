@@ -78,6 +78,7 @@ export function PatientDashboard() {
 
         // Then get the lab test sets
         const labTestData = await adminService.getPatientLabTests(fhirId);
+        setLoading(false);
         setLabTestSets(labTestData);
 
         // If we have lab tests, expand and load the most recent one
