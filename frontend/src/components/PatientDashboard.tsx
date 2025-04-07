@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { adminService, Patient, LabTestSet } from "../services/admin";
 import { formatDate } from "../utils/dateFormatter";
 import { UserIcon } from "./icons/UserIcon";
@@ -244,7 +244,28 @@ export function PatientDashboard() {
         </div>
 
         {/* Lab Sets Section */}
-        <div className="space-y-8">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-medium text-slate-900">Lab Sets</h2>
+            <Link
+              to={`/upload/${fhirId}`}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <svg
+                className="-ml-1 mr-2 h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Upload More Tests
+            </Link>
+          </div>
           {labTestSets.length === 0 ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <p className="text-lg text-slate-600">No lab tests available yet</p>

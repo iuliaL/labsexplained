@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { NameStep } from "./NameStep";
 import { DemographicsStep } from "./DemographicsStep";
 import { UploadStep } from "./UploadStep";
@@ -19,9 +19,14 @@ interface PatientData {
   testDate?: string;
 }
 
-export default function PatientWizard() {
+interface PatientWizardProps {
+  initialStep?: Step;
+}
+
+export default function PatientWizard({ initialStep = "welcome" }: PatientWizardProps) {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<Step>("welcome");
+  const { fhirId } = useParams<{ fhirId: string }>();
+  const [currentStep, setCurrentStep] = useState<Step>(initialStep);
   const [patientData, setPatientData] = useState<PatientData>({
     firstName: "",
     lastName: "",
@@ -31,16 +36,68 @@ export default function PatientWizard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    // If we have a FHIR ID and we're on the upload step, fetch the patient's data
+    if (fhirId && currentStep === "upload") {
+      adminService.getPatient(fhirId).then((patient) => {
+        setPatientData({
+          firstName: patient.first_name,
+          lastName: patient.last_name,
+          dateOfBirth: patient.birth_date,
+          gender: patient.gender,
+        });
+      });
+    }
+  }, [fhirId, currentStep]);
+
+  useEffect(() => {
+    setCurrentStep(initialStep);
+  }, [initialStep]);
+
   const nextStep = () => {
-    if (currentStep === "welcome") setCurrentStep("name");
-    else if (currentStep === "name") setCurrentStep("demographics");
-    else if (currentStep === "demographics") setCurrentStep("upload");
+    let nextPath = "/";
+    let nextStepValue: Step = "welcome";
+
+    switch (currentStep) {
+      case "welcome":
+        nextPath = "/name";
+        nextStepValue = "name";
+        break;
+      case "name":
+        nextPath = "/demographics";
+        nextStepValue = "demographics";
+        break;
+      case "demographics":
+        nextPath = "/upload";
+        nextStepValue = "upload";
+        break;
+    }
+
+    setCurrentStep(nextStepValue);
+    navigate(nextPath);
   };
 
   const prevStep = () => {
-    if (currentStep === "name") setCurrentStep("welcome");
-    else if (currentStep === "demographics") setCurrentStep("name");
-    else if (currentStep === "upload") setCurrentStep("demographics");
+    let prevPath = "/";
+    let prevStepValue: Step = "welcome";
+
+    switch (currentStep) {
+      case "name":
+        prevPath = "/";
+        prevStepValue = "welcome";
+        break;
+      case "demographics":
+        prevPath = "/name";
+        prevStepValue = "name";
+        break;
+      case "upload":
+        prevPath = "/demographics";
+        prevStepValue = "demographics";
+        break;
+    }
+
+    setCurrentStep(prevStepValue);
+    navigate(prevPath);
   };
 
   const getStepTitle = (step: Step) => {
@@ -57,49 +114,51 @@ export default function PatientWizard() {
   };
 
   const handleSubmit = async () => {
-    if (!patientData.file) {
-      setError("Please select a file to upload");
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      console.log("Starting patient creation process...");
-      // Step 1: Create the patient
-      const { fhir_id, message } = await adminService.createPatient({
-        firstName: patientData.firstName,
-        lastName: patientData.lastName,
-        dateOfBirth: patientData.dateOfBirth,
-        gender: patientData.gender,
-      });
-      console.log("Patient created successfully:", { fhir_id, message });
+      if (fhirId) {
+        // If we have a FHIR ID, we're adding a new lab set to an existing patient
+        if (!patientData.file || !patientData.testDate) {
+          throw new Error("Please select a file and test date");
+        }
+        await adminService.uploadLabTestSet(fhirId, patientData.testDate, patientData.file);
+        navigate(`/patient/${fhirId}`);
+      } else {
+        // Create a new patient and upload their first lab set
+        const { fhir_id, message } = await adminService.createPatient({
+          firstName: patientData.firstName,
+          lastName: patientData.lastName,
+          dateOfBirth: patientData.dateOfBirth,
+          gender: patientData.gender,
+        });
+        console.log("Patient created successfully:", { fhir_id, message });
 
-      if (!fhir_id) {
-        throw new Error("Patient creation succeeded but no FHIR ID was returned");
+        if (!fhir_id) {
+          throw new Error("Patient creation succeeded but no FHIR ID was returned");
+        }
+
+        console.log("Starting lab test upload for patient:", fhir_id);
+        // Step 2: Upload the lab test set
+        const uploadResponse = await adminService.uploadLabTestSet(
+          fhir_id,
+          patientData.testDate || new Date().toISOString().split("T")[0],
+          patientData.file!
+        );
+        console.log("Lab test upload response:", uploadResponse);
+
+        if (!uploadResponse?.id) {
+          throw new Error("Lab test upload succeeded but no lab set ID was returned");
+        }
+
+        console.log("Starting interpretation for lab set:", uploadResponse.id);
+        // Step 3: Generate interpretation
+        const interpretResponse = await adminService.interpretLabTestSet(uploadResponse.id);
+        console.log("Interpretation completed:", interpretResponse);
+        // Navigate to the patient dashboard
+        navigate(`/patient/${fhir_id}`);
       }
-
-      console.log("Starting lab test upload for patient:", fhir_id);
-      // Step 2: Upload the lab test set
-      const uploadResponse = await adminService.uploadLabTestSet(
-        fhir_id,
-        patientData.testDate || new Date().toISOString().split("T")[0],
-        patientData.file!
-      );
-      console.log("Lab test upload response:", uploadResponse);
-
-      if (!uploadResponse?.id) {
-        throw new Error("Lab test upload succeeded but no lab set ID was returned");
-      }
-
-      console.log("Starting interpretation for lab set:", uploadResponse.id);
-      // Step 3: Generate interpretation
-      const interpretResponse = await adminService.interpretLabTestSet(uploadResponse.id);
-      console.log("Interpretation completed:", interpretResponse);
-
-      // Navigate to the patient dashboard
-      navigate(`/patient/${fhir_id}`);
     } catch (err) {
       console.error("Error during process:", err);
       if (err instanceof Error) {
@@ -138,10 +197,7 @@ export default function PatientWizard() {
         <div className="w-full max-w-md">
           {/* Logo and Title */}
           <div className="text-center mb-7">
-            <div
-              className="h-12 w-12 mx-auto text-blue-600 mb-5
-            "
-            >
+            <div className="h-12 w-12 mx-auto text-blue-600 mb-5">
               <UserIcon className="w-full h-full" />
             </div>
             <h1 className="text-3xl font-bold text-slate-900">Your AI-Powered Lab Interpreter</h1>
@@ -154,8 +210,11 @@ export default function PatientWizard() {
             {currentStep !== "welcome" && (
               <div className="mb-4 text-center">
                 <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
-                  Step {currentStep === "name" ? "1" : currentStep === "demographics" ? "2" : "3"} of 3:&nbsp;
-                  {getStepTitle(currentStep)}
+                  {fhirId
+                    ? "Upload New Lab Results"
+                    : `Step ${
+                        currentStep === "name" ? "1" : currentStep === "demographics" ? "2" : "3"
+                      } of 3: ${getStepTitle(currentStep)}`}
                 </span>
               </div>
             )}
@@ -183,7 +242,7 @@ export default function PatientWizard() {
               <UploadStep
                 onFileSelect={(file) => setPatientData({ ...patientData, file })}
                 onDateSelect={(date) => setPatientData({ ...patientData, testDate: date })}
-                onBack={prevStep}
+                onBack={fhirId ? () => navigate(`/patient/${fhirId}`) : prevStep}
                 onSubmit={handleSubmit}
                 initialDate={patientData.testDate}
                 initialFile={patientData.file}

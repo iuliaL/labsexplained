@@ -1,36 +1,40 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PatientWizard from "./PatientWizard";
-import { AdminDashboard } from "./AdminDashboard";
-import { PatientDetails } from "./PatientDetails";
 import { PatientDashboard } from "./PatientDashboard";
+import { AdminDashboard } from "./AdminDashboard";
 import { ProtectedRoute } from "./ProtectedRoute";
+import { PatientDetails } from "./PatientDetails";
 
-export function Layout() {
+export default function Layout() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-slate-50">
-        <Routes>
-          <Route path="/" element={<PatientWizard />} />
-          <Route path="/patient/:fhirId" element={<PatientDashboard />} />
-          <Route
-            path="/admin/patients"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/patients/:fhirId"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <PatientDetails />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </div>
+      <Routes>
+        {/* Wizard Steps */}
+        <Route path="/" element={<PatientWizard initialStep="welcome" />} />
+        <Route path="/name" element={<PatientWizard initialStep="name" />} />
+        <Route path="/demographics" element={<PatientWizard initialStep="demographics" />} />
+        <Route path="/upload" element={<PatientWizard initialStep="upload" />} />
+        <Route path="/upload/:fhirId" element={<PatientWizard initialStep="upload" />} />
+        <Route path="/patient/:fhirId" element={<PatientDashboard />} />
+        {/* Protected Routes */}
+        <Route
+          path="/admin/patients"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/patients/:fhirId"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <PatientDetails />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </BrowserRouter>
   );
 }
