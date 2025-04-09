@@ -38,20 +38,24 @@
 │   │   ├── App.test.tsx
 │   │   ├── App.tsx
 │   │   ├── assets
-│   │   │   └── supawork-medic.png
+│   │   │   ├── lab-test.jpeg
+│   │   │   ├── supawork-medic.png
+│   │   │   └── testing-tubes.jpg
 │   │   ├── components
-│   │   │   ├── AdminDashboard.tsx
-│   │   │   ├── DemographicsStep.tsx
+│   │   │   ├── Admin
+│   │   │   │   ├── AdminDashboard.tsx
+│   │   │   │   ├── LabSet.tsx
+│   │   │   │   └── PatientDetails.tsx
 │   │   │   ├── Interpretation.tsx
-│   │   │   ├── LabSet.tsx
 │   │   │   ├── Layout.tsx
-│   │   │   ├── NameStep.tsx
-│   │   │   ├── PatientDetails.tsx
-│   │   │   ├── PatientWizard.tsx
+│   │   │   ├── Patient
+│   │   │   │   ├── DemographicsStep.tsx
+│   │   │   │   ├── NameStep.tsx
+│   │   │   │   ├── PatientDashboard.tsx
+│   │   │   │   ├── PatientWizard.tsx
+│   │   │   │   ├── UploadStep.tsx
+│   │   │   │   └── WelcomeStep.tsx
 │   │   │   ├── ProtectedRoute.tsx
-│   │   │   ├── UploadStep.tsx
-│   │   │   ├── UserIcon.tsx
-│   │   │   ├── WelcomeStep.tsx
 │   │   │   ├── icons
 │   │   │   │   ├── LabTestIcon.tsx
 │   │   │   │   └── UserIcon.tsx
@@ -59,6 +63,7 @@
 │   │   │       ├── ConfirmDialog.tsx
 │   │   │       ├── DateInput.tsx
 │   │   │       ├── Input.tsx
+│   │   │       ├── Pagination.tsx
 │   │   │       └── Select.tsx
 │   │   ├── index.css
 │   │   ├── index.tsx
@@ -74,4 +79,4 @@
 │   └── tsconfig.json
 └── tree.txt
 
-17 directories, 58 files
+19 directories, 61 files

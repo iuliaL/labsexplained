@@ -1,10 +1,10 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import PatientWizard from "./PatientWizard";
-import { PatientDashboard } from "./PatientDashboard";
-import { AdminDashboard } from "./AdminDashboard";
+import PatientWizard from "./Patient/PatientWizard";
+import { PatientDashboard } from "./Patient/PatientDashboard";
+import { AdminDashboard } from "./Admin/AdminDashboard";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { PatientDetails } from "./PatientDetails";
+import { PatientDetails } from "./Admin/PatientDetails";
 
 export default function Layout() {
   return (

@@ -1,5 +1,5 @@
-import { DateInput } from "./ui/DateInput";
-import { Select } from "./ui/Select";
+import { DateInput } from "../ui/DateInput";
+import { Select } from "../ui/Select";
 
 interface DemographicsStepProps {
   dateOfBirth: string;

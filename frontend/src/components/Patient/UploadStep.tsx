@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
-import { adminService } from "../services/admin";
-import { DateInput } from "./ui/DateInput";
+import { DateInput } from "../ui/DateInput";
 
 interface UploadStepProps {
   onFileSelect: (file: File) => void;

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { adminService, Patient, LabTestSet } from "../services/admin";
-import { formatDate } from "../utils/dateFormatter";
-import { UserIcon } from "./icons/UserIcon";
-import { LabTestIcon } from "./icons/LabTestIcon";
-import labTestImage from "../assets/lab-test.jpeg";
-import { Interpretation } from "./Interpretation";
-import { ConfirmDialog } from "./ui/ConfirmDialog";
-import { Pagination } from "./ui/Pagination";
+import { adminService, Patient, LabTestSet } from "../../services/admin";
+import { formatDate } from "../../utils/dateFormatter";
+import { UserIcon } from "../icons/UserIcon";
+import { LabTestIcon } from "../icons/LabTestIcon";
+import labTestImage from "../../assets/lab-test.jpeg";
+import { Interpretation } from "../Interpretation";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
+import { Pagination } from "../ui/Pagination";
 
 interface Observation {
   id: string;

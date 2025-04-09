@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { adminService, Patient, LabTestSet } from "../services/admin";
-import { formatDate } from "../utils/dateFormatter";
+import { adminService, Patient, LabTestSet } from "../../services/admin";
+import { formatDate } from "../../utils/dateFormatter";
 import { LabSet } from "./LabSet";
-import { Pagination } from "./ui/Pagination";
+import { Pagination } from "../ui/Pagination";
 
 interface PaginationMetadata {
   total: number;

@@ -1,4 +1,4 @@
-import { Input } from "./ui/Input";
+import { Input } from "../ui/Input";
 
 interface NameStepProps {
   firstName: string;

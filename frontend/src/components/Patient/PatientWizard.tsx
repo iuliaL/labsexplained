@@ -4,9 +4,9 @@ import { NameStep } from "./NameStep";
 import { DemographicsStep } from "./DemographicsStep";
 import { UploadStep } from "./UploadStep";
 import { WelcomeStep } from "./WelcomeStep";
-import doctorImage from "../assets/supawork-medic.png";
-import { UserIcon } from "./icons/UserIcon";
-import { adminService } from "../services/admin";
+import doctorImage from "../../assets/supawork-medic.png";
+import { UserIcon } from "../icons/UserIcon";
+import { adminService } from "../../services/admin";
 
 type Step = "welcome" | "name" | "demographics" | "upload";
 

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { formatDate } from "../utils/dateFormatter";
-import { Interpretation } from "./Interpretation";
-import { adminService } from "../services/admin";
-import { LabTestIcon } from "./icons/LabTestIcon";
-import { LabTestSet } from "../services/admin";
-import { ConfirmDialog } from "./ui/ConfirmDialog";
+import { formatDate } from "../../utils/dateFormatter";
+import { Interpretation } from "../Interpretation";
+import { adminService } from "../../services/admin";
+import { LabTestIcon } from "../icons/LabTestIcon";
+import { LabTestSet } from "../../services/admin";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
 
 interface Observation {
   id: string;

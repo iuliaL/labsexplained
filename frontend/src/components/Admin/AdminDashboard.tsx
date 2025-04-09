@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { adminService } from "../services/admin";
-import { formatDate } from "../utils/dateFormatter";
-import { ConfirmDialog } from "./ui/ConfirmDialog";
-import { Pagination } from "./ui/Pagination";
+import { adminService } from "../../services/admin";
+import { formatDate } from "../../utils/dateFormatter";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
+import { Pagination } from "../ui/Pagination";
 
 interface Patient {
   id: string;
@@ -46,7 +46,7 @@ export function AdminDashboard() {
 
   useEffect(() => {
     fetchPatients(pagination.page);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.page]);
 
   const fetchPatients = async (page: number) => {
