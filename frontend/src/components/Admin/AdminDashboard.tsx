@@ -112,7 +112,15 @@ export function AdminDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Patients</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <h1 className="text-2xl font-bold text-slate-900">Patients</h1>
+        <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full ring-1 ring-blue-700/10">
+          {pagination.total} total
+        </span>
+        {pagination.total > pagination.page_size && (
+          <span className="text-sm text-slate-500">(showing {pagination.page_size} per page)</span>
+        )}
+      </div>
 
       <div className="grid gap-4">
         {patients.map((patient) => (
