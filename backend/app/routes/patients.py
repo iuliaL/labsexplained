@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Literal
+from typing import Literal, Optional
 from app.services.fhir import create_fhir_patient, delete_fhir_patient, remove_all_observations_for_patient
 from app.models.patient import search_patient, get_patients as get_patients_from_db, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db
 
@@ -29,33 +29,75 @@ async def register_patient(patient: PatientInput):
     raise HTTPException(status_code=500, detail="Failed to register patient")
 
 @router.get("/patients")
-async def get_patients():
-    """Retrieves the patient from MongoDB using the FHIR ID"""
-    patients = get_patients_from_db()
-    if patients:
-        # Convert ObjectId to string and return as id
-        formatted_patients = []
-        from app.models.lab_test_set import get_lab_test_sets_for_patient
-        
-        for patient in patients:
-            patient_dict = dict(patient)
-            patient_dict['id'] = str(patient_dict.pop('_id'))
-            
-            # Get lab test sets for this patient
-            lab_test_sets = get_lab_test_sets_for_patient(patient_dict['fhir_id'])
-            
-            # Count total lab sets and interpreted sets
-            total_lab_sets = len(lab_test_sets)
-            interpreted_sets = sum(1 for test_set in lab_test_sets if test_set.get('interpretation'))
-            
-            patient_dict['lab_test_count'] = total_lab_sets
-            patient_dict['interpreted_count'] = interpreted_sets
-            
-            formatted_patients.append(patient_dict)
-            
-        return {"message": "Patients retrieved", "patients": formatted_patients}
+async def get_patients(page: Optional[int] = 1, page_size: Optional[int] = 10):
+    """
+    Retrieves paginated patients from MongoDB.
     
-    raise HTTPException(status_code=404, detail="Patient not found")
+    Args:
+        page (int): The page number (1-based indexing)
+        page_size (int): Number of items per page
+    """
+    # Input validation
+    if page < 1:
+        raise HTTPException(status_code=400, detail="Page number must be greater than 0")
+    if page_size < 1:
+        raise HTTPException(status_code=400, detail="Page size must be greater than 0")
+    
+    patients = get_patients_from_db()
+    if not patients:
+        return {
+            "message": "No patients found",
+            "patients": [],
+            "pagination": {
+                "total": 0,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": 0
+            }
+        }
+    
+    # Convert patients to list if it's a cursor
+    patients_list = list(patients)
+    total_patients = len(patients_list)
+    total_pages = (total_patients + page_size - 1) // page_size
+    
+    # Calculate slice indices
+    start_idx = (page - 1) * page_size
+    end_idx = start_idx + page_size
+    
+    # Slice the patients list for the current page
+    current_page_patients = patients_list[start_idx:end_idx]
+    
+    # Format patients for the current page
+    formatted_patients = []
+    from app.models.lab_test_set import get_lab_test_sets_for_patient
+    
+    for patient in current_page_patients:
+        patient_dict = dict(patient)
+        patient_dict['id'] = str(patient_dict.pop('_id'))
+        
+        # Get lab test sets for this patient
+        lab_test_sets = get_lab_test_sets_for_patient(patient_dict['fhir_id'])
+        
+        # Count total lab sets and interpreted sets
+        total_lab_sets = len(lab_test_sets)
+        interpreted_sets = sum(1 for test_set in lab_test_sets if test_set.get('interpretation'))
+        
+        patient_dict['lab_test_count'] = total_lab_sets
+        patient_dict['interpreted_count'] = interpreted_sets
+        
+        formatted_patients.append(patient_dict)
+    
+    return {
+        "message": "Patients retrieved",
+        "patients": formatted_patients,
+        "pagination": {
+            "total": total_patients,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages
+        }
+    }
 
 @router.get("/patients/{fhir_id}")
 async def get_patient(fhir_id: str, include_observations: bool = False):

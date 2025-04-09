@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { adminService } from "../services/admin";
 import { formatDate } from "../utils/dateFormatter";
 import { ConfirmDialog } from "./ui/ConfirmDialog";
+import { Pagination } from "./ui/Pagination";
 
 interface Patient {
   id: string;
@@ -15,9 +16,17 @@ interface Patient {
   interpreted_count: number;
 }
 
+interface PaginationMetadata {
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
 interface PatientsResponse {
   message: string;
   patients: Patient[];
+  pagination: PaginationMetadata;
 }
 
 export function AdminDashboard() {
@@ -28,20 +37,33 @@ export function AdminDashboard() {
   const [isDeletingPatient, setIsDeletingPatient] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationMetadata>({
+    total: 0,
+    page: 1,
+    page_size: 2,
+    total_pages: 0,
+  });
 
   useEffect(() => {
-    fetchPatients();
-  }, []);
+    fetchPatients(pagination.page);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination.page]);
 
-  const fetchPatients = async () => {
+  const fetchPatients = async (page: number) => {
     try {
-      const response = (await adminService.getPatients()) as PatientsResponse;
+      setLoading(true);
+      const response = (await adminService.getPatients(page, pagination.page_size)) as PatientsResponse;
       setPatients(response.patients);
+      setPagination(response.pagination);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
   const handleViewPatient = (fhirId: string) => {
@@ -60,7 +82,7 @@ export function AdminDashboard() {
     setShowDeleteConfirm(false); // Close the dialog immediately when starting deletion
     try {
       await adminService.deletePatient(selectedPatientId);
-      await fetchPatients(); // Refresh the list
+      await fetchPatients(pagination.page); // Refresh the list
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to delete patient";
       setError(errorMessage);
@@ -161,6 +183,9 @@ export function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      {/* Add pagination component */}
+      <Pagination currentPage={pagination.page} totalPages={pagination.total_pages} onPageChange={handlePageChange} />
 
       <ConfirmDialog
         isOpen={showDeleteConfirm}

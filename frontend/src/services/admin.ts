@@ -49,8 +49,8 @@ if (!process.env.API_BASE_URL) {
 }
 
 export const adminService = {
-  async getPatients(): Promise<PatientsResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/patients`);
+  async getPatients(page: number = 1, pageSize: number = 10): Promise<PatientsResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/patients?page=${page}&page_size=${pageSize}`);
     if (!response.ok) {
       throw new Error("Failed to fetch patients");
     }
