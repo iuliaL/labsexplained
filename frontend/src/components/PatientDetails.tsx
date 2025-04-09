@@ -3,6 +3,14 @@ import { Link, useParams } from "react-router-dom";
 import { adminService, Patient, LabTestSet } from "../services/admin";
 import { formatDate } from "../utils/dateFormatter";
 import { LabSet } from "./LabSet";
+import { Pagination } from "./ui/Pagination";
+
+interface PaginationMetadata {
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
 
 export function PatientDetails() {
   const { fhirId } = useParams<{ fhirId: string }>();
@@ -10,34 +18,44 @@ export function PatientDetails() {
   const [labTestSets, setLabTestSets] = useState<LabTestSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationMetadata>({
+    total: 0,
+    page: 1,
+    page_size: 2,
+    total_pages: 0,
+  });
 
   useEffect(() => {
     if (!fhirId) return;
-
-    const fetchPatientData = async () => {
-      try {
-        // First get the patient data
-        const patientData = await adminService.getPatient(fhirId);
-        setPatient(patientData);
-
-        // Then get the lab test sets
-        const labTestData = await adminService.getPatientLabTests(fhirId);
-        setLabTestSets(labTestData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPatientData();
-  }, [fhirId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fhirId, pagination.page]); // Re-fetch when page changes
+
+  const fetchPatientData = async () => {
+    try {
+      setLoading(true);
+      // First get the patient data
+      const patientData = await adminService.getPatient(fhirId!);
+      setPatient(patientData);
+
+      // Then get the lab test sets with pagination
+      const response = await adminService.getPatientLabTests(fhirId!, pagination.page, pagination.page_size);
+      setLabTestSets(response.lab_test_sets);
+      setPagination(response.pagination);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPagination((prev) => ({ ...prev, page: newPage }));
+  };
 
   const handleLabSetDeleted = () => {
-    // Refresh the lab test sets after deletion
-    if (fhirId) {
-      adminService.getPatientLabTests(fhirId).then(setLabTestSets);
-    }
+    // Refresh the current page
+    fetchPatientData();
   };
 
   const handleInterpretationUpdated = (labTestSetId: string, newInterpretation: string) => {
@@ -135,24 +153,33 @@ export function PatientDetails() {
           <div className="flex items-center gap-3 mb-4">
             <h2 className="text-lg font-semibold text-slate-900">Lab Sets</h2>
             <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full ring-1 ring-blue-700/10">
-              {labTestSets.length} total
+              {pagination.total} total
             </span>
           </div>
           {labTestSets.length === 0 ? (
             <p className="text-sm text-slate-500">No lab sets available</p>
           ) : (
-            <div className="space-y-6">
-              {labTestSets.map((testSet) => (
-                <LabSet
-                  key={testSet.id}
-                  labSet={testSet}
-                  onInterpretationUpdated={(newInterpretation) =>
-                    handleInterpretationUpdated(testSet.id, newInterpretation)
-                  }
-                  onDelete={handleLabSetDeleted}
+            <>
+              <div className="space-y-6">
+                {labTestSets.map((testSet) => (
+                  <LabSet
+                    key={testSet.id}
+                    labSet={testSet}
+                    onInterpretationUpdated={(newInterpretation) =>
+                      handleInterpretationUpdated(testSet.id, newInterpretation)
+                    }
+                    onDelete={handleLabSetDeleted}
+                  />
+                ))}
+              </div>
+              {pagination.total_pages > 1 && (
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.total_pages}
+                  onPageChange={handlePageChange}
                 />
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
       </div>

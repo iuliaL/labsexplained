@@ -37,6 +37,18 @@ export interface Observation {
   }>;
 }
 
+interface PaginationMetadata {
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+interface LabTestsResponse {
+  lab_test_sets: LabTestSet[];
+  pagination: PaginationMetadata;
+}
+
 interface PatientsResponse {
   message: string;
   patients: Patient[];
@@ -72,19 +84,12 @@ export const adminService = {
     return data.patient;
   },
 
-  async getPatientLabTests(patientFhirId: string): Promise<LabTestSet[]> {
-    const response = await fetch(`${API_BASE_URL}/api/lab_set/${patientFhirId}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
+  async getPatientLabTests(fhirId: string, page: number = 1, pageSize: number = 5): Promise<LabTestsResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/lab_set/${fhirId}?page=${page}&page_size=${pageSize}`);
     if (!response.ok) {
-      throw new Error("Failed to fetch patient lab tests");
+      throw new Error("Failed to fetch lab tests");
     }
-
-    const data = await response.json();
-    return data.lab_test_sets;
+    return response.json();
   },
 
   async getLabSetObservations(observationId: string): Promise<Observation[]> {

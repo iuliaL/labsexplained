@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from datetime import datetime
+from typing import Optional
 import re
 from app.services.fhir import send_lab_results_to_fhir, remove_all_observations_for_patient, remove_fhir_observation, get_fhir_observations
 from app.utils.file_parser import extract_text
@@ -10,22 +11,55 @@ from app.models.lab_test_set import get_lab_test_sets_for_patient, remove_lab_te
 router = APIRouter()
 
 @router.get("/lab_set/{patient_fhir_id}")
-async def get_all_patient_lab_sets(patient_fhir_id: str, include_observations: bool = False):
+async def get_all_patient_lab_sets(
+    patient_fhir_id: str, 
+    include_observations: bool = False,
+    page: Optional[int] = 1,
+    page_size: Optional[int] = 5
+):
     """
-    Retrieves all lab test sets for a specific patient.
+    Retrieves all lab test sets for a specific patient with pagination.
     
-    If `include_observations=True`, fetches full observation details from FHIR.
+    Args:
+        patient_fhir_id (str): The patient's FHIR ID
+        include_observations (bool): If True, fetches full observation details from FHIR
+        page (int): The page number (1-based)
+        page_size (int): Number of items per page
     """
-    lab_test_sets = get_lab_test_sets_for_patient(patient_fhir_id)
+    if page < 1:
+        raise HTTPException(status_code=400, detail="Page number must be greater than 0")
+    if page_size < 1:
+        raise HTTPException(status_code=400, detail="Page size must be greater than 0")
+
+    # Get all lab test sets
+    all_lab_test_sets = get_lab_test_sets_for_patient(patient_fhir_id)
+    
+    # Calculate pagination
+    total_sets = len(all_lab_test_sets)
+    total_pages = (total_sets + page_size - 1) // page_size
+    
+    # Calculate slice indices
+    start_idx = (page - 1) * page_size
+    end_idx = start_idx + page_size
+    
+    # Get the current page's lab sets
+    current_page_sets = all_lab_test_sets[start_idx:end_idx]
 
     if include_observations:
-        for test_set in lab_test_sets:
-            # Get observation IDs from the observations array
+        for test_set in current_page_sets:
             observation_ids = [obs["id"] for obs in test_set["observations"]]
             full_observations = get_fhir_observations(observation_ids)
             test_set["full_observations"] = full_observations
 
-    return {"lab_test_sets": lab_test_sets}
+    return {
+        "lab_test_sets": current_page_sets,
+        "pagination": {
+            "total": total_sets,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages
+        }
+    }
 
 
 @router.post("/lab_set")
