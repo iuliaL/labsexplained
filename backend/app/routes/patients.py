@@ -2,31 +2,76 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Literal, Optional
 from app.services.fhir import create_fhir_patient, delete_fhir_patient, remove_all_observations_for_patient
-from app.models.patient import search_patient, get_patients as get_patients_from_db, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db
+from app.models.patient import set_password, store_patient, Patient, get_patients as get_patients_from_db, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db, search_patient_by_email
+from app.utils.jwt import create_access_token
 
 router = APIRouter()
 
 # Define the input model for patient registration
-class PatientInput(BaseModel):
+class PatientRegister(BaseModel):
     first_name: str
     last_name: str
     birth_date: str
     gender: Literal["male", "female", "other", "unknown"]
-
-
+    email: str
+    password: str  # Password will be hashed
+    is_admin: Optional[bool] = False  # Default to False if not provided
 
 @router.post("/patients")
-async def register_patient(patient: PatientInput):
-    """Registers a new patient in the FHIR system and stores their FHIR ID in MongoDB or retrieves the patient if already existing"""
-    existing_patient = search_patient(patient.first_name, patient.last_name)
+async def register_patient(patient: PatientRegister):
+    """Registers a new patient in the FHIR system and stores their FHIR ID in MongoDB or errors if patient already existing"""
+    # First, check if the patient exists by email
+    existing_patient = search_patient_by_email(patient.email)
     if existing_patient:
-        return {"message": "Patient already registered", "fhir_id": existing_patient["fhir_id"]}
-
-    new_patient = create_fhir_patient(patient.first_name, patient.last_name, patient.birth_date, patient.gender)
-    if new_patient:
-        return {"message": "Patient registered successfully", "fhir_id": new_patient["fhir_id"]}
+        raise HTTPException(status_code=400, detail="Patient already exists.")
     
-    raise HTTPException(status_code=500, detail="Failed to register patient")
+    # Call the external FHIR service to create the patient and retrieve their FHIR ID
+    fhir_created_id = create_fhir_patient(
+        patient.first_name,
+        patient.last_name,
+        patient.birth_date,
+        patient.gender,
+    )
+    if not fhir_created_id:
+        raise HTTPException(status_code=500, detail="Failed to register patient with FHIR server.")
+
+     # Hash the patient's password before saving
+    hashed_password = set_password(patient.password)
+    # Create a Pydantic Patient model instance from the data
+    new_patient_data = Patient(
+        first_name=patient.first_name,
+        last_name=patient.last_name,
+        birth_date=patient.birth_date,
+        gender=patient.gender,
+        fhir_id=fhir_created_id,
+        email=patient.email,
+        password=hashed_password,
+        is_admin=patient.is_admin
+    )
+    # Store the patient in MongoDB, now with a FHIR ID and check the insertion
+    try:
+        store_patient(new_patient_data)
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    
+    # Generate a JWT token for the patient
+    token = create_access_token(data={"sub": patient.email, "role": "admin" if patient.is_admin else "patient"})
+
+    return {
+        "message": "Patient registered successfully",
+        "token": token,
+        "fhir_id": fhir_created_id
+    }
+    
+
+@router.get("/patients/check/{email}")
+async def check_patient_exists(email: str):
+    """Check if a patient exists by email."""
+    existing_patient = search_patient_by_email(email)
+    if existing_patient:
+        return {"message": "Patient exists. Please log in."}
+    return {"message": "Patient not found. You can register now."}
+
 
 @router.get("/patients")
 async def get_patients(page: Optional[int] = 1, page_size: Optional[int] = 10):

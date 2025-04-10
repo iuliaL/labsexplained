@@ -1,7 +1,6 @@
 import requests
 import json
 from app.config import FHIR_SERVER_URL
-from app.models.patient import store_patient
 from app.utils.file_parser import parse_reference_range
 
 VALID_GENDER_VALUES = ["male", "female", "other", "unknown"]
@@ -21,7 +20,7 @@ def create_fhir_patient(first_name: str, last_name: str, birth_date: str, gender
     
     if response.status_code == 201:
         fhir_id = response.json()["id"]
-        return store_patient(first_name, last_name, birth_date, gender.lower(), fhir_id,)
+        return fhir_id
     return None
 
 

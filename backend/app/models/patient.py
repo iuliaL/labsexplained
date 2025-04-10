@@ -1,36 +1,47 @@
 from pymongo import MongoClient
 from typing import Literal
 from app.config import MONGO_URI
+from pydantic import BaseModel
+from enum import Enum
+from passlib.context import CryptContext
+from fastapi import HTTPException
+
 
 client = MongoClient(MONGO_URI)
 db = client.medical_dashboard
 patients_collection = db["patients"]
 
+class Gender(str, Enum):
+    male = "male"
+    female = "female"
+    other = "other"
+    unknown = "unknown"
+
+
 # MongoDB Patient Schema
-patient_schema = {
-    "first_name": str,
-    "last_name": str,
-    "birth_date": str,
-    "gender": str,
-    "fhir_id": str
-}
+class Patient(BaseModel):
+    first_name: str
+    last_name: str
+    birth_date: str
+    gender: Gender
+    fhir_id: str
+    email: str = None
+    password: str
+    is_admin: bool = False
 
-VALID_GENDER_VALUES = Literal["male", "female", "other", "unknown"]
+    class Config: 
+        # MongoDB stores data in camelCase, but we want snake_case in the code
+        alias_generator = lambda string: string.lower()      
 
-def store_patient(first_name:str, last_name: str, birth_date: str, gender: VALID_GENDER_VALUES, fhir_id: str):
+def store_patient(patient: Patient):
     """Stores the patient in MongoDB, ensuring gender validation."""
-    if gender not in ["male", "female", "other", "unknown"]:
-        raise ValueError(f"Invalid gender. Allowed values: male, female, other, unknown.")
+    # Convert Pydantic model to dictionary for MongoDB
+    patient_dict = patient.model_dump(by_alias=True)
+    result = patients_collection.insert_one(patient_dict)
 
-    patient = {
-        "first_name": first_name, 
-        "last_name": last_name, 
-        "birth_date": birth_date, 
-        "gender": gender, 
-        "fhir_id": fhir_id
-    }
-
-    patients_collection.insert_one(patient)
+    # Check if the insert was acknowledged
+    if not result.acknowledged:
+        raise HTTPException(status_code=500, detail="Failed to insert patient into the database.")
     return patient
 
 def get_patients():
@@ -45,6 +56,22 @@ def search_patient(first_name, last_name):
     """Retrieves patient from MongoDB by first and lastname"""
     return patients_collection.find_one({"first_name": first_name, "last_name": last_name})
 
+def search_patient_by_email(email: str):
+    """Retrieves patient from MongoDB by email."""
+    return patients_collection.find_one({"email": email})
+
 def delete_patient(fhir_id):
     """Deletes a patient from MongoDB"""
     patients_collection.delete_one({"fhir_id": fhir_id})
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def set_password(password: str):
+    """Hashes the password."""
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str):
+    """Verifies the password."""
+    return pwd_context.verify(plain_password, hashed_password)
+
