@@ -1,5 +1,6 @@
 import re
 from openai import OpenAI
+from datetime import datetime
 import json
 from app.config import GITHUB_TOKEN
 from app.utils.file_parser import clean_reference_range 
@@ -20,6 +21,7 @@ def interpret_full_lab_set(lab_tests: list, birth_date: str, gender: str):
     """
     if not GITHUB_TOKEN:
         raise ValueError("Missing Github Token. Set GITHUB_TOKEN as an environment variable.")
+    
 
     # ✅ Extract relevant lab test details from FHIR Observations
     extracted_tests = []
@@ -35,27 +37,42 @@ def interpret_full_lab_set(lab_tests: list, birth_date: str, gender: str):
     # ✅ Convert to JSON for AI processing
     lab_results_json = json.dumps(extracted_tests, indent=2)
 
+    patient_age = calculate_age(birth_date) 
 
     # ✅ Define the GPT prompt
     prompt = f"""
-    You are an experienced medical doctor analyzing a patient's lab test results.
-    - **Patient Gender**: {gender}
-    - **Patient Birth Date**: {birth_date}
-    - **Lab Test Results**:
+    You are an experienced medical doctor analyzing a patient's lab test results. 
+    The following lab test results belong to a {gender.lower()} patient, born on {birth_date} meaning they hae=ve an an approximate age of {patient_age}.
+    Interpret the data considering the patient's age and gender, and provide an evidence-based medical analysis.
 
     ```json
     {lab_results_json}
     ```
 
-    Your task:
-    - Consider the patient's age and gender when analyzing the results.
-    - Clearly state in your response that you are taking these factors into account.
+    Instructions:
+    - Consider the patient's age and gender when analyzing the results. Carefully consider the patient's age in interpretation. For infants or elderly patients, physiological norms and reference ranges may differ significantly from adults.
+
+    For each test:
+    - Include the name, value, unit, and the full reference range, if provided.
+    - If the reference range is missing, infer a standard clinical reference range appropriate for the test, using the patient’s age and gender.
+    - Confirm that the unit used in the reference range matches the test result.
+    - Clearly state whether the test result is within, below, or above the expected range.
+
+    - Do not disregard provided reference ranges. Use both lower and upper thresholds when available. If the test value falls within that range, it should be interpreted as normal.
+    - If only a single threshold is present (e.g., “>59”), clarify this and explain its clinical implication.
+    - Explain any abnormal values and their significance, and provide a short and relevant physiological background.
     - Identify patterns, correlations, and potential health concerns.
-    - Explain any abnormal values and their significance.
+    - When values are normal, affirm them and avoid alarmist language.
+
+    Organize the response into clean sections:
+    - Summary of individual test interpretations
+    - General findings and possible clinical correlations
+    - Actionable recommendations (if any)
+    - Do not use first- or second-person language (avoid "I", "you", "we", etc.). Write in an objective, clinical style.
+    - Avoid direct references to a speaker (e.g., "I will analyze" or "You should be concerned"). Instead, present findings in an objective and clinically relevant format. 
     - Provide a structured, easy-to-understand explanation for the patient.
     - Ensure your response explicitly acknowledges how gender and age influence the interpretation.
     - Ensure the interpretation is medically informative, neutral in tone, and structured in a clear and professional manner.
-    - Avoid direct references to a speaker (e.g., "I will analyze" or "You should be concerned"). Instead, present findings in an objective and clinically relevant format. 
     """
 
    
@@ -83,7 +100,7 @@ def extract_lab_results_with_gpt(ocr_text: str):
     
     if not GITHUB_TOKEN:
         raise ValueError("Missing OpenAI API Key. Set your GITHUB_TOKEN as an environment variable.")
-
+    
     # Define the GPT prompt for structured lab result extraction
     prompt = f"""
     You are an AI assistant that extracts lab test results from unstructured text.
@@ -163,4 +180,21 @@ def extract_lab_results_with_gpt(ocr_text: str):
 
     except Exception as e:
         raise ValueError(f"Error calling OpenAI API: {e}")
+
+
+
+
+def calculate_age(birth_date_str: str):
+    birth_date = datetime.strptime(birth_date_str, "%Y-%m-%d")
+    today = datetime.today()
+    age_in_months = (today.year - birth_date.year) * 12 + (today.month - birth_date.month)
+    if age_in_months < 24:
+        prompt = f"{age_in_months // 12} year and {age_in_months % 12} months"
+        # Use “pediatric” hint for the AI prompt
+        prompt += "\nNote: This is a pediatric case. Interpret using pediatric reference ranges and considerations."
+        return prompt
+    
+    else:
+        return f"{(today - birth_date).days // 365} years"
+
 

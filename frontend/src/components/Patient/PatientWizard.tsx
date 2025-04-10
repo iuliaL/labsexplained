@@ -210,7 +210,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
               <div className="mb-4 text-center">
                 <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
                   {fhirId
-                    ? "Upload New Lab Results"
+                    ? "Upload new lab results"
                     : `Step ${
                         currentStep === "name" ? "1" : currentStep === "demographics" ? "2" : "3"
                       } of 3: ${getStepTitle(currentStep)}`}
