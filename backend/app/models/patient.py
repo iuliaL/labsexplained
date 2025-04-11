@@ -3,7 +3,6 @@ from typing import Literal
 from app.config import MONGO_URI
 from pydantic import BaseModel
 from enum import Enum
-from passlib.context import CryptContext
 from fastapi import HTTPException
 
 
@@ -65,13 +64,12 @@ def delete_patient(fhir_id):
     patients_collection.delete_one({"fhir_id": fhir_id})
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def set_password(password: str):
-    """Hashes the password."""
-    return pwd_context.hash(password)
 
-def verify_password(plain_password: str, hashed_password: str):
-    """Verifies the password."""
-    return pwd_context.verify(plain_password, hashed_password)
+def assign_admin(email: str):
+    patient = search_patient_by_email(email)
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    patients_collection.update_one({"email": email}, {"$set": {"is_admin": True}})
 

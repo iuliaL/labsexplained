@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Literal, Optional
 from app.services.fhir import create_fhir_patient, delete_fhir_patient, remove_all_observations_for_patient
 from app.models.patient import set_password, store_patient, Patient, get_patients as get_patients_from_db, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db, search_patient_by_email
-from app.utils.jwt import create_access_token
+from backend.app.utils.auth import create_access_token, admin_required
 
 router = APIRouter()
 
@@ -175,7 +175,7 @@ async def get_patient(fhir_id: str, include_observations: bool = False):
     raise HTTPException(status_code=404, detail="Patient not found")
 
 @router.delete("/patients/{fhir_id}")
-async def delete_patient(fhir_id: str):
+async def delete_patient(fhir_id: str, current_user: dict = Depends(admin_required)):
     """Deletes a patient from both MongoDB and the FHIR server"""
     patient = get_patient(fhir_id)
     
