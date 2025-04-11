@@ -26,7 +26,16 @@ async def login(credentials: LoginInput):
         "sub": user["email"],
         "role": "admin" if user.get("is_admin") else "patient"
     })
-    return {"message": "Login successful", "token": token, "token_type": "Bearer"}
+    return {"message": "Login successful", "token": token, "token_type": "Bearer", "fhir_id": user["fhir_id"]}
+
+
+@router.get("/check-email")
+async def check_patient_exists(email):
+    """Check if a patient exists by email."""
+    existing_patient = search_patient_by_email(email)
+    if existing_patient:
+        return {"message": "Patient exists. Please log in.", "exists": True}
+    return {"message": "Patient not found. You can register now.", "exists": False}
 
 
 @router.put("/assign-admin/{email}")

@@ -64,14 +64,6 @@ async def register_patient(patient: PatientRegister):
     }
     
 
-@router.get("/patients/check/{email}")
-async def check_patient_exists(email: str):
-    """Check if a patient exists by email."""
-    existing_patient = search_patient_by_email(email)
-    if existing_patient:
-        return {"message": "Patient exists. Please log in."}
-    return {"message": "Patient not found. You can register now."}
-
 
 @router.get("/patients")
 async def get_patients(page: Optional[int] = 1, page_size: Optional[int] = 10):

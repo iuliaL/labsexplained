@@ -54,6 +54,20 @@ interface PatientsResponse {
   patients: Patient[];
 }
 
+interface CreatePatientRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  gender: string;
+}
+
+interface LoginResponse {
+  fhir_id: string;
+  token: string;
+}
+
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:8000";
 
 if (!process.env.API_BASE_URL) {
@@ -122,18 +136,15 @@ export const adminService = {
     return await response.json();
   },
 
-  async createPatient(patientData: {
-    firstName: string;
-    lastName: string;
-    dateOfBirth: string;
-    gender: string;
-  }): Promise<{ fhir_id: string; message: string }> {
+  async createPatient(patientData: CreatePatientRequest): Promise<{ fhir_id: string; message: string }> {
     const response = await fetch(`${API_BASE_URL}/api/patients`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        email: patientData.email,
+        password: patientData.password,
         first_name: patientData.firstName,
         last_name: patientData.lastName,
         birth_date: new Date(patientData.dateOfBirth).toISOString().split("T")[0], // Convert to YYYY-MM-DD
@@ -198,5 +209,33 @@ export const adminService = {
         `Failed to delete patient: ${response.status} ${response.statusText}${errorData ? ` - ${errorData}` : ""}`
       );
     }
+  },
+
+  async checkEmailExists(email: string): Promise<boolean> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/check-email?email=${email}`);
+
+    if (!response.ok) {
+      throw new Error("Failed to check email");
+    }
+
+    const data = await response.json();
+    return data.exists;
+  },
+
+  async login(email: string, password: string): Promise<LoginResponse> {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Login failed");
+    }
+
+    const data = await response.json();
+    return data;
   },
 };

@@ -12,10 +12,12 @@ export default function Layout() {
       <Routes>
         {/* Wizard Steps */}
         <Route path="/" element={<PatientWizard initialStep="welcome" />} />
-        <Route path="/name" element={<PatientWizard initialStep="name" />} />
-        <Route path="/demographics" element={<PatientWizard initialStep="demographics" />} />
-        <Route path="/upload" element={<PatientWizard initialStep="upload" />} />
-        <Route path="/upload/:fhirId" element={<PatientWizard initialStep="upload" />} />
+        <Route path="/wizard" element={<PatientWizard initialStep="welcome" />} />
+        <Route path="/wizard/email" element={<PatientWizard initialStep="email" />} />
+        <Route path="/wizard/name" element={<PatientWizard initialStep="name" />} />
+        <Route path="/wizard/demographics" element={<PatientWizard initialStep="demographics" />} />
+        <Route path="/wizard/upload" element={<PatientWizard initialStep="upload" />} />
+        <Route path="/wizard/upload/:fhirId" element={<PatientWizard initialStep="upload" />} />
         <Route path="/patient/:fhirId" element={<PatientDashboard />} />
         {/* Protected Routes */}
         <Route

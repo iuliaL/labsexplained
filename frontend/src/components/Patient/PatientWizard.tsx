@@ -4,13 +4,17 @@ import { NameStep } from "./NameStep";
 import { DemographicsStep } from "./DemographicsStep";
 import { UploadStep } from "./UploadStep";
 import { WelcomeStep } from "./WelcomeStep";
+import { EmailStep } from "./EmailStep";
+import { Login } from "./Login";
 import doctorImage from "../../assets/supawork-medic.png";
 import { UserIcon } from "../icons/UserIcon";
 import { adminService } from "../../services/admin";
 
-type Step = "welcome" | "name" | "demographics" | "upload";
+type Step = "welcome" | "email" | "name" | "demographics" | "upload";
 
 interface PatientData {
+  email: string;
+  password: string;
   firstName: string;
   lastName: string;
   dateOfBirth: string;
@@ -27,7 +31,10 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
   const navigate = useNavigate();
   const { fhirId } = useParams<{ fhirId: string }>();
   const [currentStep, setCurrentStep] = useState<Step>(initialStep);
+  const [isLoginMode, setIsLoginMode] = useState(false);
   const [patientData, setPatientData] = useState<PatientData>({
+    email: "",
+    password: "",
     firstName: "",
     lastName: "",
     dateOfBirth: "",
@@ -41,6 +48,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
     if (fhirId && currentStep === "upload") {
       adminService.getPatient(fhirId).then((patient) => {
         setPatientData({
+          ...patientData,
           firstName: patient.first_name,
           lastName: patient.last_name,
           dateOfBirth: patient.birth_date,
@@ -48,6 +56,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
         });
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fhirId, currentStep]);
 
   useEffect(() => {
@@ -55,20 +64,24 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
   }, [initialStep]);
 
   const nextStep = () => {
-    let nextPath = "/";
+    let nextPath = "/wizard/";
     let nextStepValue: Step = "welcome";
 
     switch (currentStep) {
       case "welcome":
-        nextPath = "/name";
+        nextPath = "/wizard/email";
+        nextStepValue = "email";
+        break;
+      case "email":
+        nextPath = "/wizard/name";
         nextStepValue = "name";
         break;
       case "name":
-        nextPath = "/demographics";
+        nextPath = "/wizard/demographics";
         nextStepValue = "demographics";
         break;
       case "demographics":
-        nextPath = "/upload";
+        nextPath = "/wizard/upload";
         nextStepValue = "upload";
         break;
     }
@@ -78,20 +91,24 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
   };
 
   const prevStep = () => {
-    let prevPath = "/";
+    let prevPath = "/wizard/";
     let prevStepValue: Step = "welcome";
 
     switch (currentStep) {
-      case "name":
-        prevPath = "/";
+      case "email":
+        prevPath = "/wizard/";
         prevStepValue = "welcome";
         break;
+      case "name":
+        prevPath = "/wizard/email";
+        prevStepValue = "email";
+        break;
       case "demographics":
-        prevPath = "/name";
+        prevPath = "/wizard/name";
         prevStepValue = "name";
         break;
       case "upload":
-        prevPath = "/demographics";
+        prevPath = "/wizard/demographics";
         prevStepValue = "demographics";
         break;
     }
@@ -104,12 +121,55 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
     switch (step) {
       case "welcome":
         return "Welcome";
+      case "email":
+        return "Account Information";
       case "name":
         return "Patient Information";
       case "demographics":
         return "Patient Demographics";
       case "upload":
         return "Upload Lab Results";
+    }
+  };
+
+  const handleEmailSubmit = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Check if email exists
+      const emailExists = await adminService.checkEmailExists(patientData.email);
+
+      if (emailExists) {
+        setIsLoginMode(true);
+        setError("Email already exists. Please log in instead.");
+      } else {
+        nextStep();
+      }
+    } catch (err) {
+      console.error("Error checking email:", err);
+      setError("An error occurred while checking your email. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await adminService.login(patientData.email, patientData.password);
+      if (response.fhir_id) {
+        navigate(`/patient/${response.fhir_id}`);
+      } else {
+        setError("Invalid email or password");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("An error occurred during login. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -128,6 +188,8 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
       } else {
         // Create a new patient and upload their first lab set
         const { fhir_id, message } = await adminService.createPatient({
+          email: patientData.email,
+          password: patientData.password,
           firstName: patientData.firstName,
           lastName: patientData.lastName,
           dateOfBirth: patientData.dateOfBirth,
@@ -212,14 +274,41 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
                   {fhirId
                     ? "Upload new lab results"
                     : `Step ${
-                        currentStep === "name" ? "1" : currentStep === "demographics" ? "2" : "3"
-                      } of 3: ${getStepTitle(currentStep)}`}
+                        currentStep === "email"
+                          ? "1"
+                          : currentStep === "name"
+                          ? "2"
+                          : currentStep === "demographics"
+                          ? "3"
+                          : "4"
+                      } of 4: ${getStepTitle(currentStep)}`}
                 </span>
               </div>
             )}
 
             {/* Steps */}
             {currentStep === "welcome" && <WelcomeStep onNext={nextStep} />}
+            {currentStep === "email" && !isLoginMode && (
+              <EmailStep
+                email={patientData.email}
+                password={patientData.password}
+                onChange={(data) => setPatientData({ ...patientData, ...data })}
+                onNext={handleEmailSubmit}
+                onLogin={() => setIsLoginMode(true)}
+                error={error || undefined}
+              />
+            )}
+            {currentStep === "email" && isLoginMode && (
+              <Login
+                email={patientData.email}
+                password={patientData.password}
+                onChange={(data) => setPatientData({ ...patientData, ...data })}
+                onSubmit={handleLogin}
+                onBack={() => setIsLoginMode(false)}
+                error={error || undefined}
+                loading={loading}
+              />
+            )}
             {currentStep === "name" && (
               <NameStep
                 firstName={patientData.firstName}
