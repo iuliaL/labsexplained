@@ -6,9 +6,18 @@ interface DateInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
+  error?: string;
 }
 
-export function DateInput({ label, value, onChange, required = false, className = "", ...props }: DateInputProps) {
+export function DateInput({
+  label,
+  value,
+  onChange,
+  required = false,
+  error,
+  className = "",
+  ...props
+}: DateInputProps) {
   const displayValue = value && isValidDate(value) ? formatDate(value) : value;
 
   return (
@@ -30,7 +39,7 @@ export function DateInput({ label, value, onChange, required = false, className 
             placeholder:text-slate-400
             rounded-lg
             transition-colors
-            border border-slate-200
+            border ${error ? "border-red-300" : "border-slate-200"}
             focus:outline-none
             focus:ring-2
             focus:ring-blue-500/20
@@ -46,11 +55,12 @@ export function DateInput({ label, value, onChange, required = false, className 
           {...props}
         />
         <div className="absolute inset-0 flex items-center px-3 pointer-events-none">
-          <span className="text-slate-900 text-sm">
+          <span className={`text-sm ${error ? "text-red-900" : "text-slate-900"}`}>
             {displayValue || <span className="text-slate-400">DD.MM.YYYY</span>}
           </span>
         </div>
       </div>
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 }

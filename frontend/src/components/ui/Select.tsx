@@ -38,6 +38,10 @@ export const Select: React.FC<SelectProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleChange = (newValue: string) => {
+    onChange(newValue);
+  };
+
   return (
     <div className="w-full">
       {label && (
@@ -60,7 +64,7 @@ export const Select: React.FC<SelectProps> = ({
             text-sm
             rounded-lg
             transition-colors
-            border border-slate-200
+            border ${error ? "border-red-300" : "border-slate-200"}
             focus:outline-none
             focus:ring-2
             focus:ring-blue-500/20
@@ -73,7 +77,6 @@ export const Select: React.FC<SelectProps> = ({
             items-center
             justify-between
             ${error ? "ring-2 ring-red-500/20 bg-red-50/50 border-transparent" : ""}
-            ${!value && required ? "ring-2 ring-red-500/20 bg-red-50/50 border-transparent" : ""}
             ${className}
           `}
           disabled={disabled}
@@ -99,18 +102,19 @@ export const Select: React.FC<SelectProps> = ({
                 key={option.value}
                 type="button"
                 onClick={() => {
-                  onChange(option.value);
+                  handleChange(option.value);
                   setIsOpen(false);
                 }}
-                role="option"
-                aria-selected={option.value === value}
                 className={`
                   w-full px-3 py-2
-                  text-sm
                   text-left
-                  transition-colors
-                  ${option.value === value ? "bg-blue-50 text-blue-700" : "text-slate-900 hover:bg-slate-50"}
+                  text-sm
+                  hover:bg-slate-50
+                  focus:bg-slate-50
+                  ${option.value === value ? "bg-blue-50 text-blue-700" : "text-slate-900"}
                 `}
+                role="option"
+                aria-selected={option.value === value}
               >
                 {option.label}
               </button>
@@ -118,7 +122,7 @@ export const Select: React.FC<SelectProps> = ({
           </div>
         )}
       </div>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 };
