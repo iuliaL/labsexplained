@@ -5,9 +5,10 @@ interface NameStepProps {
   lastName: string;
   onChange: (data: { firstName: string; lastName: string }) => void;
   onNext: () => void;
+  onBack: () => void;
 }
 
-export function NameStep({ firstName, lastName, onChange, onNext }: NameStepProps) {
+export function NameStep({ firstName, lastName, onChange, onNext, onBack }: NameStepProps) {
   return (
     <div className="space-y-6">
       {/* Explanation Card */}
@@ -24,7 +25,7 @@ export function NameStep({ firstName, lastName, onChange, onNext }: NameStepProp
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800">Before We Begin</h3>
+            <h3 className="text-sm font-medium text-blue-800">Before we begin</h3>
             <div className="mt-1 text-xs text-blue-700">
               <p>
                 To provide you with accurate lab result interpretations, we'll need some basic information. This helps
@@ -53,14 +54,23 @@ export function NameStep({ firstName, lastName, onChange, onNext }: NameStepProp
           required
         />
       </div>
+      <div className="flex space-x-4">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex-1 py-2 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Back
+        </button>
 
-      <button
-        onClick={onNext}
-        disabled={!firstName || !lastName}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400"
-      >
-        Next
-      </button>
+        <button
+          onClick={onNext}
+          disabled={!firstName || !lastName}
+          className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }

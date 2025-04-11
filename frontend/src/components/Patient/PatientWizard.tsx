@@ -237,7 +237,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Left side - Content */}
-      <div className="w-full lg:w-1/2 relative z-10 flex items-center justify-center px-4 sm:px-6 py-12">
+      <div className="w-full lg:w-1/2 relative z-10 flex items-center justify-center px-4 sm:px-6 py-6">
         {/* Wave Shape */}
         <div className="absolute right-0 inset-y-0 w-[100px] translate-x-[98px]">
           <svg
@@ -258,7 +258,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
         <div className="w-full max-w-md">
           {/* Logo and Title */}
           <div className="text-center mb-7">
-            <div className="h-12 w-12 mx-auto text-blue-600 mb-5">
+            <div className="h-8 w-8 mx-auto text-blue-600 mb-3">
               <UserIcon className="w-full h-full" />
             </div>
             <h1 className="text-3xl font-bold text-slate-900">Your AI-Powered Lab Interpreter</h1>
@@ -315,6 +315,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
                 lastName={patientData.lastName}
                 onChange={(data) => setPatientData({ ...patientData, ...data })}
                 onNext={nextStep}
+                onBack={prevStep}
               />
             )}
             {currentStep === "demographics" && (
