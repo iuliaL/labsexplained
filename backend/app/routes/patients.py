@@ -111,7 +111,8 @@ async def get_patients(page: Optional[int] = 1, page_size: Optional[int] = 10):
     
     for patient in current_page_patients:
         patient_dict = dict(patient)
-        patient_dict['id'] = str(patient_dict.pop('_id'))
+        patient_dict.pop('_id', None)
+        patient_dict.pop('password', None)  # ✅ safely removes if it exists
         
         # Get lab test sets for this patient
         lab_test_sets = get_lab_test_sets_for_patient(patient_dict['fhir_id'])
@@ -144,9 +145,9 @@ async def get_patient(fhir_id: str, include_observations: bool = False):
     """
     patient = get_patient_from_db(fhir_id)
     if patient:
-        # Convert ObjectId to string and return as id
         patient_dict = dict(patient)
-        patient_dict['id'] = str(patient_dict.pop('_id'))
+        patient_dict.pop('_id', None)
+        patient_dict.pop('password', None)
         
         if include_observations:
             # Get all lab test sets for the patient
