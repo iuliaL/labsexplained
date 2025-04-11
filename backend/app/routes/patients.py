@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Literal, Optional
 from app.services.fhir import create_fhir_patient, delete_fhir_patient, remove_all_observations_for_patient
-from app.models.patient import set_password, store_patient, Patient, get_patients as get_patients_from_db, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db, search_patient_by_email
-from backend.app.utils.auth import create_access_token, admin_required
+from app.models.patient import store_patient, Patient, get_patients as get_patients_from_db, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db, search_patient_by_email
+from app.utils.auth import create_access_token, admin_required, set_password
 
 router = APIRouter()
 

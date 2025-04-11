@@ -1,9 +1,8 @@
 from fastapi import HTTPException, Depends
-from app.models.patient import search_patient_by_email, verify_password, assign_admin
-from backend.app.utils.auth import create_access_token
+from app.models.patient import search_patient_by_email, assign_admin
 from fastapi import APIRouter
 from pydantic import BaseModel
-from backend.app.utils.auth import admin_required
+from app.utils.auth import admin_required, verify_password, create_access_token
 
 router = APIRouter()
 

@@ -1,5 +1,4 @@
 from pymongo import MongoClient
-from typing import Literal
 from app.config import MONGO_URI
 from pydantic import BaseModel
 from enum import Enum
