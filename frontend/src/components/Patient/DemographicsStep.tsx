@@ -52,7 +52,6 @@ export function DemographicsStep({ dateOfBirth, gender, onChange, onNext, onBack
           id="gender"
           label="Gender"
           value={gender}
-
           onChange={(value) => {
             setTouched((prev) => ({ ...prev, gender: true }));
             onChange({ dateOfBirth, gender: value });

@@ -2,7 +2,7 @@ import React from "react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  error?: string;
+  error?: string | React.ReactNode;
   required?: boolean;
 }
 
@@ -26,7 +26,7 @@ export const Input: React.FC<InputProps> = ({ label, error, required = false, cl
           placeholder:text-slate-400
           rounded-lg
           transition-colors
-          border border-slate-200
+          border ${error ? "border-red-300" : "border-slate-200"}
           focus:outline-none
           focus:ring-2
           focus:ring-blue-500/20
@@ -38,7 +38,7 @@ export const Input: React.FC<InputProps> = ({ label, error, required = false, cl
           ${className}
         `}
       />
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <div className="mt-1 text-sm text-red-600">{error}</div>}
     </div>
   );
 };

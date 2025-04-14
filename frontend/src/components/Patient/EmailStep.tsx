@@ -1,4 +1,5 @@
 import { Input } from "../ui/Input";
+import { useState } from "react";
 
 interface EmailStepProps {
   email: string;
@@ -9,7 +10,63 @@ interface EmailStepProps {
   error?: string;
 }
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+const PasswordRequirements = ({ password }: { password: string }) => {
+  const requirements = [
+    { regex: /.{8,}/, text: "At least 8 characters" },
+    { regex: /[A-Z]/, text: "At least one uppercase letter" },
+    { regex: /[a-z]/, text: "At least one lowercase letter" },
+    { regex: /[0-9]/, text: "At least one number" },
+    { regex: /[@$!%*?&]/, text: "At least one special character (@$!%*?&)" },
+  ];
+
+  return (
+    <div className="mt-2 space-y-1">
+      {requirements.map((req, index) => (
+        <div key={index} className="flex items-center text-sm">
+          <svg
+            className={`w-4 h-4 mr-2 ${req.regex.test(password) ? "text-green-500" : "text-red-500"}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            {req.regex.test(password) ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            )}
+          </svg>
+          <span className={req.regex.test(password) ? "text-green-700" : "text-red-700"}>{req.text}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export function EmailStep({ email, password, onChange, onNext, onLogin, error }: EmailStepProps) {
+  const [showErrors, setShowErrors] = useState(false);
+
+  const emailError = showErrors && !emailRegex.test(email) ? "Please enter a valid email address" : undefined;
+  const passwordError =
+    showErrors && !passwordRegex.test(password) ? (
+      <div>
+        <p className="text-sm text-red-600 font-medium">Password requirements:</p>
+        <PasswordRequirements password={password} />
+      </div>
+    ) : undefined;
+
+  const isFormValid = emailRegex.test(email) && passwordRegex.test(password);
+
+  const handleNext = () => {
+    if (isFormValid) {
+      onNext();
+    } else {
+      setShowErrors(true);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Explanation Card */}
@@ -46,6 +103,7 @@ export function EmailStep({ email, password, onChange, onNext, onLogin, error }:
           onChange={(e) => onChange({ email: e.target.value, password })}
           placeholder="Enter your email"
           required
+          error={emailError}
         />
         <Input
           id="password"
@@ -55,6 +113,7 @@ export function EmailStep({ email, password, onChange, onNext, onLogin, error }:
           onChange={(e) => onChange({ email, password: e.target.value })}
           placeholder="Create a password"
           required
+          error={passwordError}
         />
       </div>
 
@@ -62,8 +121,8 @@ export function EmailStep({ email, password, onChange, onNext, onLogin, error }:
 
       <div className="space-y-4">
         <button
-          onClick={onNext}
-          disabled={!email || !password}
+          onClick={handleNext}
+          disabled={showErrors && !isFormValid}
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400"
         >
           Create Account
