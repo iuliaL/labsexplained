@@ -5,6 +5,7 @@ import { PatientDashboard } from "./Patient/PatientDashboard";
 import { AdminDashboard } from "./Admin/AdminDashboard";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PatientDetails } from "./Admin/PatientDetails";
+import { ResetPassword } from "./Patient/ResetPassword";
 
 export default function Layout() {
   return (
@@ -19,6 +20,10 @@ export default function Layout() {
         <Route path="/wizard/upload" element={<PatientWizard initialStep="upload" />} />
         <Route path="/wizard/upload/:fhirId" element={<PatientWizard initialStep="upload" />} />
         <Route path="/patient/:fhirId" element={<PatientDashboard />} />
+
+        {/* Auth */}
+        <Route path="/reset-password" element={<ResetPassword />} />
+
         {/* Protected Routes */}
         <Route
           path="/admin/patients"

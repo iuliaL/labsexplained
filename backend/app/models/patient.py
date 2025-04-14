@@ -77,7 +77,7 @@ def update_password(email: str, new_password: str):
     patients_collection.update_one(
         {"email": email},
         {
-            "$set": {"hashed_password": new_password},
+            "$set": {"password": new_password},
             "$unset": {"reset_token": "", "reset_token_expires": ""}
         }
     )
