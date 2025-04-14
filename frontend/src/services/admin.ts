@@ -237,9 +237,7 @@ export const adminService = {
       if (!response.ok) {
         if (response.status === 401) {
           // For 401, we know the server sends the error in data.detail
-          throw new Error(
-            "Invalid email or password. Please try again."
-          );
+          throw new Error("Invalid email or password. Please try again.");
         }
 
         // For other errors
@@ -257,5 +255,47 @@ export const adminService = {
       // For unexpected errors
       throw new Error("An unexpected error occurred. Please try again later.");
     }
+  },
+
+  async requestPasswordReset(email: string): Promise<{ message: string }> {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (typeof data === "object" && data.detail) {
+        throw new Error(data.detail);
+      }
+      throw new Error("Failed to process password reset request. Please try again later.");
+    }
+
+    return data;
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token, new_password: newPassword }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (typeof data === "object" && data.detail) {
+        throw new Error(data.detail);
+      }
+      throw new Error("Failed to reset password. Please try again later.");
+    }
+
+    return data;
   },
 };
