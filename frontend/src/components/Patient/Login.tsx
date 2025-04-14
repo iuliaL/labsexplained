@@ -70,7 +70,7 @@ function ForgotPassword({ email, onEmailChange, onBack }: ForgotPasswordProps) {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-green-800">Password Reset Email Sent</h3>
+              <h3 className="text-sm font-medium text-green-800">Password reset email sent</h3>
               <div className="mt-2 text-sm text-green-700">
                 <p>We've sent you an email with instructions to reset your password. Please check your inbox.</p>
               </div>
@@ -81,7 +81,7 @@ function ForgotPassword({ email, onEmailChange, onBack }: ForgotPasswordProps) {
           onClick={onBack}
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
-          Return to Login
+          Back to login
         </button>
       </div>
     );

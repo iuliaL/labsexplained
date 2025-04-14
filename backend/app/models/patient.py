@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from pymongo import MongoClient
 from app.config import MONGO_URI
 from pydantic import BaseModel
@@ -63,8 +64,6 @@ def delete_patient(fhir_id):
     patients_collection.delete_one({"fhir_id": fhir_id})
 
 
-
-
 def assign_admin(email: str):
     patient = search_patient_by_email(email)
     if not patient:
@@ -72,3 +71,36 @@ def assign_admin(email: str):
 
     patients_collection.update_one({"email": email}, {"$set": {"is_admin": True}})
 
+    
+
+def update_password(email: str, new_password: str):
+    patients_collection.update_one(
+        {"email": email},
+        {
+            "$set": {"hashed_password": new_password},
+            "$unset": {"reset_token": "", "reset_token_expires": ""}
+        }
+    )
+
+ 
+
+def check_reset_token_expiration(token: str):
+    patient = patients_collection.find_one({
+        "reset_token": token,
+        "reset_token_expires": {"$gt": datetime.now(timezone.utc)}
+    })
+    if not patient:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+    return patient
+
+
+def update_reset_token(email: str, reset_token: str, expires_at: datetime):
+    patients_collection.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "reset_token": reset_token,
+                "reset_token_expires": expires_at
+                }
+        }
+    )
