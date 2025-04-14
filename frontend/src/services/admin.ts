@@ -68,15 +68,15 @@ interface LoginResponse {
   token: string;
 }
 
-const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
 
-if (!process.env.API_BASE_URL) {
-  console.warn("API_BASE_URL is not defined in environment variables. Using fallback: http://localhost:8000");
+if (!process.env.REACT_APP_API_BASE_URL) {
+  console.warn("REACT_APP_API_BASE_URL is not defined in environment variables. Using fallback: http://localhost:8000");
 }
 
 export const adminService = {
   async getPatients(page: number = 1, pageSize: number = 10): Promise<PatientsResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/patients?page=${page}&page_size=${pageSize}`);
+    const response = await fetch(`${API_BASE_URL}/patients?page=${page}&page_size=${pageSize}`);
     if (!response.ok) {
       throw new Error("Failed to fetch patients");
     }
@@ -84,7 +84,7 @@ export const adminService = {
   },
 
   async getPatient(fhirId: string): Promise<Patient> {
-    const response = await fetch(`${API_BASE_URL}/api/patients/${fhirId}`, {
+    const response = await fetch(`${API_BASE_URL}/patients/${fhirId}`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -99,7 +99,7 @@ export const adminService = {
   },
 
   async getPatientLabTests(fhirId: string, page: number = 1, pageSize: number = 5): Promise<LabTestsResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/lab_set/${fhirId}?page=${page}&page_size=${pageSize}`);
+    const response = await fetch(`${API_BASE_URL}/lab_set/${fhirId}?page=${page}&page_size=${pageSize}`);
     if (!response.ok) {
       throw new Error("Failed to fetch lab tests");
     }
@@ -107,7 +107,7 @@ export const adminService = {
   },
 
   async getLabSetObservations(observationId: string): Promise<Observation[]> {
-    const response = await fetch(`${API_BASE_URL}/api/observations/${observationId}`, {
+    const response = await fetch(`${API_BASE_URL}/observations/${observationId}`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -122,7 +122,7 @@ export const adminService = {
   },
 
   async interpretLabTestSet(labTestSetId: string): Promise<{ interpretation: string }> {
-    const response = await fetch(`${API_BASE_URL}/api/lab_set/${labTestSetId}/interpret`, {
+    const response = await fetch(`${API_BASE_URL}/lab_set/${labTestSetId}/interpret`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -137,7 +137,7 @@ export const adminService = {
   },
 
   async createPatient(patientData: CreatePatientRequest): Promise<{ fhir_id: string; message: string }> {
-    const response = await fetch(`${API_BASE_URL}/api/patients`, {
+    const response = await fetch(`${API_BASE_URL}/patients`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -165,7 +165,7 @@ export const adminService = {
     formData.append("test_date", new Date(testDate).toISOString().split("T")[0]); // Convert to YYYY-MM-DD
     formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/api/lab_set`, {
+    const response = await fetch(`${API_BASE_URL}/lab_set`, {
       method: "POST",
       body: formData,
     });
@@ -178,7 +178,7 @@ export const adminService = {
   },
 
   async deleteLabTestSet(labTestSetId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/lab_set/${labTestSetId}`, {
+    const response = await fetch(`${API_BASE_URL}/lab_set/${labTestSetId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -191,7 +191,7 @@ export const adminService = {
   },
 
   async deletePatient(fhirId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/patients/${fhirId}`, {
+    const response = await fetch(`${API_BASE_URL}/patients/${fhirId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -212,7 +212,7 @@ export const adminService = {
   },
 
   async checkEmailExists(email: string): Promise<boolean> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/check-email?email=${email}`);
+    const response = await fetch(`${API_BASE_URL}/auth/check-email?email=${email}`);
 
     if (!response.ok) {
       throw new Error("Failed to check email");
@@ -223,19 +223,39 @@ export const adminService = {
   },
 
   async login(email: string, password: string): Promise<LoginResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (!response.ok) {
-      throw new Error("Login failed");
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // For 401, we know the server sends the error in data.detail
+          throw new Error(
+            "Invalid email or password. Please try again."
+          );
+        }
+
+        // For other errors
+        if (typeof data === "object" && data.detail) {
+          throw new Error(data.detail);
+        } else throw new Error("An error occurred while trying to log in. Please try again later.");
+      }
+
+      return data;
+    } catch (error) {
+      // If it's our error with a specific message, rethrow it
+      if (error instanceof Error) {
+        throw error;
+      }
+      // For unexpected errors
+      throw new Error("An unexpected error occurred. Please try again later.");
     }
-
-    const data = await response.json();
-    return data;
   },
 };

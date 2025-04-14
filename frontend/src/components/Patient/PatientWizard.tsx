@@ -157,17 +157,17 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
   const handleLogin = async () => {
     setLoading(true);
     setError(null);
+    const genericLoginError = "An error occurred during login. Please try again.";
 
     try {
       const response = await adminService.login(patientData.email, patientData.password);
       if (response.fhir_id) {
         navigate(`/patient/${response.fhir_id}`);
       } else {
-        setError("Invalid email or password");
+        setError(genericLoginError);
       }
     } catch (err) {
-      console.error("Login error:", err);
-      setError("An error occurred during login. Please try again.");
+      setError(err instanceof Error ? err.message : genericLoginError);
     } finally {
       setLoading(false);
     }
