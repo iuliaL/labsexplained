@@ -145,7 +145,7 @@ export function PatientDashboard() {
       // Delay navigation to ensure cookie removal is handled first
       setTimeout(() => {
         navigate("/login");
-      }, 100);  // Delay to give enough time for cookie removal
+      }, 100); // Delay to give enough time for cookie removal
     } catch (err) {
       console.error("Logout failed:", err);
     }
@@ -257,7 +257,7 @@ export function PatientDashboard() {
                   <div className="text-sm font-medium text-blue-600 mt-1">
                     {patient ? calculateAge(patient.birth_date) : "--"}
                   </div>
-                  <br></br> 
+                  <br></br>
                   <p className="text-xl text-slate-600 mt-2">
                     Here are your lab test results and their interpretations
                   </p>
