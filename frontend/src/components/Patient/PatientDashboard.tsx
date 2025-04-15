@@ -34,7 +34,7 @@ interface PaginationMetadata {
   total_pages: number;
 }
 
-export function PatientDashboard() {  
+export function PatientDashboard() {
   const { fhirId } = useParams<{ fhirId: string }>();
   const navigate = useNavigate();
   const [patient, setPatient] = useState<Patient | null>(null);
@@ -49,6 +49,7 @@ export function PatientDashboard() {
   const [deletingSetId, setDeletingSetId] = useState<string | null>(null);
   const [isDeletingSet, setIsDeletingSet] = useState(false);
   const [interpretingSetId, setInterpretingSetId] = useState<string | null>(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [pagination, setPagination] = useState<PaginationMetadata>({
     total: 0,
     page: 1,
@@ -263,7 +264,7 @@ export function PatientDashboard() {
                 </div>
               </div>
               <button
-                onClick={handleLogout}
+                onClick={() => setShowLogoutConfirm(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
               >
                 <svg
@@ -645,6 +646,17 @@ export function PatientDashboard() {
             </div>
           </div>
         )}
+
+        <ConfirmDialog
+          isOpen={showLogoutConfirm}
+          onClose={() => setShowLogoutConfirm(false)}
+          onConfirm={handleLogout}
+          title="Logout"
+          message="Are you sure you want to logout?"
+          confirmLabel="Logout"
+          cancelLabel="Cancel"
+          variant="primary"
+        />
       </div>
     </div>
   );
