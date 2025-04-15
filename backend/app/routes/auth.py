@@ -70,8 +70,8 @@ async def forgot_password(request: ForgotPasswordRequest):
     # For now, we'll just return the token (in production, this should be sent via email)
     return {
         "message": "If an account exists with this email, you will receive password reset instructions.",
-        "debug_token": reset_token,  # Remove this in production
-        "reset_link" : "http://localhost:3000/reset-password?token={reset_token}" # Remove this in production
+
+        "reset_link" : f"http://localhost:3000/reset-password?token={reset_token}" # Remove this in production
     }
 
 class ResetPasswordRequest(BaseModel):

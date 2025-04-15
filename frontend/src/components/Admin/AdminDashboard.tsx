@@ -8,6 +8,7 @@ import { Pagination } from "../ui/Pagination";
 
 interface Patient {
   id: string;
+  email: string;
   first_name: string;
   last_name: string;
   birth_date: string;
@@ -166,11 +167,12 @@ export function AdminDashboard() {
                     {patient.first_name} {patient.last_name}
                   </h2>
                   <div className="flex items-center gap-4 mt-1">
-                    <span className="text-sm text-slate-500">Born: {formatDate(patient.birth_date)}</span>
+                    <span className="text-sm text-slate-500"><b>User:</b> {patient.email}</span>
+                    <span className="text-sm text-slate-500"><b>Born:</b> {formatDate(patient.birth_date)}</span>
                     <span className="text-sm text-slate-500">
-                      Gender: {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}
+                      <b>Gender:</b> {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}
                     </span>
-                    <span className="text-sm text-slate-500">FHIR ID: {patient.fhir_id}</span>
+                    <span className="text-sm text-slate-500"><b>FHIR ID:</b> {patient.fhir_id}</span>
                     <div className="flex items-center gap-2">
                       <span className="px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 rounded-full">
                         {patient.lab_test_count} Lab Tests

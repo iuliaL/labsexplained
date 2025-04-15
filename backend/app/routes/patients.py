@@ -2,9 +2,10 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Literal, Optional
 from datetime import timedelta
-from app.services.fhir import create_fhir_patient, delete_fhir_patient, remove_all_observations_for_patient
+from app.services.fhir import create_fhir_patient, delete_fhir_patient, remove_all_observations_for_patient, get_fhir_observations
 from app.models.patient import store_patient, Patient, get_patients as get_patients_from_db, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db, search_patient_by_email
-from app.utils.auth import create_access_token, admin_required, set_password
+from app.models.lab_test_set import get_lab_test_sets_for_patient
+from app.utils.auth import create_access_token, admin_required, set_password, self_or_admin_required
 
 router = APIRouter()
 
@@ -69,7 +70,10 @@ async def register_patient(patient: PatientRegister):
 
 
 @router.get("/patients")
-async def get_patients(page: Optional[int] = 1, page_size: Optional[int] = 10):
+async def get_patients(page: Optional[int] = 1,
+                       page_size: Optional[int] = 10,
+                       current_user: dict = Depends(admin_required)
+                       ):
     """
     Retrieves paginated patients from MongoDB.
     
@@ -110,7 +114,6 @@ async def get_patients(page: Optional[int] = 1, page_size: Optional[int] = 10):
     
     # Format patients for the current page
     formatted_patients = []
-    from app.models.lab_test_set import get_lab_test_sets_for_patient
     
     for patient in current_page_patients:
         patient_dict = dict(patient)
@@ -135,13 +138,16 @@ async def get_patients(page: Optional[int] = 1, page_size: Optional[int] = 10):
         "pagination": {
             "total": total_patients,
             "page": page,
-            "page_size": page_size,
+            "page_size": page_size, 
             "total_pages": total_pages
         }
     }
 
 @router.get("/patients/{fhir_id}")
-async def get_patient(fhir_id: str, include_observations: bool = False):
+async def get_patient(fhir_id: str,
+                    include_observations: bool = False,
+                    patient: dict = Depends(self_or_admin_required)
+                      ):
     """
     Retrieves the patient from MongoDB using the FHIR ID.
     If include_observations=True, includes all lab test sets with their FHIR observations.
@@ -154,8 +160,6 @@ async def get_patient(fhir_id: str, include_observations: bool = False):
         
         if include_observations:
             # Get all lab test sets for the patient
-            from app.models.lab_test_set import get_lab_test_sets_for_patient
-            from app.services.fhir import get_fhir_observations
             
             lab_test_sets = get_lab_test_sets_for_patient(fhir_id)
             

@@ -249,12 +249,12 @@ export function PatientDashboard() {
                 </div>
                 <div className="flex-1">
                   <h1 className="text-2xl font-semibold text-slate-900">
-                    Welcome, {patient?.first_name.toUpperCase()} {patient?.last_name.toUpperCase()}
+                    Welcome, {patient?.first_name} {patient?.last_name}
                   </h1>
                   <div className="text-sm font-medium text-blue-600 mt-1">
                     {patient ? calculateAge(patient.birth_date) : "--"}
                   </div>
-                  <br></br>
+                  <br></br> 
                   <p className="text-xl text-slate-600 mt-2">
                     Here are your lab test results and their interpretations
                   </p>

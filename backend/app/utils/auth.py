@@ -2,9 +2,11 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from app.config import SECRET_KEY, ALGORITHM
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, Path
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
+from app.models.patient import get_patient as get_patient_from_db
+
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = timedelta(hours=1)):
@@ -56,5 +58,18 @@ def admin_required(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user
+
+
+
+def self_or_admin_required(
+    fhir_id: str = Path(...),  # get path param at runtime
+    current_user: dict = Depends(get_current_user)
+):
+    patient = get_patient_from_db(fhir_id)
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    if current_user["role"] == "admin" or current_user["email"] == patient["email"]:
+        return patient
+    raise HTTPException(status_code=403, detail="Not authorized to access this patient")
 
 

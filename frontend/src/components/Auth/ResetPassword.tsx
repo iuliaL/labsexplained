@@ -46,10 +46,10 @@ export function ResetPassword() {
     try {
       await authService.resetPassword(token, formData.newPassword);
       setSuccess(true);
-      // Navigate to login page after 5 seconds
+      // Navigate to login page after 3 seconds
       setTimeout(() => {
         navigate("/login");
-      }, 5000);
+      }, 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred. Please try again.");
     } finally {
