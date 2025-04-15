@@ -1,6 +1,8 @@
 import { Input } from "../ui/Input";
 import { useState } from "react";
 import { PasswordRequirements } from "../ui/PasswordRequirements";
+import { passwordRegex, emailRegex } from "../../utils/regexes";
+
 interface EmailStepProps {
   email: string;
   password: string;
@@ -9,9 +11,6 @@ interface EmailStepProps {
   onLogin: () => void;
   error?: string;
 }
-
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
 export function EmailStep({ email, password, onChange, onNext, onLogin, error }: EmailStepProps) {
   const [showErrors, setShowErrors] = useState(false);

@@ -19,6 +19,8 @@ export default function Layout() {
         <Route path="/wizard/demographics" element={<PatientWizard initialStep="demographics" />} />
         <Route path="/wizard/upload" element={<PatientWizard initialStep="upload" />} />
         <Route path="/wizard/upload/:fhirId" element={<PatientWizard initialStep="upload" />} />
+
+        {/* Patient Dashboard */}
         <Route path="/patient/:fhirId" element={<PatientDashboard />} />
 
         {/* Auth */}

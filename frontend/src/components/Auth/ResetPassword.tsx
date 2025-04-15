@@ -3,8 +3,7 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Container from "../ui/Container";
 import { PasswordRequirements } from "../ui/PasswordRequirements";
-
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+import { passwordRegex } from "../../utils/regexes";
 
 export function ResetPassword() {
   const navigate = useNavigate();
