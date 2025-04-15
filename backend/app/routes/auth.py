@@ -22,11 +22,12 @@ async def login(credentials: LoginInput):
     if not verify_password(credentials.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # Create JWT token
+    # Create JWT token (expires in 1 hour)
+    ACCESS_TOKEN_EXPIRATION_HOURS = 1
     token = create_access_token(data={
         "sub": user["email"],
         "role": "admin" if user.get("is_admin") else "patient"
-    })
+    }, expires_delta=timedelta(hours=ACCESS_TOKEN_EXPIRATION_HOURS))
     return {"message": "Login successful", "token": token, "token_type": "Bearer", "fhir_id": user["fhir_id"]}
 
 
@@ -58,8 +59,8 @@ async def forgot_password(request: ForgotPasswordRequest):
     
     # Generate a reset token
     reset_token = secrets.token_urlsafe(32)
-    # Token expires in 1 hour
-    RESET_TOKEN_EXPIRATION_HOURS = 60
+    # Reset password token expires in 1 hour
+    RESET_TOKEN_EXPIRATION_HOURS = 1
     expires_at = datetime.now(timezone.utc) + timedelta(hours=RESET_TOKEN_EXPIRATION_HOURS)
     
     # Store the reset token and expiry in MongoDB

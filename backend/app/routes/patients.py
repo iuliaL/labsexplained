@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Literal, Optional
+from datetime import timedelta
 from app.services.fhir import create_fhir_patient, delete_fhir_patient, remove_all_observations_for_patient
 from app.models.patient import store_patient, Patient, get_patients as get_patients_from_db, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db, search_patient_by_email
 from app.utils.auth import create_access_token, admin_required, set_password
@@ -54,8 +55,10 @@ async def register_patient(patient: PatientRegister):
     except HTTPException as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
     
-    # Generate a JWT token for the patient
-    token = create_access_token(data={"sub": patient.email, "role": "admin" if patient.is_admin else "patient"})
+    # Generate a JWT token for the patient that expires in 1 hour
+    ACCESS_TOKEN_EXPIRATION_HOURS = 1
+    token = create_access_token(data={"sub": patient.email, "role": "admin" if patient.is_admin else "patient"},
+                                expires_delta=timedelta(hours=ACCESS_TOKEN_EXPIRATION_HOURS))
 
     return {
         "message": "Patient registered successfully",
