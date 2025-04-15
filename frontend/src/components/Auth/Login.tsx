@@ -25,7 +25,9 @@ export default function Login() {
 
     try {
       const response = await authService.login(formData.email, formData.password);
-      if (response.fhir_id) {
+      if (response.role === "admin") {
+        navigate("/admin/patients");
+      } else if (response.fhir_id) {
         navigate(`/patient/${response.fhir_id}`);
       } else {
         setError("An error occurred during login. Please try again.");

@@ -139,9 +139,9 @@ export function PatientDashboard() {
     setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
-      await authService.logout();
+      authService.logout();
       navigate("/login");
     } catch (err) {
       console.error("Logout failed:", err);

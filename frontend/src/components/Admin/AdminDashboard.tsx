@@ -1,35 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { adminService } from "../../services/admin";
+import { adminService, PatientsResponse, PaginationMetadata, Patient } from "../../services/admin";
 import { authService } from "../../services/auth";
 import { formatDate } from "../../utils/dateFormatter";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { Pagination } from "../ui/Pagination";
-
-interface Patient {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  birth_date: string;
-  gender: string;
-  fhir_id: string;
-  lab_test_count: number;
-  interpreted_count: number;
-}
-
-interface PaginationMetadata {
-  total: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
-}
-
-interface PatientsResponse {
-  message: string;
-  patients: Patient[];
-  pagination: PaginationMetadata;
-}
 
 export function AdminDashboard() {
   const navigate = useNavigate();
@@ -97,9 +72,9 @@ export function AdminDashboard() {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
-      await authService.logout();
+      authService.logout();
       navigate("/login");
     } catch (err) {
       console.error("Logout failed:", err);
@@ -159,7 +134,7 @@ export function AdminDashboard() {
 
       <div className="grid gap-4">
         {patients.map((patient) => (
-          <div key={patient.id} className="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+          <div key={patient.fhir_id} className="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <div>
@@ -167,12 +142,18 @@ export function AdminDashboard() {
                     {patient.first_name} {patient.last_name}
                   </h2>
                   <div className="flex items-center gap-4 mt-1">
-                    <span className="text-sm text-slate-500"><b>User:</b> {patient.email}</span>
-                    <span className="text-sm text-slate-500"><b>Born:</b> {formatDate(patient.birth_date)}</span>
+                    <span className="text-sm text-slate-500">
+                      <b>User:</b> {patient.email}
+                    </span>
+                    <span className="text-sm text-slate-500">
+                      <b>Born:</b> {formatDate(patient.birth_date)}
+                    </span>
                     <span className="text-sm text-slate-500">
                       <b>Gender:</b> {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}
                     </span>
-                    <span className="text-sm text-slate-500"><b>FHIR ID:</b> {patient.fhir_id}</span>
+                    <span className="text-sm text-slate-500">
+                      <b>FHIR ID:</b> {patient.fhir_id}
+                    </span>
                     <div className="flex items-center gap-2">
                       <span className="px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 rounded-full">
                         {patient.lab_test_count} Lab Tests

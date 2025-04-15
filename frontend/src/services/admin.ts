@@ -2,6 +2,7 @@ import { authService } from "./auth";
 
 export interface Patient {
   id: string;
+  email: string;
   first_name: string;
   last_name: string;
   birth_date: string;
@@ -39,7 +40,7 @@ export interface Observation {
   }>;
 }
 
-interface PaginationMetadata {
+export interface PaginationMetadata {
   total: number;
   page: number;
   page_size: number;
@@ -51,9 +52,10 @@ interface LabTestsResponse {
   pagination: PaginationMetadata;
 }
 
-interface PatientsResponse {
+export interface PatientsResponse {
   message: string;
   patients: Patient[];
+  pagination: PaginationMetadata;
 }
 
 interface CreatePatientRequest {
@@ -72,10 +74,10 @@ if (!process.env.REACT_APP_API_BASE_URL) {
 }
 
 // Helper function to get headers with auth token
-const headers =  {
-    "Content-Type": "application/json",
-    ...(authService.getAuthToken() ? { Authorization: `Bearer ${authService.getAuthToken()}` } : {}),
-  };
+const headers = {
+  "Content-Type": "application/json",
+  ...(authService.getAuthToken() ? { Authorization: `Bearer ${authService.getAuthToken()}` } : {}),
+};
 
 export const adminService = {
   async getPatients(page: number = 1, pageSize: number = 10): Promise<PatientsResponse> {
@@ -102,12 +104,9 @@ export const adminService = {
   },
 
   async getPatientLabTests(fhirId: string, page: number = 1, pageSize: number = 5): Promise<LabTestsResponse> {
-    const response = await fetch(
-      `${API_BASE_URL}/lab_set/${fhirId}?page=${page}&page_size=${pageSize}`,
-      {
-        headers,
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/lab_set/${fhirId}?page=${page}&page_size=${pageSize}`, {
+      headers,
+    });
     if (!response.ok) {
       throw new Error("Failed to fetch lab tests");
     }
@@ -185,7 +184,7 @@ export const adminService = {
   async deleteLabTestSet(labTestSetId: string): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/lab_set/${labTestSetId}`, {
       method: "DELETE",
-      headers
+      headers,
     });
 
     if (!response.ok) {

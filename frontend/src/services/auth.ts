@@ -1,7 +1,8 @@
 interface LoginResponse {
-  fhir_id: string;
-  token: string;
+  access_token: string;
   token_type: string;
+  fhir_id?: string;
+  role?: string;
 }
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
@@ -84,7 +85,7 @@ export const authService = {
     }
   },
 
-  async logout(): Promise<void> {
+  logout(): void {
     try {
       const token = getAuthToken();
       if (!token) return;
