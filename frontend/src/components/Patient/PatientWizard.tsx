@@ -7,6 +7,7 @@ import { WelcomeStep } from "./WelcomeStep";
 import { EmailStep } from "./EmailStep";
 import Container from "../ui/Container";
 import { adminService } from "../../services/admin";
+import { authService } from "../../services/auth";
 
 type Step = "welcome" | "email" | "name" | "demographics" | "upload";
 
@@ -135,7 +136,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
 
     try {
       // Check if email exists
-      const emailExists = await adminService.checkEmailExists(patientData.email);
+      const emailExists = await authService.checkEmailExists(patientData.email);
 
       if (emailExists) {
         setError("Email already exists. Please log in instead.");

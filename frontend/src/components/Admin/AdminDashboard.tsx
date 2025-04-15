@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminService } from "../../services/admin";
+import { authService } from "../../services/auth";
 import { formatDate } from "../../utils/dateFormatter";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { Pagination } from "../ui/Pagination";
@@ -94,6 +95,15 @@ export function AdminDashboard() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -112,14 +122,37 @@ export function AdminDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Patients</h1>
-        <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full ring-1 ring-blue-700/10">
-          {pagination.total} total
-        </span>
-        {pagination.total > pagination.page_size && (
-          <span className="text-sm text-slate-500">(showing {pagination.page_size} per page)</span>
-        )}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-slate-900">Patients</h1>
+          <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full ring-1 ring-blue-700/10">
+            {pagination.total} total
+          </span>
+          {pagination.total > pagination.page_size && (
+            <span className="text-sm text-slate-500">(showing {pagination.page_size} per page)</span>
+          )}
+        </div>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Logout
+        </button>
       </div>
 
       <div className="grid gap-4">

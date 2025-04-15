@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { adminService, Patient, LabTestSet } from "../../services/admin";
+import { authService } from "../../services/auth";
 import { formatDate } from "../../utils/dateFormatter";
 import { UserIcon } from "../icons/UserIcon";
 import { LabTestIcon } from "../icons/LabTestIcon";
@@ -33,8 +34,9 @@ interface PaginationMetadata {
   total_pages: number;
 }
 
-export function PatientDashboard() {
+export function PatientDashboard() {  
   const { fhirId } = useParams<{ fhirId: string }>();
+  const navigate = useNavigate();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [labTestSets, setLabTestSets] = useState<LabTestSet[]>([]);
   const [observations, setObservations] = useState<Record<string, Observation[]>>({});
@@ -136,6 +138,15 @@ export function PatientDashboard() {
     setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
+
   // Load initial data
   useEffect(() => {
     if (!fhirId) return;
@@ -230,23 +241,48 @@ export function PatientDashboard() {
 
           {/* Content */}
           <div className="p-6 relative z-10">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <UserIcon className="h-12 w-12 text-gray-600" />
-              </div>
-              <div className="flex-1">
-                <h1 className="text-2xl font-semibold text-slate-900">
-                  Welcome, {patient?.first_name.toUpperCase()} {patient?.last_name.toUpperCase()}
-                </h1>
-                <div className="text-sm font-medium text-blue-600 mt-1">
-                  {patient ? calculateAge(patient.birth_date) : "--"}
+            <div className="flex items-start justify-between">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <UserIcon className="h-12 w-12 text-gray-600" />
                 </div>
-                <br></br>
-                <p className="text-xl text-slate-600 mt-2">Here are your lab test results and their interpretations</p>
-                <div className="text-sm text-slate-500 mt-2">
-                  Last updated: {formatDate(lastUpdated.toISOString(), "DD.MM.YYYY HH:mm")}
+                <div className="flex-1">
+                  <h1 className="text-2xl font-semibold text-slate-900">
+                    Welcome, {patient?.first_name.toUpperCase()} {patient?.last_name.toUpperCase()}
+                  </h1>
+                  <div className="text-sm font-medium text-blue-600 mt-1">
+                    {patient ? calculateAge(patient.birth_date) : "--"}
+                  </div>
+                  <br></br>
+                  <p className="text-xl text-slate-600 mt-2">
+                    Here are your lab test results and their interpretations
+                  </p>
+                  <div className="text-sm text-slate-500 mt-2">
+                    Last updated: {formatDate(lastUpdated.toISOString(), "DD.MM.YYYY HH:mm")}
+                  </div>
                 </div>
               </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Logout
+              </button>
             </div>
           </div>
 
@@ -296,7 +332,7 @@ export function PatientDashboard() {
           {labTestSets.length === 0 ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <p className="text-lg text-slate-600">No lab tests available yet</p>
-              <p className="text-sm text-slate-500 mt-2">Check back later for your test results</p>
+              <p className="text-sm text-slate-500 mt-2">Upload your test results for interpretation</p>
             </div>
           ) : (
             <>

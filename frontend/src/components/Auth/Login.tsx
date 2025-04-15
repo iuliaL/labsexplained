@@ -1,8 +1,8 @@
 import { Input } from "../ui/Input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { adminService } from "../../services/admin";
 import Container from "../ui/Container";
+import { authService } from "../../services/auth";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export default function Login() {
     setError(undefined);
 
     try {
-      const response = await adminService.login(formData.email, formData.password);
+      const response = await authService.login(formData.email, formData.password);
       if (response.fhir_id) {
         navigate(`/patient/${response.fhir_id}`);
       } else {

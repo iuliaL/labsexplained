@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import Container from "../ui/Container";
 import { PasswordRequirements } from "../ui/PasswordRequirements";
 import { passwordRegex } from "../../utils/regexes";
-
+import { authService } from "../../services/auth";
 export function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -44,28 +44,12 @@ export function ResetPassword() {
     setError(undefined);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/auth/reset-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token,
-          new_password: formData.newPassword,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Failed to reset password");
-      }
-
+      await authService.resetPassword(token, formData.newPassword);
       setSuccess(true);
-      // Navigate to login page after 3 seconds
+      // Navigate to login page after 5 seconds
       setTimeout(() => {
         navigate("/login");
-      }, 3000);
+      }, 5000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred. Please try again.");
     } finally {

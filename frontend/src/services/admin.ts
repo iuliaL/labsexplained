@@ -1,3 +1,5 @@
+import { authService } from "./auth";
+
 export interface Patient {
   id: string;
   first_name: string;
@@ -63,20 +65,23 @@ interface CreatePatientRequest {
   gender: string;
 }
 
-interface LoginResponse {
-  fhir_id: string;
-  token: string;
-}
-
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
 
 if (!process.env.REACT_APP_API_BASE_URL) {
   console.warn("REACT_APP_API_BASE_URL is not defined in environment variables. Using fallback: http://localhost:8000");
 }
 
+// Helper function to get headers with auth token
+const headers =  {
+    "Content-Type": "application/json",
+    ...(authService.getAuthToken() ? { Authorization: `Bearer ${authService.getAuthToken()}` } : {}),
+  };
+
 export const adminService = {
   async getPatients(page: number = 1, pageSize: number = 10): Promise<PatientsResponse> {
-    const response = await fetch(`${API_BASE_URL}/patients?page=${page}&page_size=${pageSize}`);
+    const response = await fetch(`${API_BASE_URL}/patients?page=${page}&page_size=${pageSize}`, {
+      headers,
+    });
     if (!response.ok) {
       throw new Error("Failed to fetch patients");
     }
@@ -85,9 +90,7 @@ export const adminService = {
 
   async getPatient(fhirId: string): Promise<Patient> {
     const response = await fetch(`${API_BASE_URL}/patients/${fhirId}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
     });
 
     if (!response.ok) {
@@ -99,7 +102,12 @@ export const adminService = {
   },
 
   async getPatientLabTests(fhirId: string, page: number = 1, pageSize: number = 5): Promise<LabTestsResponse> {
-    const response = await fetch(`${API_BASE_URL}/lab_set/${fhirId}?page=${page}&page_size=${pageSize}`);
+    const response = await fetch(
+      `${API_BASE_URL}/lab_set/${fhirId}?page=${page}&page_size=${pageSize}`,
+      {
+        headers,
+      }
+    );
     if (!response.ok) {
       throw new Error("Failed to fetch lab tests");
     }
@@ -108,9 +116,7 @@ export const adminService = {
 
   async getLabSetObservations(observationId: string): Promise<Observation[]> {
     const response = await fetch(`${API_BASE_URL}/observations/${observationId}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
     });
 
     if (!response.ok) {
@@ -124,9 +130,7 @@ export const adminService = {
   async interpretLabTestSet(labTestSetId: string): Promise<{ interpretation: string }> {
     const response = await fetch(`${API_BASE_URL}/lab_set/${labTestSetId}/interpret`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
     });
 
     if (!response.ok) {
@@ -168,6 +172,7 @@ export const adminService = {
     const response = await fetch(`${API_BASE_URL}/lab_set`, {
       method: "POST",
       body: formData,
+      headers,
     });
 
     if (!response.ok) {
@@ -180,9 +185,7 @@ export const adminService = {
   async deleteLabTestSet(labTestSetId: string): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/lab_set/${labTestSetId}`, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers
     });
 
     if (!response.ok) {
@@ -193,9 +196,7 @@ export const adminService = {
   async deletePatient(fhirId: string): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/patients/${fhirId}`, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
     });
 
     if (!response.ok) {
@@ -209,93 +210,5 @@ export const adminService = {
         `Failed to delete patient: ${response.status} ${response.statusText}${errorData ? ` - ${errorData}` : ""}`
       );
     }
-  },
-
-  async checkEmailExists(email: string): Promise<boolean> {
-    const response = await fetch(`${API_BASE_URL}/auth/check-email?email=${email}`);
-
-    if (!response.ok) {
-      throw new Error("Failed to check email");
-    }
-
-    const data = await response.json();
-    return data.exists;
-  },
-
-  async login(email: string, password: string): Promise<LoginResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          // For 401, we know the server sends the error in data.detail
-          throw new Error("Invalid email or password. Please try again.");
-        }
-
-        // For other errors
-        if (typeof data === "object" && data.detail) {
-          throw new Error(data.detail);
-        } else throw new Error("An error occurred while trying to log in. Please try again later.");
-      }
-
-      return data;
-    } catch (error) {
-      // If it's our error with a specific message, rethrow it
-      if (error instanceof Error) {
-        throw error;
-      }
-      // For unexpected errors
-      throw new Error("An unexpected error occurred. Please try again later.");
-    }
-  },
-
-  async requestPasswordReset(email: string): Promise<{ message: string }> {
-    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      if (typeof data === "object" && data.detail) {
-        throw new Error(data.detail);
-      }
-      throw new Error("Failed to process password reset request. Please try again later.");
-    }
-
-    return data;
-  },
-
-  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
-    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ token, new_password: newPassword }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      if (typeof data === "object" && data.detail) {
-        throw new Error(data.detail);
-      }
-      throw new Error("Failed to reset password. Please try again later.");
-    }
-
-    return data;
   },
 };
