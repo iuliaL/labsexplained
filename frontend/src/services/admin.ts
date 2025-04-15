@@ -74,7 +74,7 @@ if (!process.env.REACT_APP_API_BASE_URL) {
 }
 
 // Helper function to get headers with auth token
-const getHeaders = () =>(  {
+const getHeaders = () => ({
   "Content-Type": "application/json",
   ...(authService.getAuthToken() ? { Authorization: `Bearer ${authService.getAuthToken()}` } : {}),
 });
