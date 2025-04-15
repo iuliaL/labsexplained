@@ -67,6 +67,12 @@ interface CreatePatientRequest {
   gender: string;
 }
 
+interface CreatePatientResponse {
+  fhir_id: string;
+  message: string;
+  token: string;
+}
+
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
 
 if (!process.env.REACT_APP_API_BASE_URL) {
@@ -149,7 +155,7 @@ export const adminService = {
     return await response.json();
   },
 
-  async createPatient(patientData: CreatePatientRequest): Promise<{ fhir_id: string; message: string }> {
+  async createPatient(patientData: CreatePatientRequest): Promise<CreatePatientResponse> {
     const response = await fetch(`${API_BASE_URL}/patients`, {
       method: "POST",
       headers: {
@@ -169,7 +175,12 @@ export const adminService = {
       throw new Error("Failed to create patient");
     }
 
-    return await response.json();
+    const data = await response.json();
+    // Store the token in cookies using authService
+    if (data.token) {
+      authService.setAuthToken(data.token);
+    }
+    return data;
   },
 
   async uploadLabTestSet(patientFhirId: string, testDate: string, file: File): Promise<LabTestSet> {

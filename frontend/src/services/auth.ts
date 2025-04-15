@@ -36,6 +36,7 @@ const removeAuthToken = () => {
 
 export const authService = {
   getAuthToken,
+  setAuthToken,
 
   async checkEmailExists(email: string): Promise<boolean> {
     const response = await fetch(`${API_BASE_URL}/auth/check-email?email=${email}`);
@@ -90,7 +91,7 @@ export const authService = {
       const token = getAuthToken();
       if (!token) return;
       // Remove the token from cookies
-    	removeAuthToken();
+      removeAuthToken();
     } catch (error) {
       console.error("Error during logout:", error);
       removeAuthToken();
