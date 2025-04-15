@@ -74,10 +74,20 @@ if (!process.env.REACT_APP_API_BASE_URL) {
 }
 
 // Helper function to get headers with auth token
-const getHeaders = () => ({
-  "Content-Type": "application/json",
-  ...(authService.getAuthToken() ? { Authorization: `Bearer ${authService.getAuthToken()}` } : {}),
-});
+const getHeaders = (isFormData: boolean = false) => {
+  const headers: Record<string, string> = {};
+
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const token = authService.getAuthToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  return headers;
+};
 
 export const adminService = {
   async getPatients(page: number = 1, pageSize: number = 10): Promise<PatientsResponse> {
@@ -171,7 +181,7 @@ export const adminService = {
     const response = await fetch(`${API_BASE_URL}/lab_set`, {
       method: "POST",
       body: formData,
-      headers: getHeaders(),
+      headers: getHeaders(true), // Pass true for FormData
     });
 
     if (!response.ok) {
