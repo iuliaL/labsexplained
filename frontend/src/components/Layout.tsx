@@ -5,8 +5,8 @@ import { PatientDashboard } from "./Patient/PatientDashboard";
 import { AdminDashboard } from "./Admin/AdminDashboard";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PatientDetails } from "./Admin/PatientDetails";
-import { ResetPassword } from "./Patient/ResetPassword";
-
+import { ResetPassword } from "./Auth/ResetPassword";
+import Login from "./Auth/Login";
 export default function Layout() {
   return (
     <BrowserRouter>
@@ -23,6 +23,7 @@ export default function Layout() {
 
         {/* Auth */}
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/login" element={<Login />} />
 
         {/* Protected Routes */}
         <Route

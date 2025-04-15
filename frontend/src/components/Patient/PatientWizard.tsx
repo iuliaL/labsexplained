@@ -5,7 +5,6 @@ import { DemographicsStep } from "./DemographicsStep";
 import { UploadStep } from "./UploadStep";
 import { WelcomeStep } from "./WelcomeStep";
 import { EmailStep } from "./EmailStep";
-import { Login } from "./Login";
 import doctorImage from "../../assets/supawork-medic.png";
 import { UserIcon } from "../icons/UserIcon";
 import { adminService } from "../../services/admin";
@@ -31,7 +30,6 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
   const navigate = useNavigate();
   const { fhirId } = useParams<{ fhirId: string }>();
   const [currentStep, setCurrentStep] = useState<Step>(initialStep);
-  const [isLoginMode, setIsLoginMode] = useState(false);
   const [patientData, setPatientData] = useState<PatientData>({
     email: "",
     password: "",
@@ -141,7 +139,6 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
       const emailExists = await adminService.checkEmailExists(patientData.email);
 
       if (emailExists) {
-        setIsLoginMode(true);
         setError("Email already exists. Please log in instead.");
       } else {
         nextStep();
@@ -149,25 +146,6 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
     } catch (err) {
       console.error("Error checking email:", err);
       setError("An error occurred while checking your email. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogin = async () => {
-    setLoading(true);
-    setError(null);
-    const genericLoginError = "An error occurred during login. Please try again.";
-
-    try {
-      const response = await adminService.login(patientData.email, patientData.password);
-      if (response.fhir_id) {
-        navigate(`/patient/${response.fhir_id}`);
-      } else {
-        setError(genericLoginError);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : genericLoginError);
     } finally {
       setLoading(false);
     }
@@ -288,25 +266,14 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
 
             {/* Steps */}
             {currentStep === "welcome" && <WelcomeStep onNext={nextStep} />}
-            {currentStep === "email" && !isLoginMode && (
+            {currentStep === "email" && (
               <EmailStep
                 email={patientData.email}
                 password={patientData.password}
                 onChange={(data) => setPatientData({ ...patientData, ...data })}
                 onNext={handleEmailSubmit}
-                onLogin={() => setIsLoginMode(true)}
+                onLogin={() => navigate("/login")}
                 error={error || undefined}
-              />
-            )}
-            {currentStep === "email" && isLoginMode && (
-              <Login
-                email={patientData.email}
-                password={patientData.password}
-                onChange={(data) => setPatientData({ ...patientData, ...data })}
-                onSubmit={handleLogin}
-                onBack={() => setIsLoginMode(false)}
-                error={error || undefined}
-                loading={loading}
               />
             )}
             {currentStep === "name" && (

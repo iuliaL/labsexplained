@@ -4,6 +4,44 @@ import { Input } from "../ui/Input";
 import { UserIcon } from "../icons/UserIcon";
 import doctorImage from "../../assets/supawork-medic.png";
 
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+interface PasswordRequirementsProps {
+  password: string;
+}
+
+function PasswordRequirements({ password }: PasswordRequirementsProps) {
+  const requirements = [
+    { regex: /.{8,}/, text: "At least 8 characters" },
+    { regex: /[A-Z]/, text: "At least one uppercase letter" },
+    { regex: /[a-z]/, text: "At least one lowercase letter" },
+    { regex: /[0-9]/, text: "At least one number" },
+    { regex: /[@$!%*?&]/, text: "At least one special character (@$!%*?&)" },
+  ];
+
+  return (
+    <div className="mt-2 space-y-1">
+      {requirements.map((req, index) => (
+        <div key={index} className="flex items-center text-sm">
+          <svg
+            className={`w-4 h-4 mr-2 ${req.regex.test(password) ? "text-green-500" : "text-red-500"}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            {req.regex.test(password) ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            )}
+          </svg>
+          <span className={req.regex.test(password) ? "text-green-700" : "text-red-700"}>{req.text}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -15,6 +53,7 @@ export function ResetPassword() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async () => {
     if (formData.newPassword !== formData.confirmPassword) {
@@ -22,8 +61,8 @@ export function ResetPassword() {
       return;
     }
 
-    if (!formData.newPassword) {
-      setError("Please enter a new password");
+    if (!passwordRegex.test(formData.newPassword)) {
+      setError("Please ensure your password meets all requirements");
       return;
     }
 
@@ -48,14 +87,48 @@ export function ResetPassword() {
         throw new Error(data.detail || "Failed to reset password");
       }
 
-      // Navigate to login page
-      navigate("/wizard/email");
+      setSuccess(true);
+      // Navigate to login page after 3 seconds
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex">
+        <div className="w-full lg:w-1/2 relative z-10 flex items-center justify-center px-4 sm:px-6 py-6">
+          <div className="w-full max-w-md">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6">
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                  <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="mt-3 text-lg font-medium text-gray-900">Password reset successful!</h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  Your password has been reset successfully. You will be redirected to the login page in a few
+                  seconds...
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="hidden lg:block w-1/2 relative bg-slate-50">
+          <div className="absolute inset-0">
+            <img src={doctorImage} alt="Medical Professional" className="h-full w-full object-cover object-center" />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-50/80 to-transparent pointer-events-none" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -102,6 +175,7 @@ export function ResetPassword() {
                   required
                   disabled={loading}
                 />
+                <PasswordRequirements password={formData.newPassword} />
                 <Input
                   id="confirmPassword"
                   label="Confirm Password"
@@ -151,7 +225,7 @@ export function ResetPassword() {
                   )}
                 </button>
                 <button
-                  onClick={() => navigate("/wizard/email")}
+                  onClick={() => navigate("/login")}
                   className="w-full flex justify-center py-2 px-4 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Back to Login
