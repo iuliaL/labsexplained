@@ -74,15 +74,15 @@ if (!process.env.REACT_APP_API_BASE_URL) {
 }
 
 // Helper function to get headers with auth token
-const headers = {
+const getHeaders = () =>(  {
   "Content-Type": "application/json",
   ...(authService.getAuthToken() ? { Authorization: `Bearer ${authService.getAuthToken()}` } : {}),
-};
+});
 
 export const adminService = {
   async getPatients(page: number = 1, pageSize: number = 10): Promise<PatientsResponse> {
     const response = await fetch(`${API_BASE_URL}/patients?page=${page}&page_size=${pageSize}`, {
-      headers,
+      headers: getHeaders(),
     });
     if (!response.ok) {
       throw new Error("Failed to fetch patients");
@@ -92,7 +92,7 @@ export const adminService = {
 
   async getPatient(fhirId: string): Promise<Patient> {
     const response = await fetch(`${API_BASE_URL}/patients/${fhirId}`, {
-      headers,
+      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -105,7 +105,7 @@ export const adminService = {
 
   async getPatientLabTests(fhirId: string, page: number = 1, pageSize: number = 5): Promise<LabTestsResponse> {
     const response = await fetch(`${API_BASE_URL}/lab_set/${fhirId}?page=${page}&page_size=${pageSize}`, {
-      headers,
+      headers: getHeaders(),
     });
     if (!response.ok) {
       throw new Error("Failed to fetch lab tests");
@@ -115,7 +115,7 @@ export const adminService = {
 
   async getLabSetObservations(observationId: string): Promise<Observation[]> {
     const response = await fetch(`${API_BASE_URL}/observations/${observationId}`, {
-      headers,
+      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -129,7 +129,7 @@ export const adminService = {
   async interpretLabTestSet(labTestSetId: string): Promise<{ interpretation: string }> {
     const response = await fetch(`${API_BASE_URL}/lab_set/${labTestSetId}/interpret`, {
       method: "POST",
-      headers,
+      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -171,7 +171,7 @@ export const adminService = {
     const response = await fetch(`${API_BASE_URL}/lab_set`, {
       method: "POST",
       body: formData,
-      headers,
+      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -184,7 +184,7 @@ export const adminService = {
   async deleteLabTestSet(labTestSetId: string): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/lab_set/${labTestSetId}`, {
       method: "DELETE",
-      headers,
+      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -195,7 +195,7 @@ export const adminService = {
   async deletePatient(fhirId: string): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/patients/${fhirId}`, {
       method: "DELETE",
-      headers,
+      headers: getHeaders(),
     });
 
     if (!response.ok) {

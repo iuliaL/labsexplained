@@ -90,10 +90,9 @@ export const authService = {
       const token = getAuthToken();
       if (!token) return;
       // Remove the token from cookies
-      removeAuthToken();
+    	removeAuthToken();
     } catch (error) {
       console.error("Error during logout:", error);
-      // Even if the server request fails, we still want to clear the token
       removeAuthToken();
     }
   },

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { adminService, PatientsResponse, PaginationMetadata, Patient } from "../../services/admin";
+import { adminService, PaginationMetadata, Patient } from "../../services/admin";
 import { authService } from "../../services/auth";
 import { formatDate } from "../../utils/dateFormatter";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
@@ -30,7 +30,7 @@ export function AdminDashboard() {
   const fetchPatients = async (page: number) => {
     try {
       setLoading(true);
-      const response = (await adminService.getPatients(page, pagination.page_size)) as PatientsResponse;
+      const response = await adminService.getPatients(page, pagination.page_size);
       setPatients(response.patients);
       setPagination(response.pagination);
     } catch (err) {
@@ -75,7 +75,10 @@ export function AdminDashboard() {
   const handleLogout = () => {
     try {
       authService.logout();
-      navigate("/login");
+      // Delay navigation to ensure cookie removal is handled first
+      setTimeout(() => {
+        navigate("/login");
+      }, 100);  // Delay to give enough time for cookie removal
     } catch (err) {
       console.error("Logout failed:", err);
     }

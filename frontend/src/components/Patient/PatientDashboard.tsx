@@ -142,7 +142,10 @@ export function PatientDashboard() {
   const handleLogout = () => {
     try {
       authService.logout();
-      navigate("/login");
+      // Delay navigation to ensure cookie removal is handled first
+      setTimeout(() => {
+        navigate("/login");
+      }, 100);  // Delay to give enough time for cookie removal
     } catch (err) {
       console.error("Logout failed:", err);
     }
