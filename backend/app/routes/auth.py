@@ -71,7 +71,12 @@ async def forgot_password(request: ForgotPasswordRequest):
     
     # Send the reset email
     reset_link = f"{os.getenv('FRONTEND_URL')}/reset-password?token={reset_token}"
-    send_password_reset_email(to_email=request.email, reset_link=reset_link)
+    try:
+        # Send the reset email
+        send_password_reset_email(to_email=request.email, reset_link=reset_link)
+    except Exception as e:
+        # If email sending fails, raise a 500 error
+        raise HTTPException(status_code=500, detail=f"Failed to send password reset email: {str(e)}")
 
     return {
         "message": "If an account exists with this email, you will receive password reset instructions."

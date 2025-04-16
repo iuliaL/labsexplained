@@ -35,9 +35,14 @@ def send_password_reset_email(to_email: str, reset_link: str):
     try:
         # Send the request to Mailgun API
         response = requests.post(url, auth=auth, data=data)
+
         if response.status_code == 200:
             print(f"Password reset email sent to {to_email}")
         else:
-            print(f"Failed to send email: {response.status_code} - {response.text}")
+            # Raise an exception if Mailgun returns a non-200 status code
+            raise Exception(f"{response.status_code} - {response.text}")
+            
     except Exception as e:
         print(f"Error sending email: {e}")
+        # Raise the exception to notify the caller that something went wrong
+        raise Exception(e)
