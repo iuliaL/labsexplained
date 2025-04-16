@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import { authService } from "../../services/auth";
+import { emailRegex } from "../../utils/regexes";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -163,18 +164,25 @@ function ForgotPassword({ email, onEmailChange, onBack }: ForgotPasswordProps) {
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async () => {
+    // Reset error state
+    setError(undefined);
+
+    // Validate email format
     if (!email) {
       setError("Please enter your email address");
       return;
     }
 
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     setIsLoading(true);
-    setError(undefined);
 
     try {
       // Call the password reset endpoint
       await authService.requestPasswordReset(email);
-   
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred. Please try again.");
