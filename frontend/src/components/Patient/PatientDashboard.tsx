@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { adminService, Patient, LabTestSet } from "../../services/admin";
-import { authService } from "../../services/auth";
 import { formatDate } from "../../utils/dateFormatter";
 import { UserIcon } from "../icons/UserIcon";
 import { LabTestIcon } from "../icons/LabTestIcon";
@@ -38,7 +37,7 @@ interface PaginationMetadata {
 export function PatientDashboard() {
   const { fhirId } = useParams<{ fhirId: string }>();
   const navigate = useNavigate();
-  const { role } = useAuth();
+  const { role, logout } = useAuth();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [labTestSets, setLabTestSets] = useState<LabTestSet[]>([]);
   const [observations, setObservations] = useState<Record<string, Observation[]>>({});
@@ -143,7 +142,7 @@ export function PatientDashboard() {
 
   const handleLogout = () => {
     try {
-      authService.logout();
+      logout();
       // Delay navigation to ensure cookie removal is handled first
       setTimeout(() => {
         navigate("/login");

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminService, PaginationMetadata, Patient } from "../../services/admin";
-import { authService } from "../../services/auth";
 import { formatDate } from "../../utils/dateFormatter";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { Pagination } from "../ui/Pagination";
@@ -9,7 +8,7 @@ import { useAuth } from "../../contexts/AuthContext";
 
 export function AdminDashboard() {
   const navigate = useNavigate();
-  const { fhirId } = useAuth();
+  const { fhirId, logout } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +75,7 @@ export function AdminDashboard() {
 
   const handleLogout = () => {
     try {
-      authService.logout();
+      logout();
       // Delay navigation to ensure cookie removal is handled first
       setTimeout(() => {
         navigate("/login");
