@@ -4,9 +4,11 @@ import { useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import { authService } from "../../services/auth";
 import { emailRegex } from "../../utils/regexes";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -25,7 +27,8 @@ export default function Login() {
     setError(undefined);
 
     try {
-      const response = await authService.login(formData.email, formData.password);
+      const response = await login(formData.email, formData.password);
+
       if (response.role === "admin") {
         navigate("/admin/patients");
       } else if (response.fhir_id) {

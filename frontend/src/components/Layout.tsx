@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import PatientWizard from "./Patient/PatientWizard";
 import { PatientDashboard } from "./Patient/PatientDashboard";
 import { AdminDashboard } from "./Admin/AdminDashboard";
@@ -7,27 +7,21 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { PatientDetails } from "./Admin/PatientDetails";
 import { ResetPassword } from "./Auth/ResetPassword";
 import Login from "./Auth/Login";
+
 export default function Layout() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Wizard Steps */}
-        <Route path="/" element={<PatientWizard initialStep="welcome" />} />
-        <Route path="/wizard" element={<PatientWizard initialStep="welcome" />} />
+        {/* Public routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
         <Route path="/wizard/email" element={<PatientWizard initialStep="email" />} />
         <Route path="/wizard/name" element={<PatientWizard initialStep="name" />} />
         <Route path="/wizard/demographics" element={<PatientWizard initialStep="demographics" />} />
         <Route path="/wizard/upload" element={<PatientWizard initialStep="upload" />} />
-        <Route path="/wizard/upload/:fhirId" element={<PatientWizard initialStep="upload" />} />
 
-        {/* Patient Dashboard */}
-        <Route path="/patient/:fhirId" element={<PatientDashboard />} />
-
-        {/* Auth */}
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/login" element={<Login />} />
-
-        {/* Protected Routes */}
+        {/* Protected admin routes */}
         <Route
           path="/admin/patients"
           element={
@@ -44,6 +38,27 @@ export default function Layout() {
             </ProtectedRoute>
           }
         />
+
+        {/* Protected patient routes */}
+        <Route
+          path="/patient/:fhirId"
+          element={
+            <ProtectedRoute requiredRole="patient" validateFhirId>
+              <PatientDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/wizard/upload/:fhirId"
+          element={
+            <ProtectedRoute requiredRole="patient" validateFhirId>
+              <PatientWizard initialStep="upload" />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Default redirect */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );

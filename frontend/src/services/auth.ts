@@ -1,4 +1,4 @@
-interface LoginResponse {
+export interface LoginResponse {
   access_token: string;
   token_type: string;
   fhir_id?: string;
@@ -29,14 +29,57 @@ const setAuthToken = (token: string) => {
   document.cookie = `jwt=${token}; expires=${expires.toUTCString()}; path=/`;
 };
 
-// Helper function to remove the auth token from cookies
-const removeAuthToken = () => {
+
+
+// Helper function to get the role from cookies
+const getAuthRole = (): string | null => {
+  return (
+    document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("role="))
+      ?.split("=")[1] || null
+  );
+};
+
+// Helper function to get the FHIR ID from cookies
+const getAuthFhirId = (): string | null => {
+  return (
+    document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("fhir_id="))
+      ?.split("=")[1] || null
+  );
+};
+
+// Helper function to set the role in cookies
+const setAuthRole = (role: string) => {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + 60 * 60 * 1000); // 1 hour
+  document.cookie = `role=${role}; expires=${expires.toUTCString()}; path=/`;
+};
+
+// Helper function to set the FHIR ID in cookies
+const setAuthFhirId = (fhirId: string) => {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + 60 * 60 * 1000); // 1 hour
+  document.cookie = `fhir_id=${fhirId}; expires=${expires.toUTCString()}; path=/`;
+};
+
+// Helper function to remove auth data from cookies
+const removeAuthData = () => {
   document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie = "role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie = "fhir_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 };
 
 export const authService = {
   getAuthToken,
   setAuthToken,
+  getAuthRole,
+  getAuthFhirId,
+  setAuthRole,
+  setAuthFhirId,
+  removeAuthData,
 
   async checkEmailExists(email: string): Promise<boolean> {
     const response = await fetch(`${API_BASE_URL}/auth/check-email?email=${email}`);
@@ -63,38 +106,34 @@ export const authService = {
 
       if (!response.ok) {
         if (response.status === 401) {
-          // For 401, we know the server sends the error in data.detail
           throw new Error("Invalid email or password. Please try again.");
         }
-
-        // For other errors
         if (typeof data === "object" && data.detail) {
           throw new Error(data.detail);
-        } else throw new Error("An error occurred while trying to log in. Please try again later.");
+        }
+        throw new Error("An error occurred while trying to log in. Please try again later.");
       }
 
-      // Store the token in cookies
+      // Store all auth data in cookies
       setAuthToken(data.token);
+      if (data.role) setAuthRole(data.role);
+      if (data.fhir_id) setAuthFhirId(data.fhir_id);
+
       return data;
     } catch (error) {
-      // If it's our error with a specific message, rethrow it
       if (error instanceof Error) {
         throw error;
       }
-      // For unexpected errors
       throw new Error("An unexpected error occurred. Please try again later.");
     }
   },
 
   logout(): void {
     try {
-      const token = getAuthToken();
-      if (!token) return;
-      // Remove the token from cookies
-      removeAuthToken();
+      removeAuthData();
     } catch (error) {
       console.error("Error during logout:", error);
-      removeAuthToken();
+      removeAuthData();
     }
   },
 

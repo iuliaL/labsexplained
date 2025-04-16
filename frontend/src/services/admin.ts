@@ -178,6 +178,7 @@ export const adminService = {
     const data = await response.json();
     // Store the token in cookies using authService
     if (data.token) {
+      //TODO set the auth state (context), token, role, fhir_id
       authService.setAuthToken(data.token);
     }
     return data;
