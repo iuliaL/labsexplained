@@ -173,20 +173,8 @@ function ForgotPassword({ email, onEmailChange, onBack }: ForgotPasswordProps) {
 
     try {
       // Call the password reset endpoint
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/auth/forgot-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Failed to process request");
-      }
-
+      await authService.requestPasswordReset(email);
+   
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred. Please try again.");

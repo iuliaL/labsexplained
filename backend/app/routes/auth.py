@@ -2,8 +2,10 @@ from fastapi import APIRouter, HTTPException, Depends
 from app.models.patient import search_patient_by_email, assign_admin, update_reset_token, update_password, check_reset_token_expiration
 from pydantic import BaseModel
 from app.utils.auth import admin_required, verify_password, create_access_token, set_password
+from app.services.email_service import send_password_reset_email
 from datetime import datetime, timedelta, timezone
 import secrets
+import os
 
 router = APIRouter()
 
@@ -67,12 +69,12 @@ async def forgot_password(request: ForgotPasswordRequest):
     # Store the reset token and expiry in MongoDB
     update_reset_token(request.email, reset_token, expires_at)
     
-    # TODO: Send email with reset link
-    # For now, we'll just return the token (in production, this should be sent via email)
-    return {
-        "message": "If an account exists with this email, you will receive password reset instructions.",
+    # Send the reset email
+    reset_link = f"{os.getenv('FRONTEND_URL')}/reset-password?token={reset_token}"
+    send_password_reset_email(to_email=request.email, reset_link=reset_link)
 
-        "reset_link" : f"http://localhost:3000/reset-password?token={reset_token}" # Remove this in production
+    return {
+        "message": "If an account exists with this email, you will receive password reset instructions."
     }
 
 class ResetPasswordRequest(BaseModel):
