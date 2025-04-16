@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PatientWizard from "./Patient/PatientWizard";
 import { PatientDashboard } from "./Patient/PatientDashboard";
 import { AdminDashboard } from "./Admin/AdminDashboard";
@@ -7,6 +7,7 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { PatientDetails } from "./Admin/PatientDetails";
 import { ResetPassword } from "./Auth/ResetPassword";
 import Login from "./Auth/Login";
+import NotFound from "./NotFound";
 
 export default function Layout() {
   return (
@@ -57,8 +58,8 @@ export default function Layout() {
           }
         />
 
-        {/* Default redirect */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Not Found route */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

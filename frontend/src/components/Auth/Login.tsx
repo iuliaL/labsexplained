@@ -1,5 +1,5 @@
 import { Input } from "../ui/Input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import { authService } from "../../services/auth";
@@ -8,7 +8,7 @@ import { useAuth } from "../../contexts/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated, role, fhirId } = useAuth();
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -16,6 +16,17 @@ export default function Login() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
+
+  useEffect(() => {
+    // If user is already authenticated, redirect based on role
+    if (isAuthenticated) {
+      if (role === "admin") {
+        navigate("/admin/patients");
+      } else if (fhirId) {
+        navigate(`/patient/${fhirId}`);
+      }
+    }
+  }, [isAuthenticated, role, fhirId, navigate]);
 
   const handleLogin = async () => {
     if (!formData.email || !formData.password) {

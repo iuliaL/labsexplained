@@ -11,7 +11,6 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, requiredRole, validateFhirId = false }: ProtectedRouteProps) {
   const { isAuthenticated, role, fhirId } = useAuth();
   const params = useParams();
-
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
