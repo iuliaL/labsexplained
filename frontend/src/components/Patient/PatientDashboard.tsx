@@ -55,7 +55,7 @@ export function PatientDashboard() {
   const [pagination, setPagination] = useState<PaginationMetadata>({
     total: 0,
     page: 1,
-    page_size: 2,
+    page_size: 5,
     total_pages: 0,
   });
 
@@ -269,9 +269,9 @@ export function PatientDashboard() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                {role === 'admin' && (
+                {role === "admin" && (
                   <button
-                    onClick={() => navigate('/admin/patients')}
+                    onClick={() => navigate("/admin/patients")}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
                   >
                     <svg
@@ -288,7 +288,7 @@ export function PatientDashboard() {
                       <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
                       <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
                     </svg>
-                    Go to Admin Dashboard
+                    Admin Dashboard
                   </button>
                 )}
                 <button
@@ -356,7 +356,7 @@ export function PatientDashboard() {
                   clipRule="evenodd"
                 />
               </svg>
-              Upload more tests
+              Upload lab results
             </Link>
           </div>
           {labTestSets.length === 0 ? (

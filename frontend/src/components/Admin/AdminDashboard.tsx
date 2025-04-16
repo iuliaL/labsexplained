@@ -20,7 +20,7 @@ export function AdminDashboard() {
   const [pagination, setPagination] = useState<PaginationMetadata>({
     total: 0,
     page: 1,
-    page_size: 2,
+    page_size: 10,
     total_pages: 0,
   });
 
@@ -134,7 +134,7 @@ export function AdminDashboard() {
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
-              Go to my patient dashboard
+              My patient dashboard
             </button>
           )}
           <button

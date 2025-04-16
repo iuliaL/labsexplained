@@ -29,8 +29,6 @@ const setAuthToken = (token: string) => {
   document.cookie = `jwt=${token}; expires=${expires.toUTCString()}; path=/`;
 };
 
-
-
 // Helper function to get the role from cookies
 const getAuthRole = (): string | null => {
   return (

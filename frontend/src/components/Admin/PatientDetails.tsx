@@ -21,7 +21,7 @@ export function PatientDetails() {
   const [pagination, setPagination] = useState<PaginationMetadata>({
     total: 0,
     page: 1,
-    page_size: 2,
+    page_size: 5,
     total_pages: 0,
   });
 

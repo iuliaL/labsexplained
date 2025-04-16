@@ -43,7 +43,7 @@ export default function Layout() {
         <Route
           path="/patient/:fhirId"
           element={
-            <ProtectedRoute requiredRole="patient" validateFhirId>
+            <ProtectedRoute validateFhirId>
               <PatientDashboard />
             </ProtectedRoute>
           }
@@ -51,7 +51,7 @@ export default function Layout() {
         <Route
           path="/wizard/upload/:fhirId"
           element={
-            <ProtectedRoute requiredRole="patient" validateFhirId>
+            <ProtectedRoute validateFhirId>
               <PatientWizard initialStep="upload" />
             </ProtectedRoute>
           }

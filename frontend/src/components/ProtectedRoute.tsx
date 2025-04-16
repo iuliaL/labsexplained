@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
   validateFhirId?: boolean;
 }
 
-export function ProtectedRoute({ children, requiredRole = "patient", validateFhirId = false }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, requiredRole, validateFhirId = false }: ProtectedRouteProps) {
   const { isAuthenticated, role, fhirId } = useAuth();
   const params = useParams();
 
@@ -16,6 +16,7 @@ export function ProtectedRoute({ children, requiredRole = "patient", validateFhi
     return <Navigate to="/login" replace />;
   }
 
+  // Only check role if requiredRole is specified
   if (requiredRole && role !== requiredRole) {
     return <Navigate to={role === "admin" ? "/admin/patients" : `/patient/${fhirId}`} replace />;
   }
