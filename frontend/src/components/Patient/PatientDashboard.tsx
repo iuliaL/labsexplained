@@ -258,9 +258,7 @@ export function PatientDashboard() {
                   <div className="text-sm font-medium text-blue-600 mt-1">
                     {patient ? calculateAge(patient.birth_date) : "--"}
                   </div>
-                  <div className="text-sm text-slate-500 mt-1">
-                    {patient?.email}
-                  </div>
+                  <div className="text-sm text-slate-500 mt-1">{patient?.email}</div>
                   <br></br>
                   <p className="text-xl text-slate-600 mt-2">
                     Here are your lab test results and their interpretations

@@ -70,7 +70,6 @@ interface CreatePatientRequest {
 interface CreatePatientResponse {
   fhir_id: string;
   message: string;
-  token: string;
 }
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
@@ -176,11 +175,6 @@ export const adminService = {
     }
 
     const data = await response.json();
-    // Store the token in cookies using authService
-    if (data.token) {
-      //TODO set the auth state (context), token, role, fhir_id
-      authService.setAuthToken(data.token);
-    }
     return data;
   },
 

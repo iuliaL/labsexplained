@@ -8,6 +8,7 @@ import { EmailStep } from "./EmailStep";
 import Container from "../ui/Container";
 import { adminService } from "../../services/admin";
 import { authService } from "../../services/auth";
+import { useAuth } from "../../contexts/AuthContext";
 
 type Step = "welcome" | "email" | "name" | "demographics" | "upload";
 
@@ -29,6 +30,7 @@ interface PatientWizardProps {
 export default function PatientWizard({ initialStep = "welcome" }: PatientWizardProps) {
   const navigate = useNavigate();
   const { fhirId } = useParams<{ fhirId: string }>();
+  const { login } = useAuth();
   const [currentStep, setCurrentStep] = useState<Step>(initialStep);
   const [patientData, setPatientData] = useState<PatientData>({
     email: "",
@@ -179,6 +181,9 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
           throw new Error("Patient creation succeeded but no FHIR ID was returned");
         }
 
+        // Update auth context with the new user's data
+        await login(patientData.email, patientData.password);
+
         console.log("Starting lab test upload for patient:", fhir_id);
         // Step 2: Upload the lab test set
         const uploadResponse = await adminService.uploadLabTestSet(
@@ -210,7 +215,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
     } finally {
       setLoading(false);
     }
-  };  
+  };
 
   return (
     <Container title="Your AI-Powered Lab Interpreter" subtitle="Get instant insights from your lab results">
