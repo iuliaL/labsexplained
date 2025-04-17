@@ -229,21 +229,7 @@ export function PatientDashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Header with curved edge */}
         <div className="bg-white rounded-lg shadow-sm mb-8 overflow-hidden relative">
-          {/* Curved shape on the right */}
-          <div className="absolute top-0 right-0 h-full w-1/2">
-            <div className="absolute inset-0 bg-gradient-to-l from-blue-50/80 to-white/20"></div>
-            <svg
-              className="absolute top-0 right-0 h-full w-32 text-white"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-              fill="currentColor"
-            >
-              <path d="M0 0 C 40 0 60 50 60 50 C 60 50 40 100 0 100 Z" />
-            </svg>
-          </div>
-
           {/* Content */}
           <div className="p-6 relative z-10">
             <div className="flex items-start justify-between">
