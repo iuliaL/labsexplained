@@ -32,8 +32,8 @@ export default function Container({ children, title, subtitle }: ContainerProps)
 
         <div className="w-full max-w-md">
           {/* Logo and Title */}
-          <div className="text-center mb-7">
-            <div className="h-8 w-8 mx-auto text-blue-600 mb-3">
+          <div className="text-center mb-5">
+            <div className="h-8 w-8 mx-auto text-blue-600 mb-2">
               <UserIcon className="w-full h-full" />
             </div>
             <h1 className="text-3xl font-bold text-slate-900">{title}</h1>
