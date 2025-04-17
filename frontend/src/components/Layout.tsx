@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import PatientWizard from "./Patient/PatientWizard";
 import { PatientDashboard } from "./Patient/PatientDashboard";
 import { AdminDashboard } from "./Admin/AdminDashboard";
@@ -13,10 +13,15 @@ export default function Layout() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Root route */}
+        <Route path="/" element={<Navigate to="/wizard" replace />} />
+
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
+        {/* Wizard routes */}
+        <Route path="/wizard" element={<PatientWizard initialStep="welcome" />} />
         <Route path="/wizard/email" element={<PatientWizard initialStep="email" />} />
         <Route path="/wizard/name" element={<PatientWizard initialStep="name" />} />
         <Route path="/wizard/demographics" element={<PatientWizard initialStep="demographics" />} />
