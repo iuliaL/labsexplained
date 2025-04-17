@@ -23,6 +23,13 @@ interface PatientData {
   testDate?: string;
 }
 
+interface ProcessingState {
+  createPatient: "pending" | "loading" | "completed" | "error";
+  uploadLabTest: "pending" | "loading" | "completed" | "error";
+  interpretResults: "pending" | "loading" | "completed" | "error";
+  error?: string;
+}
+
 interface PatientWizardProps {
   initialStep?: Step;
 }
@@ -42,6 +49,11 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [processingState, setProcessingState] = useState<ProcessingState>({
+    createPatient: "pending",
+    uploadLabTest: "pending",
+    interpretResults: "pending",
+  });
 
   useEffect(() => {
     // If we have a FHIR ID and we're on the upload step, fetch the patient's data
@@ -156,6 +168,11 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
+    setProcessingState({
+      createPatient: "loading",
+      uploadLabTest: "pending",
+      interpretResults: "pending",
+    });
 
     try {
       if (fhirId) {
@@ -163,14 +180,16 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
         if (!patientData.file || !patientData.testDate) {
           throw new Error("Please select a file and test date");
         }
+
+        setProcessingState((prev) => ({ ...prev, uploadLabTest: "loading" }));
         await adminService.uploadLabTestSet(fhirId, patientData.testDate, patientData.file);
+        setProcessingState((prev) => ({ ...prev, uploadLabTest: "completed" }));
+
         navigate(`/patient/${fhirId}`);
       } else {
         // Create a new patient and upload their first lab set
-        if (!patientData.email || !patientData.password || !patientData.firstName || !patientData.lastName || !patientData.dateOfBirth || !patientData.gender) {
-          throw new Error("Missing patient required fields");
-        }
-        const { fhir_id, message } = await adminService.createPatient({
+        setProcessingState((prev) => ({ ...prev, createPatient: "loading" }));
+        const { fhir_id } = await adminService.createPatient({
           email: patientData.email,
           password: patientData.password,
           firstName: patientData.firstName,
@@ -178,7 +197,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
           dateOfBirth: patientData.dateOfBirth,
           gender: patientData.gender,
         });
-        console.log("Patient created successfully:", { fhir_id, message });
+        setProcessingState((prev) => ({ ...prev, createPatient: "completed" }));
 
         if (!fhir_id) {
           throw new Error("Patient creation succeeded but no FHIR ID was returned");
@@ -187,27 +206,31 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
         // Update auth context with the new user's data
         await login(patientData.email, patientData.password);
 
-        console.log("Starting lab test upload for patient:", fhir_id);
-        // Step 2: Upload the lab test set
+        setProcessingState((prev) => ({ ...prev, uploadLabTest: "loading" }));
         const uploadResponse = await adminService.uploadLabTestSet(
           fhir_id,
           patientData.testDate || new Date().toISOString().split("T")[0],
           patientData.file!
         );
-        console.log("Lab test upload response:", uploadResponse);
+        setProcessingState((prev) => ({ ...prev, uploadLabTest: "completed" }));
 
         if (!uploadResponse?.id) {
           throw new Error("Lab test upload succeeded but no lab set ID was returned");
         }
 
-        console.log("Starting interpretation for lab set:", uploadResponse.id);
-        // Step 3: Generate interpretation
+        setProcessingState((prev) => ({ ...prev, interpretResults: "loading" }));
         await adminService.interpretLabTestSet(uploadResponse.id);
+        setProcessingState((prev) => ({ ...prev, interpretResults: "completed" }));
+
         // Navigate to the patient dashboard
         navigate(`/patient/${fhir_id}`);
       }
     } catch (err) {
       console.error("Error during process:", err);
+      setProcessingState((prev) => ({
+        ...prev,
+        error: err instanceof Error ? err.message : "An unexpected error occurred during the process",
+      }));
       if (err instanceof Error) {
         setError(err.message);
       } else if (typeof err === "object" && err !== null) {
@@ -219,6 +242,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
       setLoading(false);
     }
   };
+
 
   return (
     <Container title="Your AI-Powered Lab Interpreter" subtitle="Get instant insights from your lab results">
@@ -280,8 +304,9 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
           onSubmit={handleSubmit}
           initialDate={patientData.testDate}
           initialFile={patientData.file}
-          error={error || undefined}
           loading={loading}
+          error={error || undefined}
+          processingState={processingState}
         />
       )}
     </Container>

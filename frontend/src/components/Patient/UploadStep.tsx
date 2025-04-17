@@ -10,6 +10,12 @@ interface UploadStepProps {
   initialFile?: File | null;
   loading?: boolean;
   error?: string;
+  processingState?: {
+    createPatient: "pending" | "loading" | "completed" | "error";
+    uploadLabTest: "pending" | "loading" | "completed" | "error";
+    interpretResults: "pending" | "loading" | "completed" | "error";
+    error?: string;
+  };
 }
 
 export function UploadStep({
@@ -21,6 +27,7 @@ export function UploadStep({
   initialFile = null,
   loading = false,
   error = "",
+  processingState,
 }: UploadStepProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(initialFile);
   const [selectedDate, setSelectedDate] = useState<string>(initialDate);
@@ -65,6 +72,178 @@ export function UploadStep({
     const file = e.dataTransfer.files?.[0];
     if (file) handleFile(file);
   };
+
+  if (loading && processingState) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <h3 className="text-lg font-medium text-slate-900">Processing your lab results</h3>
+          <p className="text-sm text-slate-500">This may take a few moments</p>
+        </div>
+
+        <div className="space-y-4">
+          {/* Creating patient record */}
+          <div className="flex items-center space-x-3">
+            {processingState.createPatient === "completed" ? (
+              <div className="flex-shrink-0 h-5 w-5 text-green-500">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+            ) : processingState.createPatient === "loading" ? (
+              <div className="flex-shrink-0 h-5 w-5 text-blue-500">
+                <svg className="animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              </div>
+            ) : (
+              <div className="flex-shrink-0 h-5 w-5 text-slate-300">
+                <svg fill="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                </svg>
+              </div>
+            )}
+            <span
+              className={`text-sm ${
+                processingState.createPatient === "completed"
+                  ? "text-green-900"
+                  : processingState.createPatient === "loading"
+                  ? "text-blue-900"
+                  : "text-slate-500"
+              }`}
+            >
+              Creating patient record
+            </span>
+          </div>
+
+          {/* Uploading lab results */}
+          <div className="flex items-center space-x-3">
+            {processingState.uploadLabTest === "completed" ? (
+              <div className="flex-shrink-0 h-5 w-5 text-green-500">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+            ) : processingState.uploadLabTest === "loading" ? (
+              <div className="flex-shrink-0 h-5 w-5 text-blue-500">
+                <svg className="animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              </div>
+            ) : (
+              <div className="flex-shrink-0 h-5 w-5 text-slate-300">
+                <svg fill="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                </svg>
+              </div>
+            )}
+            <span
+              className={`text-sm ${
+                processingState.uploadLabTest === "completed"
+                  ? "text-green-900"
+                  : processingState.uploadLabTest === "loading"
+                  ? "text-blue-900"
+                  : "text-slate-500"
+              }`}
+            >
+              Uploading lab results
+            </span>
+          </div>
+
+          {/* Generating interpretation */}
+          <div className="flex items-center space-x-3">
+            {processingState.interpretResults === "completed" ? (
+              <div className="flex-shrink-0 h-5 w-5 text-green-500">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+            ) : processingState.interpretResults === "loading" ? (
+              <div className="flex-shrink-0 h-5 w-5 text-blue-500">
+                <svg className="animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              </div>
+            ) : (
+              <div className="flex-shrink-0 h-5 w-5 text-slate-300">
+                <svg fill="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                </svg>
+              </div>
+            )}
+            <span
+              className={`text-sm ${
+                processingState.interpretResults === "completed"
+                  ? "text-green-900"
+                  : processingState.interpretResults === "loading"
+                  ? "text-blue-900"
+                  : "text-slate-500"
+              }`}
+            >
+              Generating interpretation
+            </span>
+          </div>
+        </div>
+
+        {error && (
+          <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="font-medium">Error processing your request</p>
+                <p className="mt-1">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex-1 items-center px-4 py-2 border border-slate-300 rounded-lg shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -193,7 +372,25 @@ export function UploadStep({
         </div>
       </div>
 
-      {error && <div className="text-sm text-red-600 bg-red-50 p-2 rounded-md">{error}</div>}
+      {error && !loading && (
+        <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="font-medium">Error processing your request</p>
+              <p className="mt-1">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex space-x-4">
         <button
