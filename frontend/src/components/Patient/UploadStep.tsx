@@ -9,6 +9,7 @@ interface UploadStepProps {
   initialDate?: string;
   initialFile?: File | null;
   loading?: boolean;
+  error?: string;
 }
 
 export function UploadStep({
@@ -19,6 +20,7 @@ export function UploadStep({
   initialDate = "",
   initialFile = null,
   loading = false,
+  error = "",
 }: UploadStepProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(initialFile);
   const [selectedDate, setSelectedDate] = useState<string>(initialDate);
@@ -190,6 +192,8 @@ export function UploadStep({
           )}
         </div>
       </div>
+
+      {error && <div className="text-sm text-red-600 bg-red-50 p-2 rounded-md">{error}</div>}
 
       <div className="flex space-x-4">
         <button

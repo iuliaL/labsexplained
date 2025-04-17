@@ -167,6 +167,9 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
         navigate(`/patient/${fhirId}`);
       } else {
         // Create a new patient and upload their first lab set
+        if (!patientData.email || !patientData.password || !patientData.firstName || !patientData.lastName || !patientData.dateOfBirth || !patientData.gender) {
+          throw new Error("Missing patient required fields");
+        }
         const { fhir_id, message } = await adminService.createPatient({
           email: patientData.email,
           password: patientData.password,
@@ -277,6 +280,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
           onSubmit={handleSubmit}
           initialDate={patientData.testDate}
           initialFile={patientData.file}
+          error={error || undefined}
           loading={loading}
         />
       )}
