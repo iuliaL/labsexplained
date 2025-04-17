@@ -4,7 +4,7 @@ import { NameStep } from "./NameStep";
 import { DemographicsStep } from "./DemographicsStep";
 import { UploadStep } from "./UploadStep";
 import { WelcomeStep } from "./WelcomeStep";
-import { AccountStep } from "./EmailStep";
+import { AccountStep } from "./AccountStep";
 import Container from "../ui/Container";
 import { adminService } from "../../services/admin";
 import { authService } from "../../services/auth";
