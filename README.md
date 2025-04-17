@@ -90,7 +90,7 @@ FHIR-MedAI-Dashboard/
 - `DELETE /api/observations/{observation_id}` - Delete observation
 - `DELETE /api/observations/patient/{patient_fhir_id}` - Delete all patient observations
 
-For detailed API documentation, see [docs/api_documentation.md](docs/api_documentation.md)
+For detailed API documentation, see [docs](docs/api.md).
 
 ## 🚀 Getting Started
 
