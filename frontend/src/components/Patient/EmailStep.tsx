@@ -1,9 +1,9 @@
+import React from "react";
 import { Input } from "../ui/Input";
-import { useState } from "react";
 import { PasswordRequirements } from "../ui/PasswordRequirements";
 import { passwordRegex, emailRegex } from "../../utils/regexes";
 
-interface EmailStepProps {
+interface AccountStepProps {
   email: string;
   password: string;
   onChange: (data: { email: string; password: string }) => void;
@@ -12,8 +12,8 @@ interface EmailStepProps {
   error?: string;
 }
 
-export function EmailStep({ email, password, onChange, onNext, onLogin, error }: EmailStepProps) {
-  const [showErrors, setShowErrors] = useState(false);
+export const AccountStep: React.FC<AccountStepProps> = ({ email, password, onChange, onNext, onLogin, error }) => {
+  const [showErrors, setShowErrors] = React.useState(false);
 
   const emailError = showErrors && !emailRegex.test(email) ? "Please enter a valid email address" : undefined;
   const passwordError =
@@ -98,4 +98,4 @@ export function EmailStep({ email, password, onChange, onNext, onLogin, error }:
       </div>
     </div>
   );
-}
+};

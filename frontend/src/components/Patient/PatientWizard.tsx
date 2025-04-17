@@ -4,13 +4,13 @@ import { NameStep } from "./NameStep";
 import { DemographicsStep } from "./DemographicsStep";
 import { UploadStep } from "./UploadStep";
 import { WelcomeStep } from "./WelcomeStep";
-import { EmailStep } from "./EmailStep";
+import { AccountStep } from "./EmailStep";
 import Container from "../ui/Container";
 import { adminService } from "../../services/admin";
 import { authService } from "../../services/auth";
 import { useAuth } from "../../contexts/AuthContext";
 
-type Step = "welcome" | "email" | "name" | "demographics" | "upload";
+type Step = "welcome" | "account" | "name" | "demographics" | "upload";
 
 interface PatientData {
   email: string;
@@ -69,10 +69,10 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
 
     switch (currentStep) {
       case "welcome":
-        nextPath = "/wizard/email";
-        nextStepValue = "email";
+        nextPath = "/wizard/account";
+        nextStepValue = "account";
         break;
-      case "email":
+      case "account":
         nextPath = "/wizard/name";
         nextStepValue = "name";
         break;
@@ -95,13 +95,13 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
     let prevStepValue: Step = "welcome";
 
     switch (currentStep) {
-      case "email":
+      case "account":
         prevPath = "/wizard/";
         prevStepValue = "welcome";
         break;
       case "name":
-        prevPath = "/wizard/email";
-        prevStepValue = "email";
+        prevPath = "/wizard/account";
+        prevStepValue = "account";
         break;
       case "demographics":
         prevPath = "/wizard/name";
@@ -121,7 +121,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
     switch (step) {
       case "welcome":
         return "Welcome";
-      case "email":
+      case "account":
         return "Account Information";
       case "name":
         return "Patient Information";
@@ -226,7 +226,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
             {fhirId
               ? "Upload new lab results"
               : `Step ${
-                  currentStep === "email"
+                  currentStep === "account"
                     ? "1"
                     : currentStep === "name"
                     ? "2"
@@ -240,8 +240,8 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
 
       {/* Steps */}
       {currentStep === "welcome" && <WelcomeStep onNext={nextStep} />}
-      {currentStep === "email" && (
-        <EmailStep
+      {currentStep === "account" && (
+        <AccountStep
           email={patientData.email}
           password={patientData.password}
           onChange={(data) => setPatientData({ ...patientData, ...data })}

@@ -22,7 +22,7 @@ export default function Layout() {
 
         {/* Wizard routes */}
         <Route path="/wizard" element={<PatientWizard initialStep="welcome" />} />
-        <Route path="/wizard/email" element={<PatientWizard initialStep="email" />} />
+        <Route path="/wizard/account" element={<PatientWizard initialStep="account" />} />
         <Route path="/wizard/name" element={<PatientWizard initialStep="name" />} />
         <Route path="/wizard/demographics" element={<PatientWizard initialStep="demographics" />} />
         <Route path="/wizard/upload" element={<PatientWizard initialStep="upload" />} />

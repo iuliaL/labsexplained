@@ -153,7 +153,7 @@ export default function Login() {
               Forgot your password?
             </button>
             <button
-              onClick={() => navigate("/wizard/email")}
+              onClick={() => navigate("/wizard/account")}
               disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
