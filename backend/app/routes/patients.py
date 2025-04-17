@@ -55,15 +55,9 @@ async def register_patient(patient: PatientRegister):
         store_patient(new_patient_data)
     except HTTPException as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
-    
-    # Generate a JWT token for the patient that expires in 1 hour
-    ACCESS_TOKEN_EXPIRATION_HOURS = 1
-    token = create_access_token(data={"sub": patient.email, "role": "admin" if patient.is_admin else "patient"},
-                                expires_delta=timedelta(hours=ACCESS_TOKEN_EXPIRATION_HOURS))
 
     return {
         "message": "Patient registered successfully",
-        "token": token,
         "fhir_id": fhir_created_id
     }
     
