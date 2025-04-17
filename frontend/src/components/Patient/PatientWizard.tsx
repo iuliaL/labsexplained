@@ -248,6 +248,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
           onNext={handleEmailSubmit}
           onLogin={() => navigate("/login")}
           error={error || undefined}
+          loading={loading}
         />
       )}
       {currentStep === "name" && (
