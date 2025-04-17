@@ -19,6 +19,7 @@ async def get_all_patient_lab_sets(
 ):
     """
     Retrieves all lab test sets for a specific patient with pagination.
+    Lab sets are sorted by test date in descending order (newest first).
     
     Args:
         patient_fhir_id (str): The patient's FHIR ID
@@ -33,6 +34,9 @@ async def get_all_patient_lab_sets(
 
     # Get all lab test sets
     all_lab_test_sets = get_lab_test_sets_for_patient(patient_fhir_id)
+    
+    # Sort lab test sets by test date in descending order (newest first)
+    all_lab_test_sets.sort(key=lambda x: x["test_date"], reverse=True)
     
     # Calculate pagination
     total_sets = len(all_lab_test_sets)
