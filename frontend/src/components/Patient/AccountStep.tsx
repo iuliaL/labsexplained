@@ -63,7 +63,7 @@ export const AccountStep: React.FC<AccountStepProps> = ({
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800">Create Your Account</h3>
+            <h3 className="text-sm font-medium text-blue-800">Create your account</h3>
             <div className="mt-1 text-xs text-blue-700">
               <p>
                 To provide you with secure access to your lab results and interpretations, we need you to create an
