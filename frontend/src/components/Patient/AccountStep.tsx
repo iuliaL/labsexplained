@@ -23,12 +23,13 @@ export const AccountStep: React.FC<AccountStepProps> = ({
   loading = false,
 }) => {
   const [showErrors, setShowErrors] = React.useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = React.useState(false);
 
   const emailError = showErrors && !emailRegex.test(email) ? "Please enter a valid email address" : undefined;
   const passwordError =
     showErrors && !passwordRegex.test(password) ? <PasswordRequirements password={password} /> : undefined;
 
-  const isFormValid = emailRegex.test(email) && passwordRegex.test(password);
+  const isFormValid = emailRegex.test(email) && passwordRegex.test(password) && privacyAccepted;
 
   const handleNext = () => {
     if (isFormValid) {
@@ -38,10 +39,18 @@ export const AccountStep: React.FC<AccountStepProps> = ({
     }
   };
 
+  const handleLabelClick = (e: React.MouseEvent) => {
+    // Prevent the click from propagating to the link
+    if ((e.target as HTMLElement).tagName === "A") {
+      return;
+    }
+    setPrivacyAccepted(!privacyAccepted);
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Explanation Card */}
-      <div className="bg-blue-50 rounded-lg p-3 mb-6">
+      <div className="bg-blue-50 rounded-lg p-3 mb-4">
         <div className="flex items-start">
           <div className="flex-shrink-0">
             <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -65,7 +74,7 @@ export const AccountStep: React.FC<AccountStepProps> = ({
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <Input
           id="email"
           label="Email"
@@ -88,6 +97,36 @@ export const AccountStep: React.FC<AccountStepProps> = ({
           disabled={loading}
           error={passwordError}
         />
+      </div>
+
+      {/* Privacy Policy Checkbox */}
+      <div className="flex items-start">
+        <div className="flex items-center h-5">
+          <input
+            id="privacy-policy"
+            type="checkbox"
+            checked={privacyAccepted}
+            onChange={(e) => setPrivacyAccepted(e.target.checked)}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded cursor-pointer"
+          />
+        </div>
+        <div className="ml-3 text-sm">
+          <label htmlFor="privacy-policy" className="font-medium text-slate-700" onClick={handleLabelClick}>
+            I accept the{" "}
+            <a
+              href={process.env.REACT_APP_PRIVACY_POLICY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-500 focus:outline-none focus:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Privacy Policy
+            </a>
+          </label>
+          {showErrors && !privacyAccepted && (
+            <p className="mt-1 text-red-600">You must accept the Privacy Policy to continue</p>
+          )}
+        </div>
       </div>
 
       {error && <div className="text-sm text-red-600 bg-red-50 p-2 rounded-md">{error}</div>}
