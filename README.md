@@ -136,11 +136,3 @@ uvicorn app.main:app --reload
 cd frontend
 npm start
 ```
-
-## 📚 Documentation
-
-Detailed documentation can be found in the `docs/` directory:
-- API Documentation
-- FHIR Integration Guide
-- AI Processing Pipeline
-- Deployment Guide
