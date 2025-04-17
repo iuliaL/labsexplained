@@ -2,7 +2,6 @@
 ├── README.md
 ├── backend
 │   ├── Dockerfile
-│   ├── README.md
 │   ├── app
 │   │   ├── config.py
 │   │   ├── main.py
@@ -11,18 +10,20 @@
 │   │   │   └── patient.py
 │   │   ├── routes
 │   │   │   ├── __init__.py
+│   │   │   ├── auth.py
 │   │   │   ├── lab_results.py
 │   │   │   └── patients.py
 │   │   ├── services
+│   │   │   ├── email_service.py
 │   │   │   ├── fhir.py
 │   │   │   └── openai.py
 │   │   └── utils
+│   │       ├── auth.py
 │   │       └── file_parser.py
 │   └── requirements.txt
 ├── docker-compose.yml
 ├── docs
 ├── frontend
-│   ├── README.md
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── postcss.config.js
@@ -46,9 +47,14 @@
 │   │   │   │   ├── AdminDashboard.tsx
 │   │   │   │   ├── LabSet.tsx
 │   │   │   │   └── PatientDetails.tsx
+│   │   │   ├── Auth
+│   │   │   │   ├── Login.tsx
+│   │   │   │   └── ResetPassword.tsx
 │   │   │   ├── Interpretation.tsx
 │   │   │   ├── Layout.tsx
+│   │   │   ├── NotFound.tsx
 │   │   │   ├── Patient
+│   │   │   │   ├── AccountStep.tsx
 │   │   │   │   ├── DemographicsStep.tsx
 │   │   │   │   ├── NameStep.tsx
 │   │   │   │   ├── PatientDashboard.tsx
@@ -61,22 +67,28 @@
 │   │   │   │   └── UserIcon.tsx
 │   │   │   └── ui
 │   │   │       ├── ConfirmDialog.tsx
+│   │   │       ├── Container.tsx
 │   │   │       ├── DateInput.tsx
 │   │   │       ├── Input.tsx
 │   │   │       ├── Pagination.tsx
+│   │   │       ├── PasswordRequirements.tsx
 │   │   │       └── Select.tsx
+│   │   ├── contexts
+│   │   │   └── AuthContext.tsx
 │   │   ├── index.css
 │   │   ├── index.tsx
 │   │   ├── logo.svg
 │   │   ├── react-app-env.d.ts
 │   │   ├── reportWebVitals.ts
 │   │   ├── services
-│   │   │   └── admin.ts
+│   │   │   ├── admin.ts
+│   │   │   └── auth.ts
 │   │   ├── setupTests.ts
 │   │   └── utils
-│   │       └── dateFormatter.ts
+│   │       ├── dateFormatter.ts
+│   │       └── regexes.ts
 │   ├── tailwind.config.js
 │   └── tsconfig.json
 └── tree.txt
 
-19 directories, 61 files
+21 directories, 71 files
