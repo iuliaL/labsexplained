@@ -3,7 +3,7 @@
 ## Authentication Endpoints
 
 ### Login
-- **POST** `/api/auth/login`
+- **POST** `/auth/login`
 - **Description**: Authenticates a user and returns a JWT token
 - **Request Body**:
 ```json
@@ -24,7 +24,7 @@
 ```
 
 ### Check Email
-- **GET** `/api/auth/check-email?email={email}`
+- **GET** `/auth/check-email?email={email}`
 - **Description**: Checks if a patient exists by email
 - **Response**:
 ```json
@@ -35,7 +35,7 @@
 ```
 
 ### Forgot Password
-- **POST** `/api/auth/forgot-password`
+- **POST** `/auth/forgot-password`
 - **Description**: Initiates password reset process
 - **Request Body**:
 ```json
@@ -45,7 +45,7 @@
 ```
 
 ### Reset Password
-- **POST** `/api/auth/reset-password`
+- **POST** `/auth/reset-password`
 - **Description**: Resets password using reset token
 - **Request Body**:
 ```json
@@ -56,14 +56,14 @@
 ```
 
 ### Assign Admin Role
-- **PUT** `/api/auth/assign-admin?email={email}`
+- **PUT** `/auth/assign-admin?email={email}`
 - **Description**: Assigns admin role to a user (admin only)
 - **Headers**: `Authorization: Bearer {token}`
 
 ## Patient Endpoints
 
 ### Register Patient
-- **POST** `/api/patients`
+- **POST** `/patients`
 - **Description**: Registers a new patient
 - **Request Body**:
 ```json
@@ -79,29 +79,29 @@
 ```
 
 ### Get All Patients
-- **GET** `/api/patients?page={page}&page_size={page_size}`
+- **GET** `/patients?page={page}&page_size={page_size}`
 - **Description**: Retrieves paginated list of patients (admin only)
 - **Headers**: `Authorization: Bearer {token}`
 
 ### Get Patient
-- **GET** `/api/patients/{fhir_id}?include_observations={boolean}`
+- **GET** `/patients/{fhir_id}?include_observations={boolean}`
 - **Description**: Retrieves patient details
 - **Headers**: `Authorization: Bearer {token}`
 
 ### Delete Patient
-- **DELETE** `/api/patients/{fhir_id}`
+- **DELETE** `/patients/{fhir_id}`
 - **Description**: Deletes a patient and all associated data (admin only)
 - **Headers**: `Authorization: Bearer {token}`
 
 ## Lab Results Endpoints
 
 ### Get Lab Test Sets
-- **GET** `/api/lab_set/{patient_fhir_id}?include_observations={boolean}&page={page}&page_size={page_size}`
+- **GET** `/lab_set/{patient_fhir_id}?include_observations={boolean}&page={page}&page_size={page_size}`
 - **Description**: Retrieves paginated lab test sets for a patient
 - **Headers**: `Authorization: Bearer {token}`
 
 ### Upload Lab Test Set
-- **POST** `/api/lab_set`
+- **POST** `/lab_set`
 - **Description**: Uploads and processes a lab test set
 - **Form Data**:
   - `patient_fhir_id`: string
@@ -109,26 +109,26 @@
   - `file`: file (PDF or image)
 
 ### Delete Lab Test Set
-- **DELETE** `/api/lab_set/{lab_test_set_id}`
+- **DELETE** `/lab_set/{lab_test_set_id}`
 - **Description**: Deletes a lab test set and its observations
 - **Headers**: `Authorization: Bearer {token}`
 
 ### Interpret Lab Test Set
-- **POST** `/api/lab_set/{lab_test_set_id}/interpret`
+- **POST** `/lab_set/{lab_test_set_id}/interpret`
 - **Description**: Generates AI interpretation for a lab test set
 - **Headers**: `Authorization: Bearer {token}`
 
 ### Get Observation
-- **GET** `/api/observations/{observation_id}`
+- **GET** `/observations/{observation_id}`
 - **Description**: Retrieves a specific observation
 - **Headers**: `Authorization: Bearer {token}`
 
 ### Delete Observation
-- **DELETE** `/api/observations/{observation_id}`
+- **DELETE** `/observations/{observation_id}`
 - **Description**: Deletes a specific observation
 - **Headers**: `Authorization: Bearer {token}`
 
 ### Delete All Patient Observations
-- **DELETE** `/api/observations/patient/{patient_fhir_id}`
+- **DELETE** `/observations/patient/{patient_fhir_id}`
 - **Description**: Deletes all observations for a patient
 - **Headers**: `Authorization: Bearer {token}` 

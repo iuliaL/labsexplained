@@ -69,26 +69,26 @@ FHIR-MedAI-Dashboard/
 ## 🔍 API Endpoints
 
 ### Authentication
-- `POST /api/auth/login` - User login
-- `GET /api/auth/check-email` - Check if email exists
-- `POST /api/auth/forgot-password` - Request password reset
-- `POST /api/auth/reset-password` - Reset password
-- `PUT /api/auth/assign-admin` - Assign admin role (admin only)
+- `POST /auth/login` - User login
+- `GET /auth/check-email` - Check if email exists
+- `POST /auth/forgot-password` - Request password reset
+- `POST /auth/reset-password` - Reset password
+- `PUT /auth/assign-admin` - Assign admin role (admin only)
 
 ### Patient Management
-- `POST /api/patients` - Register new patient
-- `GET /api/patients` - Get all patients (admin only)
-- `GET /api/patients/{fhir_id}` - Get patient details
-- `DELETE /api/patients/{fhir_id}` - Delete patient (admin only)
+- `POST /patients` - Register new patient
+- `GET /patients` - Get all patients (admin only)
+- `GET /patients/{fhir_id}` - Get patient details
+- `DELETE /patients/{fhir_id}` - Delete patient (admin only)
 
 ### Lab Results
-- `GET /api/lab_set/{patient_fhir_id}` - Get patient's lab test sets
-- `POST /api/lab_set` - Upload lab test results
-- `DELETE /api/lab_set/{lab_test_set_id}` - Delete lab test set
-- `POST /api/lab_set/{lab_test_set_id}/interpret` - Get AI interpretation
-- `GET /api/observations/{observation_id}` - Get specific observation
-- `DELETE /api/observations/{observation_id}` - Delete observation
-- `DELETE /api/observations/patient/{patient_fhir_id}` - Delete all patient observations
+- `GET /lab_set/{patient_fhir_id}` - Get patient's lab test sets
+- `POST /lab_set` - Upload lab test results
+- `DELETE /lab_set/{lab_test_set_id}` - Delete lab test set
+- `POST /lab_set/{lab_test_set_id}/interpret` - Get AI interpretation
+- `GET /observations/{observation_id}` - Get specific observation
+- `DELETE /observations/{observation_id}` - Delete observation
+- `DELETE /observations/patient/{patient_fhir_id}` - Delete all patient observations
 
 For detailed API documentation, see [docs](docs/api.md).
 

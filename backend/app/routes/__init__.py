@@ -9,9 +9,9 @@ router = APIRouter()
 def health_check():
     return {"status": "ok"}
 
-router.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
-router.include_router(patients_router, prefix="/api", tags=["Patients"])
-router.include_router(lab_results_router, prefix="/api", tags=["Lab Results"])
+router.include_router(auth_router, prefix="/auth", tags=["Auth"])
+router.include_router(patients_router, tags=["Patients"])
+router.include_router(lab_results_router, tags=["Lab Results"])
 
 
 
