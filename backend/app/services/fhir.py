@@ -1,4 +1,5 @@
 import requests
+from fastapi import HTTPException
 import json
 from app.config import FHIR_SERVER_URL
 from app.utils.file_parser import parse_reference_range
@@ -17,11 +18,16 @@ def create_fhir_patient(first_name: str, last_name: str, birth_date: str, gender
         "gender": gender.lower()
     }
     response = requests.post(f"{FHIR_SERVER_URL}/Patient", json=patient_resource)
+    print(f"FHIR Error {response.status_code}: {response.text}")
     
     if response.status_code == 201:
         fhir_id = response.json()["id"]
         return fhir_id
-    return None
+    else:
+        raise HTTPException(
+        status_code=500,
+        detail=f"FHIR server error ({response.status_code}): {response.text}"
+    )
 
 
 def delete_fhir_patient(fhir_id: str):

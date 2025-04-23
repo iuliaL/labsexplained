@@ -28,14 +28,18 @@ async def register_patient(patient: PatientRegister):
         raise HTTPException(status_code=400, detail="Patient already exists.")
     
     # Call the external FHIR service to create the patient and retrieve their FHIR ID
-    fhir_created_id = create_fhir_patient(
-        patient.first_name,
-        patient.last_name,
-        patient.birth_date,
-        patient.gender,
-    )
-    if not fhir_created_id:
-        raise HTTPException(status_code=500, detail="Failed to register patient with FHIR server.")
+    try:
+        fhir_created_id = create_fhir_patient(
+            patient.first_name,
+            patient.last_name,
+            patient.birth_date,
+            patient.gender,
+        )
+    except HTTPException as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=f"Failed to register patient with FHIR server. ({e.status_code}): {e.detail}"
+            )
 
      # Hash the patient's password before saving
     hashed_password = set_password(patient.password)
