@@ -2,32 +2,92 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/LabsExplained-removebg.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#2563EB" />
+
+    <!-- Primary Meta Tags -->
+    <meta name="title" content="LabsExplained.com - Understand Your Lab Results with AI" />
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="AI-powered medical dashboard that helps you understand your lab results. Get instant, personalized interpretations of your medical tests using advanced AI technology."
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+    <meta
+      name="keywords"
+      content="medical dashboard, lab results, AI interpretation, FHIR, healthcare, medical tests, patient portal"
+    />
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="%PUBLIC_URL%" />
+    <meta property="og:title" content="LabsExplained.com - Understand Your Lab Results with AI" />
+    <meta
+      property="og:description"
+      content="AI-powered medical dashboard that helps you understand your lab results. Get instant, personalized interpretations of your medical tests."
+    />
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="%PUBLIC_URL%" />
+    <meta property="twitter:title" content="LabsExplained.com - Understand Your Lab Results with AI" />
+    <meta
+      property="twitter:description"
+      content="AI-powered medical dashboard that helps you understand your lab results. Get instant, personalized interpretations of your medical tests."
+    />
+    <meta property="twitter:image" content="%PUBLIC_URL%/og-image.png" />
+
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/png" sizes="96x96" href="%PUBLIC_URL%/favicon-96x96.png" />
+    <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
+
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <meta name="apple-mobile-web-app-title" content="LabsExplained" />
+
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <title>LabsExplained</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+
+    <!-- Dynamic title script -->
+    <script>
+      // Update title based on route
+      const updateTitle = () => {
+        const path = window.location.pathname;
+        let title = "LabsExplained";
+
+        // Add specific titles based on routes
+        if (path.startsWith("/wizard")) {
+          if (path === "/wizard/account") title = "Create Account | LabsExplained";
+          else if (path === "/wizard/name") title = "Patient Information | LabsExplained";
+          else if (path === "/wizard/demographics") title = "Patient Demographics | LabsExplained";
+          else if (path === "/wizard/upload") title = "Upload Lab Results | LabsExplained";
+          else title = "Welcome | LabsExplained.AI";
+        } else if (path.startsWith("/admin/patients")) {
+          if (path === "/admin/patients") title = "Admin Dashboard | LabsExplained";
+          else title = "Patient Details | LabsExplained.AI";
+        } else if (path.startsWith("/patient/")) title = "Patient Dashboard | LabsExplained";
+        else if (path === "/login") title = "Login | LabsExplained";
+        else if (path === "/reset-password") title = "Reset Password | LabsExplained";
+        else if (path === "/404") title = "Page Not Found | LabsExplained";
+
+        document.title = title;
+      };
+
+      // Update title on initial load and route changes
+      updateTitle();
+      window.addEventListener("popstate", updateTitle);
+    </script>
   </body>
 </html>
