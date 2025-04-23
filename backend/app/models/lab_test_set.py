@@ -1,4 +1,3 @@
-from typing import Optional, List, Dict
 from bson import ObjectId
 from pymongo import MongoClient
 from app.config import MONGO_URI
