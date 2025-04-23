@@ -5,10 +5,10 @@ hapi:
     allow_multiple_delete: true
     reuse_cached_search_results_millis: 60000
     retain_cached_searches_mins: 10
-    implementationguides:
-      enable: false
-      packages:
-        - hl7.fhir.r4.core#4.0.1
+    # implementationguides:
+    #   enable: false
+    #   packages:
+    #     - hl7.fhir.r4.core#4.0.1
 
 spring:
   datasource:
