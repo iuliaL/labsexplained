@@ -1,4 +1,4 @@
-FROM hapiproject/hapi:v6.2.0
+FROM hapiproject/hapi:latest
 
 COPY application.yaml /app/application.yaml
 
