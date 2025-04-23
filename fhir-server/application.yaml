@@ -5,8 +5,15 @@ hapi:
     allow_multiple_delete: true
     reuse_cached_search_results_millis: 60000
     retain_cached_searches_mins: 10
-    # Completely disable implementation guides loading
+    # Disable implementation guides entirely
     implementationguides: {}
+    # Disable validation and profiles that are memory-intensive
+    validation:
+      enabled: false
+    # Use a simple in-memory database (optional, depending on your use case)
+    database:
+      connection:
+        type: h2
 
 spring:
   datasource:
@@ -18,3 +25,5 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+  main:
+    lazy-initialization: true
