@@ -3,7 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routes import router
 import os
 
-app = FastAPI()
+app = FastAPI(
+    title="LabsExplained API",
+    description="LabsExplained API is a RESTful API that provides access to users (admins and patients) to manage their resources depending on their role.",
+    version="1.0.0"
+)
 
 # Configure CORS
 app.add_middleware(
@@ -18,4 +22,4 @@ app.include_router(router)
 
 @app.get("/")
 def home():
-    return {"message": "Medical AI Dashboard API Running"}
+    return {"message": "LabsExplained API Running"}
