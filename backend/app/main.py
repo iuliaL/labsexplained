@@ -23,3 +23,6 @@ app.include_router(router)
 @app.get("/")
 def home():
     return {"message": "LabsExplained API Running"}
+
+
+print("🔥 LabsExplained backend is booting up...")
