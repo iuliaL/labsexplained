@@ -19,6 +19,8 @@ interface UploadStepProps {
   isUploadOnly?: boolean;
 }
 
+const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
+
 export function UploadStep({
   onFileSelect,
   onDateSelect,
@@ -34,9 +36,16 @@ export function UploadStep({
   const [selectedFile, setSelectedFile] = useState<File | null>(initialFile);
   const [selectedDate, setSelectedDate] = useState<string>(initialDate);
   const [isDragging, setIsDragging] = useState(false);
+  const [fileSizeError, setFileSizeError] = useState<string>("");
 
   const handleFile = (file: File) => {
     if (file && (file.type.startsWith("image/") || file.type === "application/pdf")) {
+      if (file.size > MAX_FILE_SIZE) {
+        setFileSizeError("File size must be less than 1MB");
+        setSelectedFile(null);
+        return;
+      }
+      setFileSizeError("");
       setSelectedFile(file);
       onFileSelect(file);
     }
@@ -275,7 +284,13 @@ export function UploadStep({
                 mt-1 flex justify-center px-6 pt-5 pb-6 
                 border-2 border-dashed rounded-lg
                 transition-colors duration-200
-                ${isDragging ? "border-blue-500 bg-blue-50/50" : "border-slate-200 hover:border-slate-300"}
+                ${
+                  isDragging
+                    ? "border-blue-500 bg-blue-50/50"
+                    : fileSizeError
+                    ? "border-red-300 bg-red-50/50"
+                    : "border-slate-200 hover:border-slate-300"
+                }
                 ${loading ? "opacity-50 cursor-not-allowed" : ""}
               `}
               onDragEnter={!loading ? handleDragIn : undefined}
@@ -327,7 +342,8 @@ export function UploadStep({
                   </label>
                   <p className="pl-1">or drag and drop</p>
                 </div>
-                <p className="text-xs text-slate-500">PDF or image files</p>
+                <p className="text-xs text-slate-500">PDF or image files (max 1MB)</p>
+                {fileSizeError && <p className="text-xs text-red-600 mt-2">{fileSizeError}</p>}
               </div>
             </div>
           ) : (
@@ -406,14 +422,15 @@ export function UploadStep({
           Back
         </button>
         <button
+          type="button"
           onClick={onSubmit}
-          disabled={!selectedFile || !selectedDate || loading}
+          disabled={!selectedFile || !selectedDate || loading || !!fileSizeError}
           className="flex-1 py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-400"
         >
           {loading ? (
-            <span className="flex items-center justify-center">
+            <>
               <svg
-                className="animate-spin -ml-1 mr-2 h-4 w-4"
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -426,12 +443,37 @@ export function UploadStep({
                 ></path>
               </svg>
               Processing...
-            </span>
+            </>
           ) : (
             "Submit"
           )}
         </button>
       </div>
+
+      {error && (
+        <div className="rounded-md bg-red-50 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-red-400"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">{error}</h3>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
