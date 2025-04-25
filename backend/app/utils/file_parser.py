@@ -1,39 +1,49 @@
-from paddleocr import PaddleOCR
-import cv2
 import re
-import numpy as np
 from pdf2image import convert_from_bytes
+import requests
+import mimetypes
+from pdf2image import convert_from_bytes
+from io import BytesIO
+from PIL import Image
+from app.config import OCR_SPACE_API_KEY
 
-# Initialize PaddleOCR
-ocr = PaddleOCR(use_angle_cls=True, lang="en")
+
 
 def extract_text(filename: str, file_contents: bytes) -> str:
-    """Extracts text from an image or PDF file using PaddleOCR."""
-    
+    """
+    Extract text from an image or PDF file using OCR.Space API.
+    """
+    texts = []
+
+    def ocr_image(image_bytes, page_name="page.jpg"):
+        response = requests.post(
+            url="https://api.ocr.space/parse/image",
+            files={"file": (page_name, image_bytes)},
+            data={
+                "apikey": OCR_SPACE_API_KEY,
+                "language": "eng",
+                "isOverlayRequired": False,
+                "OCREngine": 2  # Optional: Engine 2 is better at structure
+            }
+        )
+        result = response.json()
+        if result.get("IsErroredOnProcessing"):
+            raise ValueError("OCR API error: " + result.get("ErrorMessage", ["Unknown error"])[0])
+        return result["ParsedResults"][0]["ParsedText"]
+
     if filename.endswith(".pdf"):
-        # Convert PDF to images
         images = convert_from_bytes(file_contents)
-        extracted_text = []
-        
-        for img in images:
-            img_cv = np.array(img)  # Convert image to OpenCV format
-            processed_img = cv2.cvtColor(img_cv, cv2.COLOR_RGB2BGR)  # Ensure color format is correct
-            
-            # Run OCR on each page
-            results = ocr.ocr(processed_img, cls=True)
-            extracted_text.extend([line[1][0] for line in results[0] if line[1][0]])
-
-        return "\n".join(extracted_text)
-
-    elif filename.endswith((".png", ".jpg", ".jpeg")):
-        # Process image directly
-        image = cv2.imdecode(np.frombuffer(file_contents, np.uint8), cv2.IMREAD_COLOR)
-        results = ocr.ocr(image, cls=True)
-
-        return "\n".join([line[1][0] for line in results[0] if line[1][0]])
-
+        for i, img in enumerate(images):
+            buffer = BytesIO()
+            img.save(buffer, format="JPEG")
+            texts.append(ocr_image(buffer.getvalue(), f"page_{i}.jpg"))
     else:
-        raise ValueError("Unsupported file format. Upload a PDF or image.")
+        texts.append(ocr_image(file_contents, filename))
+
+    final_result= "\n".join(texts)
+    
+    print("Final OCR.space text extraction", final_result)
+    return final_result
     
 
 def parse_reference_range(reference_range: str, unit: str):
