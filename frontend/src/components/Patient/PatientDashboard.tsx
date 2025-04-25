@@ -95,16 +95,28 @@ export function PatientDashboard() {
 
     try {
       const labSet = labTestSets.find((set) => set.id === labSetId);
-      if (!labSet) return;
+      if (!labSet) {
+        console.error("Lab set not found:", labSetId);
+        return;
+      }
 
       const observationPromises = labSet.observations.map((obs) => adminService.getLabSetObservations(obs.id));
       const observationResults = await Promise.all(observationPromises);
-      const allObservations = observationResults.flat();
+      const allObservations = observationResults.flat().filter((obs) => obs && typeof obs === "object");
+
+      console.log("Debug - Received observations:", allObservations);
+
+      if (!Array.isArray(allObservations)) {
+        console.error("Invalid observations data received");
+        setObservations((prev) => ({ ...prev, [labSetId]: [] }));
+        return;
+      }
 
       setObservations((prev) => ({ ...prev, [labSetId]: allObservations }));
       setLastUpdated(new Date());
     } catch (err) {
       console.error("Failed to load observations:", err);
+      setObservations((prev) => ({ ...prev, [labSetId]: [] }));
     }
   };
 
@@ -486,35 +498,56 @@ export function PatientDashboard() {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-slate-200">
-                            {(loadingInitialObservations && testSet.id === labTestSets[0]?.id) ||
-                            !observations[testSet.id]
-                              ? // Show loading skeleton rows
-                                TableSkeleton
-                              : observations[testSet.id].map((observation) => (
-                                  <tr key={observation.id} className="hover:bg-slate-50/50">
+                            {loadingInitialObservations && testSet.id === labTestSets[0]?.id ? (
+                              TableSkeleton
+                            ) : !observations[testSet.id] ? (
+                              <tr>
+                                <td colSpan={4} className="px-6 py-4 text-center text-sm text-slate-500">
+                                  Loading observations...
+                                </td>
+                              </tr>
+                            ) : !Array.isArray(observations[testSet.id]) || observations[testSet.id].length === 0 ? (
+                              <tr>
+                                <td colSpan={4} className="px-6 py-4 text-center text-sm text-slate-500">
+                                  No observations available
+                                </td>
+                              </tr>
+                            ) : (
+                              observations[testSet.id]
+                                .filter((observation) => observation && typeof observation === "object")
+                                .map((observation) => (
+                                  <tr key={observation?.id || "unknown"} className="hover:bg-slate-50/50">
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                      {observation.code.text}
+                                      {observation?.code?.text || "Unknown Test"}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                      {observation.valueQuantity?.value || observation.valueString || "N/A"}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                      {observation.valueQuantity?.unit || "-"}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                      {observation.referenceRange?.[0]?.text ||
-                                        (observation.referenceRange?.[0] &&
-                                          (observation.referenceRange[0].low && observation.referenceRange[0].high
-                                            ? `${observation.referenceRange[0].low.value} - ${observation.referenceRange[0].high.value}`
-                                            : observation.referenceRange[0].low
-                                            ? `>${observation.referenceRange[0].low.value}`
-                                            : observation.referenceRange[0].high
-                                            ? `<${observation.referenceRange[0].high.value}`
-                                            : "N/A")) ||
+                                      {observation?.valueQuantity?.value?.toString() ||
+                                        observation?.valueString ||
                                         "N/A"}
                                     </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                      {observation?.valueQuantity?.unit || "-"}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                      {(() => {
+                                        const range = observation?.referenceRange?.[0];
+                                        if (!range) return "N/A";
+
+                                        if (range.text) return range.text;
+
+                                        if (range.low?.value && range.high?.value) {
+                                          return `${range.low.value} - ${range.high.value}`;
+                                        }
+
+                                        if (range.low?.value) return `>${range.low.value}`;
+                                        if (range.high?.value) return `<${range.high.value}`;
+
+                                        return "N/A";
+                                      })()}
+                                    </td>
                                   </tr>
-                                ))}
+                                ))
+                            )}
                           </tbody>
                         </table>
                       </div>
