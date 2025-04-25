@@ -1,4 +1,4 @@
-# 🚀 FHIR-MedAI Dashboard
+# 🚀 LabsExplained
 
 A modern web application that allows patients to manage their medical data through FHIR integration and AI-powered lab result interpretation.
 
