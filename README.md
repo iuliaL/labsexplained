@@ -17,7 +17,7 @@ This full-stack application consists of:
 
 ### Patient
 - Register and manage their profile
-- Upload lab test results (PDF or image files)
+- Upload lab test results (PDF or image files, max 1MB)
 - View their lab test history
 - Get AI-powered interpretations of their lab results
 - Reset their password if forgotten
@@ -83,7 +83,7 @@ FHIR-MedAI-Dashboard/
 
 ### Lab Results
 - `GET /lab_set/{patient_fhir_id}` - Get patient's lab test sets
-- `POST /lab_set` - Upload lab test results
+- `POST /lab_set` - Upload lab test results (max 1MB)
 - `DELETE /lab_set/{lab_test_set_id}` - Delete lab test set
 - `POST /lab_set/{lab_test_set_id}/interpret` - Get AI interpretation
 - `GET /observations/{observation_id}` - Get specific observation

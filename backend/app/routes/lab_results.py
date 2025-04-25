@@ -7,6 +7,9 @@ from app.utils.file_parser import extract_text
 from app.services.openai import extract_lab_results_with_gpt, interpret_full_lab_set
 from app.models.lab_test_set import get_lab_test_sets_for_patient, remove_lab_test_set, store_lab_test_set, get_lab_test_set_by_id, update_lab_test_set
 
+# Constants
+MAX_FILE_SIZE = 1024 * 1024  # 1MB in bytes
+ALLOWED_MIME_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/jpg"]
 
 router = APIRouter()
 
@@ -75,10 +78,29 @@ async def upload_patient_lab_test_set(
     """
     Uploads and processes a lab test set for a patient.
     Stores both observation IDs and test names in MongoDB.
+    
+    File size limit: 1MB
+    Accepted formats: PDF, JPEG, PNG
     """
     try:
-        # Read the file content and extract text
+        # Validate file type
+        if file.content_type not in ALLOWED_MIME_TYPES:
+            raise HTTPException(
+                status_code=415,
+                detail=f"Unsupported file type. Allowed types: PDF, JPEG, PNG"
+            )
+
+        # Read initial chunk to check file size
         contents = await file.read()
+        file_size = len(contents)
+        
+        if file_size > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File size ({file_size / 1024 / 1024:.1f}MB) exceeds maximum allowed size (1MB)"
+            )
+
+        # Extract text from the file
         extracted_text = extract_text(file.filename, contents)
 
         # Extract lab results using GPT
@@ -99,7 +121,10 @@ async def upload_patient_lab_test_set(
         
         return lab_test_set
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
+        print(f"Unexpected error in POST /lab_set: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

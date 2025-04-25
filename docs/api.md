@@ -106,7 +106,11 @@
 - **Form Data**:
   - `patient_fhir_id`: string
   - `test_date`: string
-  - `file`: file (PDF or image)
+  - `file`: file (PDF or image, max 1MB)
+- **Response**:
+  - `200 OK`: Upload successful
+  - `413 Request Entity Too Large`: File size exceeds 1MB limit
+  - `415 Unsupported Media Type`: Invalid file type
 
 ### Delete Lab Test Set
 - **DELETE** `/lab_set/{lab_test_set_id}`
