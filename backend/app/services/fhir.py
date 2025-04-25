@@ -18,7 +18,7 @@ def create_fhir_patient(first_name: str, last_name: str, birth_date: str, gender
         "gender": gender.lower()
     }
     response = requests.post(f"{FHIR_SERVER_URL}/Patient", json=patient_resource)
-    print(f"FHIR Error {response.status_code}: {response.text}")
+    print(f"FHIR Response {response.status_code}: {response.text}")
     
     if response.status_code == 201:
         fhir_id = response.json()["id"]
