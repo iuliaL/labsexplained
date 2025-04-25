@@ -8,10 +8,11 @@ This full-stack application consists of:
 
 - ✨ **React + TypeScript Frontend** with modern UI components
 - ⚡ **FastAPI Backend** for robust API handling
-- ⚛️ **FHIR Integration** for medical data storage
+- ⚛️ **FHIR Integration** via dedicated microservice ([fhir-server-lite](https://github.com/iuliaL/fhir-server-lite))
 - 🤖 **AI-Powered Analysis** using GPT-4 for lab result interpretation
 - 📊 **MongoDB** for data persistence
 - 🎨 **TailwindCSS** for beautiful, responsive design
+- 📝 **OCR.space** for extracting text from lab result documents
 
 ## 👥 User Roles and Capabilities
 
@@ -41,10 +42,13 @@ This full-stack application consists of:
 ### Backend
 - FastAPI 0.115.11
 - Python 3.x
-- FHIR Resources 8.0.0
 - MongoDB (via PyMongo 4.11.2)
 - OpenAI API Integration
 - Uvicorn 0.34.0 (ASGI server)
+
+### FHIR Microservice
+- PostgreSQL 14+ (required for FHIR server)
+- [fhir-server-lite](https://github.com/iuliaL/fhir-server-lite)
 
 ## 📁 Project Structure
 
@@ -98,7 +102,10 @@ For detailed API documentation, see [docs](docs/api.md).
 - Node.js (v16+)
 - Python 3.x
 - MongoDB
+- PostgreSQL 14+ (for FHIR server)
 - OpenAI API key
+- OCR.space API key (free tier available)
+- Running instance of [fhir-server-lite](https://github.com/iuliaL/fhir-server-lite)
 
 ### Installation
 
@@ -124,7 +131,11 @@ npm install
 
 4. Configure environment variables:
 - Copy `.env.example` to `.env` in both frontend and backend directories
-- Fill in your API keys and configuration
+- Fill in your API keys and configuration:
+  - OpenAI API key
+  - OCR.space API key (get a free one at [ocr.space](https://ocr.space/ocrapi))
+  - FHIR server URL
+  - PostgreSQL connection details for FHIR server
 
 5. Start the development servers:
 ```bash
@@ -135,4 +146,6 @@ uvicorn app.main:app --reload
 # Terminal 2 (Frontend)
 cd frontend
 npm start
+
+# Note: Ensure your FHIR server instance is running
 ```
