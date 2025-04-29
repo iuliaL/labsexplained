@@ -30,7 +30,7 @@ async def login(credentials: LoginInput):
         "sub": user["email"],
         "role": "admin" if user.get("is_admin") else "patient"
     }, expires_delta=timedelta(hours=ACCESS_TOKEN_EXPIRATION_HOURS))
-    return {"message": "Login successful", "token": token, "token_type": "Bearer", "fhir_id": user["fhir_id"], 
+    return {"message": "Login successful", "access_token": token, "token_type": "Bearer", "fhir_id": user["fhir_id"], 
             "role": "admin" if user.get("is_admin") else "patient"}
 
 

@@ -1,4 +1,4 @@
-import { authService } from "./auth";
+import { apiRequest } from "../utils/api";
 
 export interface Patient {
   id: string;
@@ -78,88 +78,34 @@ if (!process.env.REACT_APP_API_BASE_URL) {
   console.warn("REACT_APP_API_BASE_URL is not defined in environment variables. Using fallback: http://localhost:8000");
 }
 
-// Helper function to get headers with auth token
-const getHeaders = (isFormData: boolean = false) => {
-  const headers: Record<string, string> = {};
-
-  if (!isFormData) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  const token = authService.getAuthToken();
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  return headers;
-};
-
 export const adminService = {
   async getPatients(page: number = 1, pageSize: number = 10): Promise<PatientsResponse> {
-    const response = await fetch(`${API_BASE_URL}/patients?page=${page}&page_size=${pageSize}`, {
-      headers: getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch patients");
-    }
-    return response.json();
+    return apiRequest<PatientsResponse>(`${API_BASE_URL}/patients?page=${page}&page_size=${pageSize}`);
   },
 
   async getPatient(fhirId: string): Promise<Patient> {
-    const response = await fetch(`${API_BASE_URL}/patients/${fhirId}`, {
-      headers: getHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch patient");
-    }
-
-    const data = await response.json();
+    const data = await apiRequest<{ patient: Patient }>(`${API_BASE_URL}/patients/${fhirId}`);
     return data.patient;
   },
 
   async getPatientLabTests(fhirId: string, page: number = 1, pageSize: number = 5): Promise<LabTestsResponse> {
-    const response = await fetch(`${API_BASE_URL}/lab_set/${fhirId}?page=${page}&page_size=${pageSize}`, {
-      headers: getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch lab tests");
-    }
-    return response.json();
+    return apiRequest<LabTestsResponse>(`${API_BASE_URL}/lab_set/${fhirId}?page=${page}&page_size=${pageSize}`);
   },
 
   async getLabSetObservations(observationId: string): Promise<Observation[]> {
-    const response = await fetch(`${API_BASE_URL}/observations/${observationId}`, {
-      headers: getHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch test result");
-    }
-
-    const data = await response.json();
+    const data = await apiRequest<{ observations: Observation[] }>(`${API_BASE_URL}/observations/${observationId}`);
     return data.observations;
   },
 
   async interpretLabTestSet(labTestSetId: string): Promise<{ interpretation: string }> {
-    const response = await fetch(`${API_BASE_URL}/lab_set/${labTestSetId}/interpret`, {
+    return apiRequest<{ interpretation: string }>(`${API_BASE_URL}/lab_set/${labTestSetId}/interpret`, {
       method: "POST",
-      headers: getHeaders(),
     });
-
-    if (!response.ok) {
-      throw new Error("Failed to interpret lab test set");
-    }
-
-    return await response.json();
   },
 
   async createPatient(patientData: CreatePatientRequest): Promise<CreatePatientResponse> {
-    const response = await fetch(`${API_BASE_URL}/patients`, {
+    return apiRequest<CreatePatientResponse>(`${API_BASE_URL}/patients`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         email: patientData.email,
         password: patientData.password,
@@ -169,13 +115,6 @@ export const adminService = {
         gender: patientData.gender,
       }),
     });
-
-    if (!response.ok) {
-      throw new Error("Failed to create patient");
-    }
-
-    const data = await response.json();
-    return data;
   },
 
   async uploadLabTestSet(patientFhirId: string, testDate: string, file: File): Promise<LabTestSet> {
@@ -184,46 +123,22 @@ export const adminService = {
     formData.append("test_date", new Date(testDate).toISOString().split("T")[0]); // Convert to YYYY-MM-DD
     formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/lab_set`, {
+    return apiRequest<LabTestSet>(`${API_BASE_URL}/lab_set`, {
       method: "POST",
       body: formData,
-      headers: getHeaders(true), // Pass true for FormData
+      isFormData: true,
     });
-
-    if (!response.ok) {
-      throw new Error("Failed to upload lab test set");
-    }
-
-    return await response.json();
   },
 
   async deleteLabTestSet(labTestSetId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/lab_set/${labTestSetId}`, {
+    await apiRequest(`${API_BASE_URL}/lab_set/${labTestSetId}`, {
       method: "DELETE",
-      headers: getHeaders(),
     });
-
-    if (!response.ok) {
-      throw new Error("Failed to delete lab test set");
-    }
   },
 
   async deletePatient(fhirId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/patients/${fhirId}`, {
+    await apiRequest(`${API_BASE_URL}/patients/${fhirId}`, {
       method: "DELETE",
-      headers: getHeaders(),
     });
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error("Delete patient response:", {
-        status: response.status,
-        statusText: response.statusText,
-        errorData,
-      });
-      throw new Error(
-        `Failed to delete patient: ${response.status} ${response.statusText}${errorData ? ` - ${errorData}` : ""}`
-      );
-    }
   },
 };
