@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { adminService, Patient, LabTestSet } from "../../services/admin";
 import { formatDate } from "../../utils/dateFormatter";
 import { UserIcon } from "../icons/UserIcon";
@@ -8,7 +8,6 @@ import labTestImage from "../../assets/lab-test.jpeg";
 import { Interpretation } from "../Interpretation";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { Pagination } from "../ui/Pagination";
-import { useAuth } from "../../contexts/AuthContext";
 
 interface Observation {
   id: string;
@@ -36,8 +35,6 @@ interface PaginationMetadata {
 
 export function PatientDashboard() {
   const { fhirId } = useParams<{ fhirId: string }>();
-  const navigate = useNavigate();
-  const { role, logout } = useAuth();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [labTestSets, setLabTestSets] = useState<LabTestSet[]>([]);
   const [observations, setObservations] = useState<Record<string, Observation[]>>({});
@@ -50,7 +47,6 @@ export function PatientDashboard() {
   const [deletingSetId, setDeletingSetId] = useState<string | null>(null);
   const [isDeletingSet, setIsDeletingSet] = useState(false);
   const [interpretingSetId, setInterpretingSetId] = useState<string | null>(null);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [pagination, setPagination] = useState<PaginationMetadata>({
     total: 0,
     page: 1,
@@ -150,18 +146,6 @@ export function PatientDashboard() {
 
   const handlePageChange = (newPage: number) => {
     setPagination((prev) => ({ ...prev, page: newPage }));
-  };
-
-  const handleLogout = () => {
-    try {
-      logout();
-      // Delay navigation to ensure cookie removal is handled first
-      setTimeout(() => {
-        navigate("/login");
-      }, 100); // Delay to give enough time for cookie removal
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
   };
 
   // Load initial data
@@ -265,51 +249,6 @@ export function PatientDashboard() {
                     Last updated: {formatDate(lastUpdated.toISOString(), "DD.MM.YYYY HH:mm")}
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                {role === "admin" && (
-                  <button
-                    onClick={() => navigate("/admin/patients")}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                    </svg>
-                    Admin Dashboard
-                  </button>
-                )}
-                <button
-                  onClick={() => setShowLogoutConfirm(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    <polyline points="16 17 21 12 16 7" />
-                    <line x1="21" y1="12" x2="9" y2="12" />
-                  </svg>
-                  Logout
-                </button>
               </div>
             </div>
           </div>
@@ -694,17 +633,6 @@ export function PatientDashboard() {
             </div>
           </div>
         )}
-
-        <ConfirmDialog
-          isOpen={showLogoutConfirm}
-          onClose={() => setShowLogoutConfirm(false)}
-          onConfirm={handleLogout}
-          title="Logout"
-          message="Are you sure you want to logout?"
-          confirmLabel="Logout"
-          cancelLabel="Cancel"
-          variant="primary"
-        />
       </div>
     </div>
   );

@@ -4,18 +4,15 @@ import { adminService, PaginationMetadata, Patient } from "../../services/admin"
 import { formatDate } from "../../utils/dateFormatter";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { Pagination } from "../ui/Pagination";
-import { useAuth } from "../../contexts/AuthContext";
 
 export function AdminDashboard() {
   const navigate = useNavigate();
-  const { fhirId, logout } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeletingPatient, setIsDeletingPatient] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [pagination, setPagination] = useState<PaginationMetadata>({
     total: 0,
     page: 1,
@@ -73,17 +70,6 @@ export function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    try {
-      logout();
-      // Delay navigation to ensure cookie removal is handled first
-      setTimeout(() => {
-        navigate("/login");
-      }, 100); // Delay to give enough time for cookie removal
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
-  };
 
   if (loading) {
     return (
@@ -112,51 +98,6 @@ export function AdminDashboard() {
           {pagination.total > pagination.page_size && (
             <span className="text-sm text-slate-500">(showing {pagination.page_size} per page)</span>
           )}
-        </div>
-        <div className="flex items-center gap-3">
-          {fhirId && (
-            <button
-              onClick={() => navigate(`/patient/${fhirId}`)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              My patient dashboard
-            </button>
-          )}
-          <button
-            onClick={() => setShowLogoutConfirm(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            Logout
-          </button>
         </div>
       </div>
 
@@ -249,17 +190,6 @@ export function AdminDashboard() {
         confirmLabel="Delete"
         cancelLabel="Cancel"
         variant="danger"
-      />
-
-      <ConfirmDialog
-        isOpen={showLogoutConfirm}
-        onClose={() => setShowLogoutConfirm(false)}
-        onConfirm={handleLogout}
-        title="Logout"
-        message="Are you sure you want to logout?"
-        confirmLabel="Logout"
-        cancelLabel="Cancel"
-        variant="primary"
       />
 
       {/* Loading overlay for deletion */}
