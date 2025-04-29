@@ -53,7 +53,7 @@ This full-stack application consists of:
 ## 📁 Project Structure
 
 ```sh
-FHIR-MedAI-Dashboard/
+labsexplained/
 ├── frontend/                 # React + TypeScript frontend
 │   ├── src/                 # Source files
 │   ├── public/              # Static assets
@@ -111,8 +111,8 @@ For detailed API documentation, see [docs](docs/api.md).
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/FHIR-MedAI-Dashboard.git
-cd FHIR-MedAI-Dashboard
+git clone https://github.com/yourusername/labsexplained.git
+cd labsexplained
 ```
 
 2. Set up the backend:
