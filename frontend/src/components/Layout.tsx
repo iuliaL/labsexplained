@@ -10,6 +10,8 @@ import Login from "./Auth/Login";
 import NotFound from "./NotFound";
 import { SessionProvider } from "../contexts/SessionContext";
 import { AuthProvider } from "../contexts/AuthContext";
+import ProtectedContainer from "./ui/ProtectedContainer";
+
 export default function Layout() {
   return (
     <BrowserRouter>
@@ -31,40 +33,44 @@ export default function Layout() {
             <Route path="/wizard/upload" element={<PatientWizard initialStep="upload" />} />
 
             {/* Protected admin routes */}
-            <Route
-              path="/admin/patients"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/patients/:fhirId"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <PatientDetails />
-                </ProtectedRoute>
-              }
-            />
+            <Route element={<ProtectedContainer />}>
+              <Route
+                path="/admin/patients"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/patients/:fhirId"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <PatientDetails />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
 
             {/* Protected patient routes */}
-            <Route
-              path="/patient/:fhirId"
-              element={
-                <ProtectedRoute validateFhirId>
-                  <PatientDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/wizard/upload/:fhirId"
-              element={
-                <ProtectedRoute validateFhirId>
-                  <PatientWizard initialStep="upload" />
-                </ProtectedRoute>
-              }
-            />
+            <Route element={<ProtectedContainer />}>
+              <Route
+                path="/patient/:fhirId"
+                element={
+                  <ProtectedRoute validateFhirId>
+                    <PatientDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/wizard/upload/:fhirId"
+                element={
+                  <ProtectedRoute validateFhirId>
+                    <PatientWizard initialStep="upload" />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
 
             {/* Not Found route */}
             <Route path="*" element={<NotFound />} />

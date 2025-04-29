@@ -7,7 +7,7 @@ interface WelcomeStepProps {
 export const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => (
   <div className="text-center space-y-6">
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-slate-900">Understand your lab results with AI</h2>
+      <h2 className="text-2xl font-bold text-slate-900">Understand your lab results with AI</h2>      
       <p className="text-slate-600 max-w-md mx-auto">
         Upload your lab results and get instant, personalized interpretations powered by advanced AI. Our system helps
         you understand your health data in plain language.

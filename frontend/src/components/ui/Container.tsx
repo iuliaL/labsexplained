@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import { UserIcon } from "../icons/UserIcon";
-import doctorImage from "../../assets/supawork-medic.png";
+import { BrandLogo } from "../ui/BrandLogo";
+
+import doctorImage from "../../assets/supawork-medic-logo.png";
 
 interface ContainerProps {
   children: ReactNode;
@@ -31,7 +33,7 @@ export default function Container({ children, title, subtitle }: ContainerProps)
         </div>
 
         <div className="w-full max-w-md">
-          {/* Logo and Title */}
+          {/* Title */}
           <div className="text-center mb-5">
             <div className="h-8 w-8 mx-auto text-blue-600 mb-2">
               <UserIcon className="w-full h-full" />
