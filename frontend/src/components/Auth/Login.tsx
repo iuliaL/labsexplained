@@ -63,7 +63,13 @@ export default function Login() {
           onBack={() => setShowForgotPassword(false)}
         />
       ) : (
-        <div className="space-y-6">
+        <form
+          className="space-y-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleLogin();
+          }}
+        >
           {/* Explanation Card */}
           <div className="bg-blue-50 rounded-lg p-3 mb-6">
             <div className="flex items-start">
@@ -113,7 +119,7 @@ export default function Login() {
 
           <div className="space-y-2">
             <button
-              onClick={handleLogin}
+              type="submit"
               disabled={!formData.email || !formData.password || loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400"
             >
@@ -146,6 +152,7 @@ export default function Login() {
               )}
             </button>
             <button
+              type="button"
               onClick={() => setShowForgotPassword(true)}
               disabled={loading}
               className="text-xs font-medium text-blue-600 hover:text-blue-500"
@@ -153,6 +160,7 @@ export default function Login() {
               Forgot your password?
             </button>
             <button
+              type="button"
               onClick={() => navigate("/wizard/account")}
               disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -160,7 +168,7 @@ export default function Login() {
               Create Account
             </button>
           </div>
-        </div>
+        </form>
       )}
     </Container>
   );
