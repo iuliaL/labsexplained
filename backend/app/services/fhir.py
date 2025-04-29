@@ -139,6 +139,27 @@ def get_fhir_observations(observation_ids: list):
 
     return full_observations
 
+def get_fhir_observation(observation_id: str):
+    """
+    Fetches single Observation details from the FHIR server using ID.
+
+    Args:
+        observation_id: str.
+
+    Returns:
+        Observation resources
+    """
+    try:
+        response = requests.get(f"{FHIR_SERVER_URL}/Observation/{observation_id}")
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return None
+        
+    except HTTPException as e:
+        return {"error": f"Error fetching Observation {observation_id}: {e}"}
+    
     
 
 def remove_fhir_observation(observation_id: str):

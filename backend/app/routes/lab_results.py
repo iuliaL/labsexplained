@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from datetime import datetime
 from typing import Optional
 import re
-from app.services.fhir import send_lab_results_to_fhir, remove_all_observations_for_patient, remove_fhir_observation, get_fhir_observations
+from app.services.fhir import send_lab_results_to_fhir, remove_all_observations_for_patient, remove_fhir_observation, get_fhir_observations, get_fhir_observation
 from app.utils.file_parser import extract_text
 from app.services.openai import extract_lab_results_with_gpt, interpret_full_lab_set
 from app.models.lab_test_set import get_lab_test_sets_for_patient, remove_lab_test_set, store_lab_test_set, get_lab_test_set_by_id, update_lab_test_set
@@ -244,10 +244,10 @@ async def get_observation(observation_id: str):
         dict: The observation data.
     """
     try:
-        observations = get_fhir_observations([observation_id])
-        if not observations:
+        observation = get_fhir_observation(observation_id)
+        if not observation:
             raise HTTPException(status_code=404, detail="Observation not found")
-        return {"observations": observations}
+        return observation
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
