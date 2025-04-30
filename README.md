@@ -14,6 +14,10 @@ This full-stack application consists of:
 - 🎨 **TailwindCSS** for beautiful, responsive design
 - 📝 **OCR.space** for extracting text from lab result documents
 
+## Architecture
+
+![LabsExplained Architecture](docs/architecture.png)
+
 ## 👥 User Roles and Capabilities
 
 ### Patient
