@@ -62,7 +62,9 @@ export default function Layout() {
                   </ProtectedRoute>
                 }
               />
-              <Route
+
+            </Route>
+            <Route
                 path="/wizard/upload/:fhirId"
                 element={
                   <ProtectedRoute validateFhirId>
@@ -70,7 +72,6 @@ export default function Layout() {
                   </ProtectedRoute>
                 }
               />
-            </Route>
 
             {/* Not Found route */}
             <Route path="*" element={<NotFound />} />
