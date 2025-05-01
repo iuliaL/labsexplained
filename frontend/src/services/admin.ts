@@ -8,8 +8,9 @@ export interface Patient {
   birth_date: string;
   gender: string;
   fhir_id: string;
-  lab_test_count: number;
+  lab_set_count: number;
   interpreted_count: number;
+  is_admin: string;
 }
 
 export interface LabTestSet {

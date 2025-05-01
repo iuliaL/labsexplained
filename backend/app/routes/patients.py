@@ -125,7 +125,7 @@ async def get_patients(page: Optional[int] = 1,
         total_lab_sets = len(lab_test_sets)
         interpreted_sets = sum(1 for test_set in lab_test_sets if test_set.get('interpretation'))
         
-        patient_dict['lab_test_count'] = total_lab_sets
+        patient_dict['lab_set_count'] = total_lab_sets
         patient_dict['interpreted_count'] = interpreted_sets
         
         formatted_patients.append(patient_dict)
