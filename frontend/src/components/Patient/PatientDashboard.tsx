@@ -224,43 +224,51 @@ export function PatientDashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-sm mb-8 overflow-hidden relative">
-          {/* Content */}
-          <div className="p-6 relative z-10">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <UserIcon className="h-12 w-12 text-gray-600" />
-                </div>
-                <div className="flex-1">
-                  <h1 className="text-2xl font-semibold text-slate-900">
-                    Welcome, {patient?.first_name} {patient?.last_name}
-                  </h1>
-                  <div className="text-sm font-medium text-blue-600 mt-1">
-                    {patient ? calculateAge(patient.birth_date) : "--"}
-                  </div>
-                  <div className="text-sm text-slate-500 mt-1">{patient?.email}</div>
-                  <br></br>
-                  <p className="text-xl text-slate-600 mt-2">
-                    Here are your lab test results and their interpretations
-                  </p>
-                  <div className="text-sm text-slate-500 mt-2">
-                    Last updated: {formatDate(lastUpdated.toISOString(), "DD.MM.YYYY HH:mm")}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Background image positioned absolutely */}
-          <div className="absolute top-0 right-0 h-full w-1/2 pointer-events-none">
+        <div className="bg-white rounded-2xl shadow-lg mb-8 overflow-hidden relative flex flex-col sm:flex-row items-stretch">
+          {/* Mobile background image, full container */}
+          <div className="block sm:hidden absolute inset-0 w-full h-full pointer-events-none z-0">
             <img
               src={labTestImage}
               alt="Lab equipment"
-              className="h-full w-full object-cover object-center opacity-90"
+              className="w-full h-full object-cover object-center opacity-40"
               style={{
-                maskImage: "linear-gradient(to left, black 40%, transparent 100%)",
-                WebkitMaskImage: "linear-gradient(to left, black 40%, transparent 100%)",
+                maskImage: "linear-gradient(to bottom, black 40%, transparent 100%)",
+                WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent 100%)",
+              }}
+            />
+          </div>
+          {/* Content */}
+          <div className="flex-1 p-4 sm:p-8 flex flex-col justify-center items-center sm:items-start z-10">
+            <div className="flex flex-col items-center sm:items-start w-full">
+              <UserIcon className="h-4 w-4 hidden text-gray-400 mb-2" />
+              <h1 className="text-lg sm:text-2xl font-bold text-slate-900 text-center sm:text-left">
+                Welcome, {patient?.first_name} {patient?.last_name}
+              </h1>
+              <div className="flex items-center gap-2 mt-1 mb-6 sm:mb-4">
+                {patient.birth_date && (
+                  <span className="inline-block px-2 py-0.5 text-xs sm:text-sm font-medium bg-blue-50 text-blue-700 rounded-full">
+                    {calculateAge(patient.birth_date)}
+                  </span>
+                )}
+                <span className="text-xs sm:text-sm text-gray-700">{patient?.email}</span>
+              </div>
+              <p className=" sm:text-xl sm:mt-4 font-semibold text-center sm:text-left">
+                Here are your lab test results and their interpretations
+              </p>
+              <div className="text-xs text-gray-700 mt-2 text-center sm:text-left">
+                Last updated: {formatDate(lastUpdated.toISOString(), "DD.MM.YYYY HH:mm")}
+              </div>
+            </div>
+          </div>
+          {/* Background image, subtle and right-aligned for desktop */}
+          <div className="hidden sm:block absolute inset-y-0 right-0 w-1/2 pointer-events-none">
+            <img
+              src={labTestImage}
+              alt="Lab equipment"
+              className="h-full w-full object-cover object-center opacity-70"
+              style={{
+                maskImage: "linear-gradient(to left, black 60%, transparent 100%)",
+                WebkitMaskImage: "linear-gradient(to left, black 60%, transparent 100%)",
               }}
             />
           </div>
@@ -278,7 +286,7 @@ export function PatientDashboard() {
 
             <Link
               to={`/wizard/upload/${fhirId}`}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-2 py-1 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <svg
                 className="-ml-1 mr-2 h-5 w-5"
