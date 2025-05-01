@@ -124,8 +124,7 @@ export function AdminDashboard() {
                           isAdmin ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"
                         }`}
                       >
-                        {isAdmin && <AdminIcon width={12} height={12} className="inline-block" />}
-                        {!isAdmin && <PatientIcon width={12} className="inline-block" />}
+                        {isAdmin ? <AdminIcon width={12} height={12} className="inline-block" /> : <PatientIcon width={12} className="inline-block" />}
                         <span className="hidden sm:text-xs sm:inline">{isAdmin ? "Admin" : "Patient"}</span>
                       </span>
                     </div>
@@ -195,7 +194,7 @@ export function AdminDashboard() {
                   </div>
                 </div>
                 {/* Info rows */}
-                <div className="flex flex-wrap gap-x-6 gap-y-1 mt-1">
+                <div className="flex flex-wrap gap-x-6 gap-y-1 my-1">
                   <div className="text-xs sm:text-sm text-slate-500">
                     <b>FHIR ID:</b> {patient.fhir_id}
                   </div>
@@ -203,7 +202,7 @@ export function AdminDashboard() {
                     <b>Gender:</b> {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}
                   </div>
                   <div className="text-xs sm:text-sm text-slate-500">
-                    <b>Born:</b> {formatDate(patient.birth_date)}
+                    <b>Date of birth:</b> {formatDate(patient.birth_date)}
                   </div>
                 </div>
                 {/* Lab sets and interpreted count */}
