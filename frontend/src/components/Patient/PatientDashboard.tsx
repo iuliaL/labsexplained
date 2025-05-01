@@ -4,6 +4,7 @@ import { adminService, Patient, LabTestSet } from "../../services/admin";
 import { formatDate } from "../../utils/dateFormatter";
 import { UserIcon } from "../icons/UserIcon";
 import { LabTestIcon } from "../icons/LabTestIcon";
+import LabSetIcon from "../icons/LabSetIcon";
 import labTestImage from "../../assets/lab-test.jpeg";
 import { Interpretation } from "../Interpretation";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
@@ -99,8 +100,6 @@ export function PatientDashboard() {
       const observationPromises = labSet.observations.map((obs) => adminService.getLabSetObservations(obs.id));
       const observationResults = await Promise.all(observationPromises);
       const allObservations = observationResults.flat().filter((obs) => obs && typeof obs === "object");
-
-      console.log("Debug - Received observations:", allObservations);
 
       if (!Array.isArray(allObservations)) {
         console.error("Invalid observations data received");
@@ -307,7 +306,7 @@ export function PatientDashboard() {
                 <div key={testSet.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                   {/* Lab Set Header - always visible */}
                   <div
-                    className="p-6 border-b border-slate-200 cursor-pointer hover:bg-slate-50/80 transition-colors duration-200"
+                    className="p-4 sm:p-6 border-b border-slate-200 cursor-pointer hover:bg-slate-50/80 transition-colors duration-200"
                     onClick={() => {
                       if (expandedSetId !== testSet.id) {
                         setExpandedSetId(testSet.id);
@@ -320,12 +319,14 @@ export function PatientDashboard() {
                     <div className="flex items-center gap-2">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <LabTestIcon className="h-5 w-5 text-blue-600" />
-                          <h3 className="text-md font-semibold text-slate-900">
-                            Lab set from {formatDate(testSet.test_date)}
+                          <LabSetIcon className="h-5 w-5 text-blue-600" />
+
+                          <h3 className="text-sm sm:text-lg font-semibold text-slate-900 sm:text-md -ml-2 sm:ml-0">
+                            <span className="sm:inline hidden">Lab set from</span> {formatDate(testSet.test_date)}
                           </h3>
-                          <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full ring-1 ring-blue-700/10">
-                            {testSet.observations.length} tests
+                          <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full ring-1 ring-blue-700/10 flex items-center gap-1">
+                            <LabTestIcon className="h-4 w-4 text-blue-600" />
+                            {testSet.observations.length}
                           </span>
 
                           {!testSet.interpretation && (
@@ -353,7 +354,7 @@ export function PatientDashboard() {
                               setShowDeleteConfirm(true);
                             }}
                             disabled={isDeletingSet}
-                            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md disabled:opacity-50 transition-colors duration-200"
+                            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md disabled:opacity-50 transition-colors duration-200 sm:flex sm:gap-1.5 sm:px-2.5 sm:py-1 sm:text-xs sm:font-medium sm:text-red-600 sm:bg-red-50 sm:hover:bg-red-100 sm:rounded-md sm:disabled:opacity-50 sm:transition-colors sm:duration-200"
                             title="Delete lab set"
                           >
                             <svg
@@ -373,7 +374,9 @@ export function PatientDashboard() {
                               <line x1="10" y1="11" x2="10" y2="17" />
                               <line x1="14" y1="11" x2="14" y2="17" />
                             </svg>
-                            {isDeletingSet && deletingSetId === testSet.id ? "Deleting..." : "Delete"}
+                            <span className="hidden sm:inline">
+                              {isDeletingSet && deletingSetId === testSet.id ? "Deleting..." : "Delete"}
+                            </span>
                           </button>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -395,7 +398,7 @@ export function PatientDashboard() {
                       <div
                         className={`text-blue-400 transform transition-transform duration-200 ${
                           expandedSetId === testSet.id ? "rotate-180" : ""
-                        }`}
+                        } flex self-start sm:self-center`}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -492,7 +495,7 @@ export function PatientDashboard() {
                       </div>
 
                       {/* Interpretation Section */}
-                      <div className="p-6 bg-slate-50">
+                      <div className="px-0 py-6 sm:p-6 bg-slate-50">
                         {(loadingInitialObservations && testSet.id === labTestSets[0]?.id) ||
                         !observations[testSet.id] ? (
                           <InterpretationSkeleton />
