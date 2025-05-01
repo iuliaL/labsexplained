@@ -5,7 +5,6 @@ import { formatDate } from "../../utils/dateFormatter";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { Pagination } from "../ui/Pagination";
 import AdminIcon from "../icons/AdminIcon";
-import LabSetIcon from "../icons/LabSetIcon";
 import PatientIcon from "../icons/PatientIcon";
 import { LabTestIcon } from "../icons/LabTestIcon";
 
