@@ -177,7 +177,7 @@ export function PatientDetails() {
         <div>
           <div className="flex items-center gap-3 mb-4">
             <h2 className="text-lg font-semibold text-slate-900">Lab Sets</h2>
-            <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full ring-1 ring-blue-700/10">
+            <span className="px-2.5 py-0.5 text-xs sm:text-sm font-medium bg-blue-100 text-blue-700 rounded-full ring-1 ring-blue-700/10">
               {pagination.total} total
             </span>
             {interpreted_count === lab_set_count ? (
@@ -190,6 +190,7 @@ export function PatientDetails() {
               </span>
             )}
           </div>
+          {/* Lab Sets */}
           {labTestSets.length === 0 ? (
             <p className="text-sm text-slate-500">No lab sets available</p>
           ) : (
