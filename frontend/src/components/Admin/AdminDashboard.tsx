@@ -124,14 +124,14 @@ export function AdminDashboard() {
                           isAdmin ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"
                         }`}
                       >
-                        {isAdmin && <AdminIcon width={12} height={12} className="inline-block"/>}
+                        {isAdmin && <AdminIcon width={12} height={12} className="inline-block" />}
                         <span className="hidden sm:text-xs sm:inline">{isAdmin ? "Admin" : "Patient"}</span>
                       </span>
                     </div>
                     <span className="text-xs sm:text-sm text-slate-500 mt-0.5">{patient.email}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                  {!patient.is_admin && (
+                    {!patient.is_admin && (
                       <button
                         onClick={() => {
                           /* TODO: implement make admin */
@@ -191,7 +191,6 @@ export function AdminDashboard() {
                       </svg>
                       <span className="hidden  sm:text-xs md:text-sm sm:inline">View Details</span>
                     </button>
-           
                   </div>
                 </div>
                 {/* Info rows */}
