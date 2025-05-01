@@ -7,10 +7,12 @@ export interface LoginResponse {
   role?: string;
 }
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
+const LOCALHOST = "http://localhost:8000";
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || LOCALHOST;
 
 if (!process.env.REACT_APP_API_BASE_URL) {
-  console.warn("REACT_APP_API_BASE_URL is not defined in environment variables. Using fallback: http://localhost:8000");
+  console.warn(`REACT_APP_API_BASE_URL is not defined in environment variables. Using fallback: ${LOCALHOST}`);
 }
 
 // Helper function to get the auth token from cookies

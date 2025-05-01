@@ -54,7 +54,6 @@ export const Select: React.FC<SelectProps> = ({
         <button
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          aria-required={required}
           aria-expanded={isOpen}
           aria-labelledby={id}
           className={`

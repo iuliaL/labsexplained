@@ -12,3 +12,4 @@ OCR_SPACE_API_KEY = os.getenv("OCR_SPACE_API_KEY")
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
+FRONTEND_URL = os.getenv("FRONTEND_URL")

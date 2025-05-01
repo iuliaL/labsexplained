@@ -1,7 +1,5 @@
 import { ReactNode } from "react";
 import { UserIcon } from "../icons/UserIcon";
-import { BrandLogo } from "../ui/BrandLogo";
-
 import doctorImage from "../../assets/supawork-medic-logo.png";
 
 interface ContainerProps {

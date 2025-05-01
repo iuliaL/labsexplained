@@ -5,7 +5,8 @@ from app.utils.auth import admin_required, verify_password, create_access_token,
 from app.services.email_service import send_password_reset_email
 from datetime import datetime, timedelta, timezone
 import secrets
-import os
+from app.config import FRONTEND_URL
+
 
 router = APIRouter()
 
@@ -70,7 +71,7 @@ async def forgot_password(request: ForgotPasswordRequest):
     update_reset_token(request.email, reset_token, expires_at)
     
     # Send the reset email
-    reset_link = f"{os.getenv('FRONTEND_URL')}/reset-password?token={reset_token}"
+    reset_link = f"{FRONTEND_URL}/reset-password?token={reset_token}"
     try:
         # Send the reset email
         send_password_reset_email(to_email=request.email, reset_link=reset_link)
