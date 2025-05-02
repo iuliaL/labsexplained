@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from app.models.patient import search_patient_by_email, assign_admin, update_reset_token, update_password, check_reset_token_expiration
 from pydantic import BaseModel
 from app.utils.auth import admin_required, verify_password, create_access_token, set_password
@@ -16,14 +17,12 @@ class LoginInput(BaseModel):
 
 
 @router.post("/login")
-async def login(credentials: LoginInput):
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     # Search for patient by email
-    user = search_patient_by_email(credentials.email)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    user = search_patient_by_email(form_data.username)
 
-    # Verify the password
-    if not verify_password(credentials.password, user["password"]):
+    # user = search_patient_by_email(credentials.email)
+    if not user or not verify_password(form_data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     # Create JWT token (expires in 1 hour)
@@ -33,8 +32,13 @@ async def login(credentials: LoginInput):
         "sub": user["email"],
         "role": "admin" if user.get("is_admin") else "patient"
     }, expires_delta=timedelta(hours=ACCESS_TOKEN_EXPIRATION_HOURS))
-    return {"message": "Login successful", "access_token": token, "token_type": "Bearer", "fhir_id": user["fhir_id"], 
-            "role": "admin" if user.get("is_admin") else "patient"}
+    return {
+            "message": "Login successful",
+            "access_token": token,
+            "token_type": "Bearer",
+            "fhir_id": user["fhir_id"], 
+            "role": "admin" if user.get("is_admin") else "patient"
+            }
 
 
 @router.get("/check-email")

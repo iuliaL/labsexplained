@@ -129,7 +129,6 @@ export const adminService = {
     return apiRequest<LabTestSet>(`${API_BASE_URL}/lab_set`, {
       method: "POST",
       body: formData,
-      isFormData: true,
     });
   },
 

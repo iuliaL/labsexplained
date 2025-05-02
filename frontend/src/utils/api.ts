@@ -2,14 +2,15 @@ import { authService } from "../services/auth";
 
 const PUBLIC_ENDPOINTS = ["/auth/login", "/auth/forgot-password", "/auth/reset-password", "/auth/check-email"];
 
-interface RequestOptions extends RequestInit {
-  isFormData?: boolean;
-}
 
-export async function apiRequest<T>(url: string, options: RequestOptions = {}): Promise<T> {
+export async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {};
 
-  if (!options.isFormData) {
+  // Detect body type and set Content-Type only when appropriate
+  const isFormData = options.body instanceof FormData;
+  const isURLEncoded = options.body instanceof URLSearchParams;
+
+  if (!isFormData && !isURLEncoded) {
     headers["Content-Type"] = "application/json";
   }
 

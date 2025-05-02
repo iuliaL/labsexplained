@@ -91,10 +91,16 @@ export const authService = {
   },
 
   async login(email: string, password: string): Promise<LoginResponse> {
+    const formData = new URLSearchParams();
+    formData.append("username", email); // 👈 key must be "username"
+    formData.append("password", password);
     try {
       const data = await apiRequest<LoginResponse>(`${API_BASE_URL}/auth/login`, {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: formData,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
       });
 
       // Store all auth data in cookies
