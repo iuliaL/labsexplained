@@ -14,8 +14,9 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeletingPatient, setIsDeletingPatient] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);  
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [isMakingAdmin, setIsMakingAdmin] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationMetadata>({
     total: 0,
     page: 1,
@@ -47,6 +48,15 @@ export function AdminDashboard() {
 
   const handleViewPatient = (fhirId: string) => {
     navigate(`/admin/patients/${fhirId}`);
+  };
+
+  const handleMakeAdmin = async (email: string) => {
+    try {
+      await adminService.makeAdmin(email);
+      await fetchPatients(pagination.page);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to make admin");
+    }
   };
 
   const handleDeleteClick = (fhirId: string) => {
@@ -134,18 +144,23 @@ export function AdminDashboard() {
                     {!patient.is_admin && (
                       <button
                         onClick={() => {
-                          /* TODO: implement make admin */
+                          setIsMakingAdmin(patient.email);
                         }}
+                        disabled={!!isMakingAdmin}
                         className="p-2 sm:px-2.5 sm:py-1.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md flex items-center gap-1.5"
                         title="Make Admin"
                       >
                         <AdminIcon className="w-4 h-4" />
-                        <span className="hidden sm:text-xs md:text-sm sm:inline">Make Admin</span>
+                        {isMakingAdmin === patient.email ? (
+                          <span className="hidden sm:text-xs md:text-sm sm:inline">Making admin...</span>
+                        ) : (
+                          <span className="hidden sm:text-xs md:text-sm sm:inline">Make Admin</span>
+                        )}
                       </button>
                     )}
                     <button
                       onClick={() => handleDeleteClick(patient.fhir_id)}
-                      disabled={isDeletingPatient}
+                      disabled={isDeletingPatient || !!isMakingAdmin}
                       className="p-2 sm:px-2.5 sm:py-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-md disabled:opacity-50 flex items-center gap-1.5"
                       title="Delete patient"
                     >
@@ -239,6 +254,16 @@ export function AdminDashboard() {
         confirmLabel="Delete"
         cancelLabel="Cancel"
         variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={isMakingAdmin !== null}
+        onClose={() => setIsMakingAdmin(null)}
+        onConfirm={() => isMakingAdmin &&handleMakeAdmin(isMakingAdmin)}
+        title="Make Admin"
+        message="Are you sure you want to make this patient an admin?"
+        confirmLabel="Make Admin"
+        cancelLabel="Cancel"
+        variant="primary"
       />
 
       {/* Loading overlay for deletion */}

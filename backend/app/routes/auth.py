@@ -14,6 +14,7 @@ class LoginInput(BaseModel):
     email: str
     password: str
 
+
 @router.post("/login")
 async def login(credentials: LoginInput):
     # Search for patient by email
@@ -44,8 +45,9 @@ async def check_patient_exists(email):
     return {"message": "Patient not found. You can register now.", "exists": False}
 
 
-@router.put("/assign-admin")
+@router.get("/assign-admin")
 async def assign_admin_role(email: str, current_user: dict = Depends(admin_required)):
+    """Assign admin role to a patient."""
     assign_admin(email)
     return {"message": f"{email} is now an admin"}
 

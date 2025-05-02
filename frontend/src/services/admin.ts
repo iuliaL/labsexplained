@@ -144,4 +144,8 @@ export const adminService = {
       method: "DELETE",
     });
   },
+
+  async makeAdmin(email: string): Promise<void> {
+    await apiRequest(`${API_BASE_URL}/auth/assign-admin?email=${email}`);
+  },
 };
