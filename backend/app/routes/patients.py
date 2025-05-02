@@ -5,7 +5,7 @@ from datetime import timedelta
 from app.services.fhir import create_fhir_patient, delete_fhir_patient, remove_all_observations_for_patient, get_fhir_observations
 from app.models.patient import store_patient, Patient, get_patients as get_patients_from_db, get_patient as get_patient_from_db, delete_patient as delete_patient_from_db, search_patient_by_email
 from app.models.lab_test_set import get_lab_test_sets_for_patient
-from app.utils.auth import create_access_token, admin_required, set_password, self_or_admin_required
+from app.utils.auth import admin_required, set_password, self_or_admin_required
 
 router = APIRouter()
 
@@ -175,10 +175,14 @@ async def get_patient(fhir_id: str,
 @router.delete("/patients/{fhir_id}")
 async def delete_patient(fhir_id: str, current_user: dict = Depends(admin_required)):
     """Deletes a patient from both MongoDB and the FHIR server"""
-    patient = get_patient(fhir_id)
+    patient = get_patient_from_db(fhir_id)
     
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
+
+    # Prevent admin from deleting themselves
+    if patient["email"] == current_user["email"]:
+        raise HTTPException(status_code=403, detail="You cannot delete your own account")
 
     # First delete all observations for this patient
     obs_result = remove_all_observations_for_patient(fhir_id)

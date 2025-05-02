@@ -28,6 +28,7 @@ async def login(credentials: LoginInput):
 
     # Create JWT token (expires in 1 hour)
     ACCESS_TOKEN_EXPIRATION_HOURS = 1
+    # we store the email and role in the token
     token = create_access_token(data={
         "sub": user["email"],
         "role": "admin" if user.get("is_admin") else "patient"

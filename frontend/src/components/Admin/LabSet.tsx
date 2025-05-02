@@ -181,7 +181,7 @@ export function LabSet({
                   ) : !Array.isArray(observations) || observations.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="px-6 py-4 text-center text-sm text-slate-500">
-                        No observations available
+                        No test results available
                       </td>
                     </tr>
                   ) : (
@@ -224,9 +224,11 @@ export function LabSet({
 
             {/* Interpretation Section */}
             <div className="px-0 py-6 sm:p-6 bg-slate-50">
-              {isLoadingResults || !observations ? (
+              {isLoadingResults && !observations ? (
                 <InterpretationSkeleton />
-              ) : testSet.interpretation ? (
+              ) : observations?.length === 0 ? (
+                <div>No test results to interpret.</div>
+              ): testSet.interpretation ? (
                 <Interpretation content={testSet.interpretation} />
               ) : (
                 <div className="text-sm text-slate-500 py-2">

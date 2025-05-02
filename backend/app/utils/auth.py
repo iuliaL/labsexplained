@@ -10,7 +10,7 @@ from app.models.patient import get_patient as get_patient_from_db
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = timedelta(hours=1)):
-    """Generate JWT token."""
+    """Generate JWT token with subject (email) and role (admin or patient)."""
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
