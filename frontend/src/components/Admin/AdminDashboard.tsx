@@ -7,9 +7,10 @@ import { Pagination } from "../ui/Pagination";
 import AdminIcon from "../icons/AdminIcon";
 import PatientIcon from "../icons/PatientIcon";
 import { LabTestIcon } from "../icons/LabTestIcon";
-
+import { useAuth } from "../../contexts/AuthContext";
 export function AdminDashboard() {
   const navigate = useNavigate();
+  const { fhirId } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -129,6 +130,7 @@ export function AdminDashboard() {
                       <h2 className="text-base sm:text-lg font-semibold text-slate-900">
                         {patient.first_name} {patient.last_name}
                       </h2>
+                      {patient.fhir_id === fhirId && <span className="text-xs sm:text-sm text-blue-500 font-semibold">(You)</span>}
                       <span
                         className={`px-2 py-0.5 text-xs sm:text-sm font-semibold rounded-full flex items-center gap-1 ${
                           isAdmin ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"
@@ -160,7 +162,7 @@ export function AdminDashboard() {
                     )}
                     <button
                       onClick={() => handleDeleteClick(patient.fhir_id)}
-                      disabled={isDeletingPatient || !!isMakingAdmin}
+                      disabled={isDeletingPatient || !!isMakingAdmin || patient.fhir_id === fhirId}
                       className="p-2 sm:px-2.5 sm:py-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-md disabled:opacity-50 flex items-center gap-1.5"
                       title="Delete patient"
                     >
