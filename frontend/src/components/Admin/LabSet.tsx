@@ -25,7 +25,7 @@ interface Observation {
 
 interface LabSetProps {
   testSet: LabTestSet;
-  observations?: Observation[];
+  observations: Observation[] | null;
   isLoadingResults: boolean;
   isDeleting: boolean;
   isExpanded: boolean;
@@ -46,7 +46,6 @@ export function LabSet({
   onExpand,
   onInterpret,
 }: LabSetProps) {
-
   return (
     <>
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -179,12 +178,6 @@ export function LabSet({
                   {/*  Loading Skeleton for first lab set when loading the page*/}
                   {isLoadingResults ? (
                     TableSkeleton
-                  ) : !observations ? (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-4 text-center text-sm text-slate-500">
-                        Loading observations...
-                      </td>
-                    </tr>
                   ) : !Array.isArray(observations) || observations.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="px-6 py-4 text-center text-sm text-slate-500">

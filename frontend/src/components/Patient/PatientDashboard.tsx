@@ -41,7 +41,7 @@ export function PatientDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [loadingInitialObservations, setLoadingInitialObservations] = useState(false);
+  const [loadingObservations, setLoadingObservations] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingSetId, setDeletingSetId] = useState<string | null>(null);
   const [isDeletingSet, setIsDeletingSet] = useState(false);
@@ -94,6 +94,7 @@ export function PatientDashboard() {
         console.error("Lab set not found:", labSetId);
         return;
       }
+      setLoadingObservations(true);
 
       const observationPromises = labSet.observations.map((obs) => adminService.getLabSetObservations(obs.id));
       const observationResults = await Promise.all(observationPromises);
@@ -110,6 +111,8 @@ export function PatientDashboard() {
     } catch (err) {
       console.error("Failed to load observations:", err);
       setObservations((prev) => ({ ...prev, [labSetId]: [] }));
+    } finally {
+      setLoadingObservations(false);
     }
   };
 
@@ -128,6 +131,7 @@ export function PatientDashboard() {
   };
 
   const handleExpand = (testSetId: string) => {
+    if (loadingObservations) return;
     if (expandedSetId !== testSetId) {
       setExpandedSetId(testSetId);
       loadObservationsForSet(testSetId);
@@ -168,15 +172,16 @@ export function PatientDashboard() {
         // Then get the lab test sets
         const response = await adminService.getPatientLabTests(fhirId!, pagination.page, pagination.page_size);
         const labTestData = response.lab_test_sets;
-        setLoading(false);
         setLabTestSets(labTestData);
         setPagination(response.pagination);
+        setLoading(false);
+
 
         // If we have lab tests, expand and load the most recent one
         if (labTestData.length > 0) {
           const mostRecentTest = labTestData[0];
           setExpandedSetId(mostRecentTest.id);
-          setLoadingInitialObservations(true);
+          setLoadingObservations(true);
 
           try {
             // Load observations for the most recent test
@@ -190,7 +195,7 @@ export function PatientDashboard() {
           } catch (err) {
             console.error("Failed to load initial observations:", err);
           } finally {
-            setLoadingInitialObservations(false);
+            setLoadingObservations(false);
           }
         }
       } catch (err) {
@@ -287,7 +292,7 @@ export function PatientDashboard() {
             <span className="flex items-center gap-3">
               <h2 className="text-lg font-medium text-slate-900">Lab Sets</h2>
               <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full ring-1 ring-blue-700/10">
-                {pagination.total} total
+                {labTestSets.length} total
               </span>
             </span>
 
@@ -322,7 +327,7 @@ export function PatientDashboard() {
                   key={testSet.id}
                   testSet={testSet}
                   observations={observations[testSet.id]}
-                  isLoadingResults={loadingInitialObservations}
+                  isLoadingResults={loadingObservations}
                   isExpanded={expandedSetId === testSet.id}
                   onExpand={() => handleExpand(testSet.id)}
                   isDeleting={isDeletingSet}
