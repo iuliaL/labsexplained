@@ -3,7 +3,8 @@ from openai import OpenAI
 from datetime import datetime
 import json
 from app.config import GITHUB_TOKEN
-from app.utils.file_parser import clean_reference_range 
+from app.utils.file_parser import clean_reference_range
+
 
 def interpret_full_lab_set(lab_tests: list, birth_date: str, gender: str):
     """
@@ -20,24 +21,29 @@ def interpret_full_lab_set(lab_tests: list, birth_date: str, gender: str):
         str: AI-generated interpretation.
     """
     if not GITHUB_TOKEN:
-        raise ValueError("Missing Github Token. Set GITHUB_TOKEN as an environment variable.")
-    
+        raise ValueError(
+            "Missing Github Token. Set GITHUB_TOKEN as an environment variable."
+        )
 
     # ✅ Extract relevant lab test details from FHIR Observations
     extracted_tests = []
     for obs in lab_tests:
         if "resourceType" in obs and obs["resourceType"] == "Observation":
-            extracted_tests.append({
-                "name": obs["code"]["text"],
-                "value": obs.get("valueQuantity", {}).get("value", "N/A"),
-                "unit": obs.get("valueQuantity", {}).get("unit", "N/A"),
-                "reference_range": obs.get("referenceRange", [{}])[0].get("low", {}).get("value", "N/A")
-            })
+            extracted_tests.append(
+                {
+                    "name": obs["code"]["text"],
+                    "value": obs.get("valueQuantity", {}).get("value", "N/A"),
+                    "unit": obs.get("valueQuantity", {}).get("unit", "N/A"),
+                    "reference_range": obs.get("referenceRange", [{}])[0]
+                    .get("low", {})
+                    .get("value", "N/A"),
+                }
+            )
 
     # ✅ Convert to JSON for AI processing
     lab_results_json = json.dumps(extracted_tests, indent=2)
 
-    patient_age = calculate_age(birth_date) 
+    patient_age = calculate_age(birth_date)
 
     # ✅ Define the GPT prompt
     prompt = f"""
@@ -75,10 +81,8 @@ def interpret_full_lab_set(lab_tests: list, birth_date: str, gender: str):
     - Ensure the interpretation is medically informative, neutral in tone, and structured in a clear and professional manner.
     """
 
-   
     client = OpenAI(
-        base_url="https://models.inference.ai.azure.com",
-        api_key=GITHUB_TOKEN
+        base_url="https://models.inference.ai.azure.com", api_key=GITHUB_TOKEN
     )
 
     try:
@@ -86,21 +90,23 @@ def interpret_full_lab_set(lab_tests: list, birth_date: str, gender: str):
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=4096,
-            temperature=0.2  # Lower temperature for a more factual, deterministic response
+            temperature=0.2,  # Lower temperature for a more factual, deterministic response
         )
 
         return response.choices[0].message.content.strip()
-    
+
     except Exception as e:
         return f"Error generating interpretation: {str(e)}"
 
 
 def extract_lab_results_with_gpt(ocr_text: str):
     """Uses OpenAI's GPT to extract structured lab results from OCR-extracted text."""
-    
+
     if not GITHUB_TOKEN:
-        raise ValueError("Missing OpenAI API Key. Set your GITHUB_TOKEN as an environment variable.")
-    
+        raise ValueError(
+            "Missing OpenAI API Key. Set your GITHUB_TOKEN as an environment variable."
+        )
+
     # Define the GPT prompt for structured lab result extraction
     prompt = f"""
     You are an AI assistant that extracts lab test results from unstructured text.
@@ -143,15 +149,14 @@ def extract_lab_results_with_gpt(ocr_text: str):
     """
 
     client = OpenAI(
-        base_url="https://models.inference.ai.azure.com",
-        api_key=GITHUB_TOKEN
+        base_url="https://models.inference.ai.azure.com", api_key=GITHUB_TOKEN
     )
     try:
         ai_response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=4096,
-            temperature=0.2  # Low temperature for more deterministic responses
+            temperature=0.2,  # Low temperature for more deterministic responses
         )
 
         if not ai_response or not ai_response.choices:
@@ -172,7 +177,6 @@ def extract_lab_results_with_gpt(ocr_text: str):
             else:
                 test["reference_range"] = None  # Explicitly set to None if missing
 
-
         return extracted_results
 
     except json.JSONDecodeError:
@@ -182,19 +186,17 @@ def extract_lab_results_with_gpt(ocr_text: str):
         raise ValueError(f"Error calling OpenAI API: {e}")
 
 
-
-
 def calculate_age(birth_date_str: str):
     birth_date = datetime.strptime(birth_date_str, "%Y-%m-%d")
     today = datetime.today()
-    age_in_months = (today.year - birth_date.year) * 12 + (today.month - birth_date.month)
+    age_in_months = (today.year - birth_date.year) * 12 + (
+        today.month - birth_date.month
+    )
     if age_in_months < 24:
         prompt = f"{age_in_months // 12} year and {age_in_months % 12} months"
         # Use “pediatric” hint for the AI prompt
         prompt += "\nNote: This is a pediatric case. Interpret using pediatric reference ranges and considerations."
         return prompt
-    
+
     else:
         return f"{(today - birth_date).days // 365} years"
-
-

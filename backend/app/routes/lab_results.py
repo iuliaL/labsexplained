@@ -2,10 +2,22 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from datetime import datetime
 from typing import Optional
 import re
-from app.services.fhir import send_lab_results_to_fhir, remove_all_observations_for_patient, remove_fhir_observation, get_fhir_observations, get_fhir_observation
+from app.services.fhir import (
+    send_lab_results_to_fhir,
+    remove_all_observations_for_patient,
+    remove_fhir_observation,
+    get_fhir_observations,
+    get_fhir_observation,
+)
 from app.utils.file_parser import extract_text
 from app.services.openai import extract_lab_results_with_gpt, interpret_full_lab_set
-from app.models.lab_test_set import get_lab_test_sets_for_patient, remove_lab_test_set, store_lab_test_set, get_lab_test_set_by_id, update_lab_test_set
+from app.models.lab_test_set import (
+    get_lab_test_sets_for_patient,
+    remove_lab_test_set,
+    store_lab_test_set,
+    get_lab_test_set_by_id,
+    update_lab_test_set,
+)
 
 # Constants
 MAX_FILE_SIZE = 1024 * 1024  # 1MB in bytes
@@ -13,17 +25,18 @@ ALLOWED_MIME_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/jpg"]
 
 router = APIRouter()
 
+
 @router.get("/lab_set/{patient_fhir_id}")
 async def get_all_patient_lab_sets(
-    patient_fhir_id: str, 
+    patient_fhir_id: str,
     include_observations: bool = False,
     page: Optional[int] = 1,
-    page_size: Optional[int] = 5
+    page_size: Optional[int] = 5,
 ):
     """
     Retrieves all lab test sets for a specific patient with pagination.
     Lab sets are sorted by test date in descending order (newest first).
-    
+
     Args:
         patient_fhir_id (str): The patient's FHIR ID
         include_observations (bool): If True, fetches full observation details from FHIR
@@ -31,24 +44,26 @@ async def get_all_patient_lab_sets(
         page_size (int): Number of items per page
     """
     if page < 1:
-        raise HTTPException(status_code=400, detail="Page number must be greater than 0")
+        raise HTTPException(
+            status_code=400, detail="Page number must be greater than 0"
+        )
     if page_size < 1:
         raise HTTPException(status_code=400, detail="Page size must be greater than 0")
 
     # Get all lab test sets
     all_lab_test_sets = get_lab_test_sets_for_patient(patient_fhir_id)
-    
+
     # Sort lab test sets by test date in descending order (newest first)
     all_lab_test_sets.sort(key=lambda x: x["test_date"], reverse=True)
-    
+
     # Calculate pagination
     total_sets = len(all_lab_test_sets)
     total_pages = (total_sets + page_size - 1) // page_size
-    
+
     # Calculate slice indices
     start_idx = (page - 1) * page_size
     end_idx = start_idx + page_size
-    
+
     # Get the current page's lab sets
     current_page_sets = all_lab_test_sets[start_idx:end_idx]
 
@@ -64,8 +79,8 @@ async def get_all_patient_lab_sets(
             "total": total_sets,
             "page": page,
             "page_size": page_size,
-            "total_pages": total_pages
-        }
+            "total_pages": total_pages,
+        },
     }
 
 
@@ -73,12 +88,12 @@ async def get_all_patient_lab_sets(
 async def upload_patient_lab_test_set(
     patient_fhir_id: str = Form(...),
     test_date: str = Form(...),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
 ):
     """
     Uploads and processes a lab test set for a patient.
     Stores both observation IDs and test names in MongoDB.
-    
+
     File size limit: 1MB
     Accepted formats: PDF, JPEG, PNG
     """
@@ -87,17 +102,17 @@ async def upload_patient_lab_test_set(
         if file.content_type not in ALLOWED_MIME_TYPES:
             raise HTTPException(
                 status_code=415,
-                detail=f"Unsupported file type. Allowed types: PDF, JPEG, PNG"
+                detail=f"Unsupported file type. Allowed types: PDF, JPEG, PNG",
             )
 
         # Read initial chunk to check file size
         contents = await file.read()
         file_size = len(contents)
-        
+
         if file_size > MAX_FILE_SIZE:
             raise HTTPException(
                 status_code=413,
-                detail=f"File size ({file_size / 1024 / 1024:.1f}MB) exceeds maximum allowed size (1MB)"
+                detail=f"File size ({file_size / 1024 / 1024:.1f}MB) exceeds maximum allowed size (1MB)",
             )
 
         # Extract text from the file
@@ -105,20 +120,22 @@ async def upload_patient_lab_test_set(
 
         # Extract lab results using GPT
         lab_results = extract_lab_results_with_gpt(extracted_text)
-        
+
         # Send results to FHIR and get responses
-        fhir_responses = send_lab_results_to_fhir(lab_results, patient_fhir_id, test_date)
-        
+        fhir_responses = send_lab_results_to_fhir(
+            lab_results, patient_fhir_id, test_date
+        )
+
         # Store lab test set in MongoDB with full observation data
         lab_test_set = store_lab_test_set(
             patient_fhir_id=patient_fhir_id,
             test_date=test_date,
-            observations=fhir_responses
+            observations=fhir_responses,
         )
 
         # Convert ObjectId to string for JSON response
         lab_test_set["id"] = str(lab_test_set.pop("_id"))
-        
+
         return lab_test_set
 
     except HTTPException as he:
@@ -168,11 +185,10 @@ async def delete_lab_test_set(lab_test_set_id: str):
     return {
         "message": f"Lab test set {lab_test_set_id} deleted successfully.",
         "deleted_observations": deleted_observations,
-        "failed_observations": failed_observations
+        "failed_observations": failed_observations,
     }
 
 
-    
 @router.delete("/observations/{observation_id}")
 async def delete_observation(observation_id: str):
     """Deletes a specific Observation by its ID."""
@@ -203,34 +219,38 @@ def interpret_lab_test_set(lab_test_set_id: str):
 
     if not lab_test_set:
         raise HTTPException(status_code=404, detail="Lab test set not found.")
-     
+
     # Retrieve birth date & gender from lab test set
     birth_date = lab_test_set.get("birth_date", "Unknown")
     gender = lab_test_set.get("gender", "Unknown")
 
     # Get observation IDs from the observations array
     observation_ids = [obs["id"] for obs in lab_test_set.get("observations", [])]
-    
+
     # Fetch full lab set results from FHIR using the stored observation IDs
     full_lab_tests = get_fhir_observations(observation_ids)
 
     if not full_lab_tests:
-        raise HTTPException(status_code=400, detail="No lab test results found in FHIR.")
+        raise HTTPException(
+            status_code=400, detail="No lab test results found in FHIR."
+        )
 
     # Generate AI-based summary using OpenAI
     interpretation = interpret_full_lab_set(full_lab_tests, birth_date, gender)
 
     # Store the interpretation in MongoDB
-    update_result = update_lab_test_set(lab_test_set_id, {"interpretation": interpretation})
-    
+    update_result = update_lab_test_set(
+        lab_test_set_id, {"interpretation": interpretation}
+    )
+
     if "error" in update_result:
         raise HTTPException(status_code=500, detail=update_result["error"])
 
     return {
         "message": f"Interpretation added to lab test set {lab_test_set_id}",
-        "interpretation": interpretation
+        "interpretation": interpretation,
     }
-    
+
 
 @router.get("/observations/{observation_id}")
 async def get_observation(observation_id: str):
@@ -250,7 +270,3 @@ async def get_observation(observation_id: str):
         return observation
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-    
-
-

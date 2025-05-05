@@ -15,8 +15,9 @@ lab_test_set_schema = {
     "gender": str,  # Patient's gender for context
     "test_date": str,  # Date of the test set
     "observations": list,  # Store both FHIR Observation IDs and test names
-    "interpretation": str  # AI summary
+    "interpretation": str,  # AI summary
 }
+
 
 def store_lab_test_set(patient_fhir_id: str, test_date: str, observations: list):
     """
@@ -44,10 +45,7 @@ def store_lab_test_set(patient_fhir_id: str, test_date: str, observations: list)
     observation_data = []
     for obs in observations:
         if "id" in obs and "code" in obs and "text" in obs["code"]:
-            observation_data.append({
-                "id": obs["id"],
-                "name": obs["code"]["text"]
-            })
+            observation_data.append({"id": obs["id"], "name": obs["code"]["text"]})
 
     lab_test_set = {
         "patient_fhir_id": patient_fhir_id,
@@ -55,12 +53,13 @@ def store_lab_test_set(patient_fhir_id: str, test_date: str, observations: list)
         "birth_date": birth_date,
         "gender": gender,
         "observations": observation_data,  # Store both IDs and names
-        "interpretation": None  # Placeholder for future AI summary
+        "interpretation": None,  # Placeholder for future AI summary
     }
 
     result = lab_test_sets_collection.insert_one(lab_test_set)
     lab_test_set["id"] = str(result.inserted_id)
     return lab_test_set
+
 
 def get_lab_test_sets_for_patient(patient_fhir_id: str):
     """
@@ -72,8 +71,10 @@ def get_lab_test_sets_for_patient(patient_fhir_id: str):
     Returns:
         list: A list of lab test sets with observation IDs and names.
     """
-    lab_test_sets = list(lab_test_sets_collection.find({"patient_fhir_id": patient_fhir_id}))
-    
+    lab_test_sets = list(
+        lab_test_sets_collection.find({"patient_fhir_id": patient_fhir_id})
+    )
+
     # Convert ObjectId to string and remove _id field
     formatted_sets = []
     for test_set in lab_test_sets:
@@ -84,11 +85,12 @@ def get_lab_test_sets_for_patient(patient_fhir_id: str):
             "observations": test_set.get("observations", []),
             "birth_date": test_set.get("birth_date", "Unknown"),
             "gender": test_set.get("gender", "Unknown"),
-            "interpretation": test_set.get("interpretation")
+            "interpretation": test_set.get("interpretation"),
         }
         formatted_sets.append(formatted_set)
-    
+
     return formatted_sets
+
 
 def get_lab_test_set_by_id(lab_test_set_id: str):
     """
@@ -111,6 +113,7 @@ def get_lab_test_set_by_id(lab_test_set_id: str):
         del test_set["_id"]
     return test_set
 
+
 def update_lab_test_set(lab_test_set_id: str, update_data: dict):
     """
     Updates a lab test set in MongoDB with new data.
@@ -127,11 +130,14 @@ def update_lab_test_set(lab_test_set_id: str, update_data: dict):
     except Exception:
         return {"error": "Invalid lab test set ID format."}
 
-    result = lab_test_sets_collection.update_one({"_id": object_id}, {"$set": update_data})
+    result = lab_test_sets_collection.update_one(
+        {"_id": object_id}, {"$set": update_data}
+    )
 
     if result.matched_count:
         return {"message": "Lab test set updated successfully."}
     return {"error": "Lab test set not found."}
+
 
 def remove_lab_test_set(lab_test_set_id: str):
     """
@@ -153,6 +159,3 @@ def remove_lab_test_set(lab_test_set_id: str):
     if result.deleted_count:
         return {"message": f"Lab test set {lab_test_set_id} deleted successfully."}
     return {"error": "Lab test set not found."}
-
-
-

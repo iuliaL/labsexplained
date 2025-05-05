@@ -8,9 +8,11 @@ from pymongo import MongoClient
 
 router = APIRouter()
 
+
 @router.get("/health")
 def health_check():
     return {"status": "ok"}
+
 
 @router.get("/test-db")
 def test_db_connection():
@@ -21,9 +23,7 @@ def test_db_connection():
     except Exception as e:
         return {"status": "error", "detail": str(e)}
 
+
 router.include_router(auth_router, prefix="/auth", tags=["Auth"])
 router.include_router(patients_router, tags=["Patients"])
 router.include_router(lab_results_router, tags=["Lab Results"])
-
-
-

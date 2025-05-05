@@ -1,13 +1,6 @@
-import os
 import requests
-from dotenv import load_dotenv
+from app.config import MAILGUN_DOMAIN, EMAIL_FROM, MAILGUN_API_KEY
 
-# Load environment variables
-load_dotenv()
-
-MAILGUN_API_KEY = os.getenv("MAILGUN_API_KEY")
-MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN")
-EMAIL_FROM = os.getenv("EMAIL_FROM", "noreply@yourapp.com")
 
 def send_password_reset_email(to_email: str, reset_link: str):
     """
@@ -26,7 +19,7 @@ def send_password_reset_email(to_email: str, reset_link: str):
         <p>You requested a password reset. Click the link below to reset your password:</p>
         <p><a href="{reset_link}">Reset Password</a></p>
         <p>If you didn't request this, please ignore this email.</p>
-        """
+        """,
     }
 
     # Authentication for Mailgun (using API key)
@@ -41,7 +34,7 @@ def send_password_reset_email(to_email: str, reset_link: str):
         else:
             # Raise an exception if Mailgun returns a non-200 status code
             raise Exception(f"{response.status_code} - {response.text}")
-            
+
     except Exception as e:
         print(f"Error sending email: {e}")
         # Raise the exception to notify the caller that something went wrong

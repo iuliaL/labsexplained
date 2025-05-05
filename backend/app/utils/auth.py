@@ -8,14 +8,16 @@ from passlib.context import CryptContext
 from app.models.patient import get_patient as get_patient_from_db
 
 
-
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = timedelta(hours=1)):
+def create_access_token(
+    data: dict, expires_delta: Optional[timedelta] = timedelta(hours=1)
+):
     """Generate JWT token with subject (email) and role (admin or patient)."""
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
 
 def verify_access_token(token: str):
     """Verify the JWT token and extract the data."""
@@ -26,21 +28,23 @@ def verify_access_token(token: str):
         raise Exception("Token has expired")
     except jwt.JWTError:
         raise Exception("Invalid token")
-    
-    
+
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def set_password(password: str):
     """Hashes the password."""
     return pwd_context.hash(password)
+
 
 def verify_password(plain_password: str, hashed_password: str):
     """Verifies the password."""
     return pwd_context.verify(plain_password, hashed_password)
 
 
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     """Get the current user from the JWT token."""
@@ -60,10 +64,9 @@ def admin_required(current_user: dict = Depends(get_current_user)):
     return current_user
 
 
-
 def self_or_admin_required(
     fhir_id: str = Path(...),  # get path param at runtime
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     patient = get_patient_from_db(fhir_id)
     if not patient:
@@ -71,5 +74,3 @@ def self_or_admin_required(
     if current_user["role"] == "admin" or current_user["email"] == patient["email"]:
         return patient
     raise HTTPException(status_code=403, detail="Not authorized to access this patient")
-
-

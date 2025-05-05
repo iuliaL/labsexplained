@@ -6,7 +6,7 @@ from app.config import FRONTEND_URL
 app = FastAPI(
     title="LabsExplained API",
     description="LabsExplained API is a RESTful API that provides access to users (admins and patients) to manage their resources depending on their role.",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Configure CORS
@@ -19,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(router)
+
 
 @app.get("/")
 def home():
