@@ -1,5 +1,8 @@
+import { CalendarIcon } from "@icons/CalendarIcon";
+import { formatDate, isValidDate } from "@utils/dateFormatter";
 import React from "react";
-import { formatDate, isValidDate } from "../../utils/dateFormatter";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface DateInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
   label: string;
@@ -18,23 +21,25 @@ export function DateInput({
   className = "",
   ...props
 }: DateInputProps) {
-  const displayValue = value && isValidDate(value) ? formatDate(value) : value;
+  const selectedDate = value && isValidDate(value) ? new Date(value) : null;
 
   return (
-    <div className="mb-4">
+    <div className="w-full">
       <label htmlFor={props.id} className="block text-sm font-medium text-gray-700 mb-1">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
-      <div className="relative">
-        <input
-          type="date"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+      <div className="relative w-full">
+        <DatePicker
+          selected={selectedDate}
+          onChange={(date) => onChange(date ? date.toISOString() : "")}
+          dateFormat="dd.MM.yyyy"
+          wrapperClassName="block w-full"
           className={`
-            w-full px-3 py-2
+            w-full
+            px-3 py-2
             bg-white
-            text-transparent
+            text-slate-900
             text-sm
             placeholder:text-slate-400
             rounded-lg
@@ -47,17 +52,14 @@ export function DateInput({
             focus:bg-blue-50/50
             disabled:bg-slate-50
             disabled:text-slate-500
-            [&::-webkit-datetime-edit]:hidden
-            [&::-webkit-calendar-picker-indicator]:ml-auto
             ${className}
           `}
           required={required}
-          {...props}
+          placeholderText="DD.MM.YYYY"
+          customInput={<input {...props} className="w-full" />}
         />
-        <div className="absolute inset-0 flex items-center px-3 pointer-events-none">
-          <span className={`text-sm ${error ? "text-red-900" : "text-slate-900"}`}>
-            {displayValue || <span className="text-slate-400">DD.MM.YYYY</span>}
-          </span>
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+          <CalendarIcon className="w-5 h-5" />
         </div>
       </div>
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
