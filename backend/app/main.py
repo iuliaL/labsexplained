@@ -2,6 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import router
 from app.config import FRONTEND_URL
+import os
+from pymongo import MongoClient
+import requests
+from app.config import MONGO_URI, FHIR_SERVER_URL
 
 app = FastAPI(
     title="LabsExplained API",
@@ -21,9 +25,42 @@ app.add_middleware(
 app.include_router(router)
 
 
-@app.get("/")
-def home():
-    return {"message": "LabsExplained API Running"}
-
-
 print("🔥 LabsExplained backend is booting up...")
+
+# Check required environment variables
+required_vars = [
+    "FHIR_SERVER_URL",
+    "MONGO_URI",
+    "GITHUB_TOKEN",
+    "SECRET_KEY",
+    "ALGORITHM",
+    "EMAIL_FROM",
+    "MAILGUN_API_KEY",
+    "MAILGUN_DOMAIN",
+    "FRONTEND_URL",
+]
+
+missing = [var for var in required_vars if not os.getenv(var)]
+if missing:
+    print(f"⚠️ Missing required environment variables: {missing}")
+else:
+    print("✅ All required environment variables loaded.")
+
+
+# Check MongoDB connection
+try:
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=2000)
+    client.server_info()  # Force connection
+    print("✅ MongoDB connection successful.")
+except Exception as e:
+    print(f"❌ MongoDB connection failed: {e}")
+
+# Check FHIR server
+try:
+    resp = requests.get(FHIR_SERVER_URL + "/metadata", timeout=3)
+    if resp.ok:
+        print(f"✅ FHIR server reachable: {FHIR_SERVER_URL}")
+    else:
+        print(f"⚠️ FHIR server returned status {resp.status_code}")
+except Exception as e:
+    print(f"❌ FHIR server check failed: {e}")

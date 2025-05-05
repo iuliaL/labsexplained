@@ -8,6 +8,9 @@ from pymongo import MongoClient
 
 router = APIRouter()
 
+@router.get("/", include_in_schema=False)
+def home():
+    return {"message": "LabsExplained API Running"}
 
 @router.get("/health", include_in_schema=False)
 @router.head("/health", include_in_schema=False)
@@ -15,7 +18,7 @@ def health_check():
     return {"status": "ok"}
 
 
-@router.get("/test-db")
+@router.get("/test-db", include_in_schema=False)
 def test_db_connection():
     try:
         client = MongoClient(MONGO_URI)
