@@ -1,10 +1,11 @@
-import { Input } from "../ui/Input";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import Container from "../ui/Container";
-import { PasswordRequirements } from "../ui/PasswordRequirements";
-import { passwordRegex } from "../../utils/regexes";
-import { authService } from "../../services/auth";
+import Container from "@ui/Container";
+import { PasswordRequirements } from "@ui/PasswordRequirements";
+import { passwordRegex } from "@utils/regexes";
+import { authService } from "@services/auth";
+import { PasswordInput } from "@ui/PasswordInput";
+
 export function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -82,10 +83,9 @@ export function ResetPassword() {
     <Container title="Reset Your Password" subtitle="Enter your new password below">
       <div className="space-y-6">
         <div className="space-y-4">
-          <Input
+          <PasswordInput
             id="newPassword"
             label="New Password"
-            type="password"
             value={formData.newPassword}
             onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
             placeholder="Enter your new password"
@@ -93,10 +93,9 @@ export function ResetPassword() {
             disabled={loading}
           />
           {showErrors && <PasswordRequirements password={formData.newPassword} />}
-          <Input
+          <PasswordInput
             id="confirmPassword"
             label="Confirm Password"
-            type="password"
             value={formData.confirmPassword}
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
             placeholder="Confirm your new password"

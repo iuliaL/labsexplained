@@ -1,7 +1,8 @@
-import React from "react";
 import { Input } from "@ui/Input";
 import { PasswordRequirements } from "@ui/PasswordRequirements";
-import { passwordRegex, emailRegex } from "@utils/regexes";
+import { emailRegex, passwordRegex } from "@utils/regexes";
+import React from "react";
+import { PasswordInput } from "../ui/PasswordInput";
 
 interface AccountStepProps {
   email: string;
@@ -86,10 +87,9 @@ export const AccountStep: React.FC<AccountStepProps> = ({
           disabled={loading}
           error={emailError}
         />
-        <Input
+        <PasswordInput
           id="password"
           label="Password"
-          type="password"
           value={password}
           onChange={(e) => onChange({ email, password: e.target.value })}
           placeholder="Create a password"

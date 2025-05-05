@@ -10,7 +10,8 @@
       "@components/*": ["components/*"],
       "@icons/*": ["components/icons/*"],
       "@contexts/*": ["contexts/*"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["utils/*"],
+      "@services/*": ["services/*"]
     },
     "skipLibCheck": true,
     "esModuleInterop": true,

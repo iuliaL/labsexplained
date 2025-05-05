@@ -15,6 +15,7 @@ module.exports = {
       "@icons": path.resolve(__dirname, "src/components/icons"),
       "@contexts": path.resolve(__dirname, "src/contexts"),
       "@utils": path.resolve(__dirname, "src/utils"),
+      "@services": path.resolve(__dirname, "src/services"),
     },
   },
 };

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { DateInput } from "../ui/DateInput";
+import { DateInput } from "@ui/DateInput";
 
 interface UploadStepProps {
   onFileSelect: (file: File) => void;

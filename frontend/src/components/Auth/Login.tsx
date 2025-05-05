@@ -1,10 +1,11 @@
-import { Input } from "../ui/Input";
-import { useState, useEffect } from "react";
+import { PasswordInput } from "@ui/PasswordInput";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Container from "../ui/Container";
-import { authService } from "../../services/auth";
-import { emailRegex } from "../../utils/regexes";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "@contexts/AuthContext";
+import { authService } from "@services/auth";
+import { emailRegex } from "@utils/regexes";
+import Container from "@ui/Container";
+import { Input } from "@ui/Input";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -103,10 +104,9 @@ export default function Login() {
               required
               disabled={loading}
             />
-            <Input
+            <PasswordInput
               id="password"
               label="Password"
-              type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               placeholder="Enter your password"
