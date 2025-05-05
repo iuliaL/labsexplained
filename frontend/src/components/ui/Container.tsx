@@ -1,20 +1,26 @@
-import { ReactNode } from "react";
+import doctorImage from "@assets/supawork-medic-logo.png";
+import React from "react";
 import { UserIcon } from "../icons/UserIcon";
-import doctorImage from "../../assets/supawork-medic-logo.png";
 
 interface ContainerProps {
-  children: ReactNode;
+  children: React.ReactNode;
   title: string;
   subtitle?: string;
 }
 
 export default function Container({ children, title, subtitle }: ContainerProps) {
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row relative">
+      {/* Mobile Doctor Image */}
+      <div className="lg:hidden w-full">
+        <img src={doctorImage} alt="Medical Professional" className="w-full h-100 object-cover object-top" />
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-50/80 to-transparent pointer-events-none" />
+
       {/* Left side - Content */}
       <div className="w-full lg:w-1/2 relative z-10 flex items-center justify-center px-4 sm:px-6 py-6">
-        {/* Wave Shape */}
-        <div className="absolute right-0 inset-y-0 w-[100px] translate-x-[98px]">
+        {/* Wave Shape - Hidden on Mobile */}
+        <div className="hidden lg:block absolute right-0 inset-y-0 w-[100px] translate-x-[98px]">
           <svg
             viewBox="0 0 100 800"
             fill="none"
@@ -45,7 +51,7 @@ export default function Container({ children, title, subtitle }: ContainerProps)
         </div>
       </div>
 
-      {/* Right side - Image */}
+      {/* Right side - Image (Desktop only) */}
       <div className="hidden lg:block w-1/2 relative bg-slate-50">
         <div className="absolute inset-0">
           <img src={doctorImage} alt="Medical Professional" className="h-full w-full object-cover object-center" />
