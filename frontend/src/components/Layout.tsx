@@ -1,16 +1,16 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import PatientWizard from "./Patient/PatientWizard";
-import { PatientDashboard } from "./Patient/PatientDashboard";
-import { AdminDashboard } from "./Admin/AdminDashboard";
-import { ProtectedRoute } from "./ProtectedRoute";
-import { PatientDetails } from "./Admin/PatientDetails";
-import { ResetPassword } from "./Auth/ResetPassword";
-import Login from "./Auth/Login";
-import NotFound from "./NotFound";
-import { SessionProvider } from "../contexts/SessionContext";
-import { AuthProvider } from "../contexts/AuthContext";
-import ProtectedContainer from "./ui/ProtectedContainer";
+import PatientWizard from "@components/Patient/PatientWizard";
+import { PatientDashboard } from "@components/Patient/PatientDashboard";
+import { AdminDashboard } from "@components/Admin/AdminDashboard";
+import { ProtectedRoute } from "@components/ProtectedRoute";
+import { PatientDetails } from "@components/Admin/PatientDetails";
+import { ResetPassword } from "@components/Auth/ResetPassword";
+import Login from "@components/Auth/Login";
+import NotFound from "@components/NotFound";
+import { SessionProvider } from "@contexts/SessionContext";
+import { AuthProvider } from "@contexts/AuthContext";
+import ProtectedContainer from "@ui/ProtectedContainer";
 
 export default function Layout() {
   return (

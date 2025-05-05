@@ -1,5 +1,5 @@
 import React from "react";
-import Container from "./ui/Container";
+import Container from "@ui/Container";
 
 export default function NotFound() {
   const handleGoBack = () => {

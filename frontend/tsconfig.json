@@ -1,12 +1,17 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
+    "baseUrl": "src",
+    "paths": {
+      "@assets/*": ["assets/*"],
+      "@ui/*": ["components/ui/*"],
+      "@components/*": ["components/*"],
+      "@icons/*": ["components/icons/*"],
+      "@contexts/*": ["contexts/*"],
+      "@utils/*": ["utils/*"]
+    },
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -20,7 +25,5 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

@@ -1,7 +1,7 @@
 import React from "react";
-import { Input } from "../ui/Input";
-import { PasswordRequirements } from "../ui/PasswordRequirements";
-import { passwordRegex, emailRegex } from "../../utils/regexes";
+import { Input } from "@ui/Input";
+import { PasswordRequirements } from "@ui/PasswordRequirements";
+import { passwordRegex, emailRegex } from "@utils/regexes";
 
 interface AccountStepProps {
   email: string;

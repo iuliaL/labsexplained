@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { BrandLogo } from "./BrandLogo";
+import { BrandLogo } from "@components/ui/BrandLogo";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { ConfirmDialog } from "./ConfirmDialog";
-import  LabSetIcon  from "../icons/LabSetIcon";
-import PatientIcon from "../icons/PatientIcon";
+import { useAuth } from "@contexts/AuthContext";
+import { ConfirmDialog } from "@ui/ConfirmDialog";
+import  LabSetIcon  from "@icons/LabSetIcon";
+import PatientIcon from "@icons/PatientIcon";
 
 export const Header: React.FC = () => {
   const location = useLocation();
