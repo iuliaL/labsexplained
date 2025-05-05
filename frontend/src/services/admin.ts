@@ -95,7 +95,7 @@ export const adminService = {
     return apiRequest<LabTestsResponse>(`${API_BASE_URL}/lab_set/${fhirId}?page=${page}&page_size=${pageSize}`);
   },
 
-  async getLabSetObservations(observationId: string): Promise<Observation> {
+  async getLabSetObservation(observationId: string): Promise<Observation> {
     const data = await apiRequest<Observation>(`${API_BASE_URL}/observations/${observationId}`);
     return data;
   },

@@ -96,7 +96,7 @@ export function PatientDashboard() {
       }
       setLoadingObservations(true);
 
-      const observationPromises = labSet.observations.map((obs) => adminService.getLabSetObservations(obs.id));
+      const observationPromises = labSet.observations.map((obs) => adminService.getLabSetObservation(obs.id));
       const observationResults = await Promise.all(observationPromises);
       const allObservations = observationResults.flat().filter((obs) => obs && typeof obs === "object");
 
@@ -186,7 +186,7 @@ export function PatientDashboard() {
           try {
             // Load observations for the most recent test
             const labSet = labTestData[0];
-            const observationPromises = labSet.observations.map((obs) => adminService.getLabSetObservations(obs.id));
+            const observationPromises = labSet.observations.map((obs) => adminService.getLabSetObservation(obs.id));
             const observationResults = await Promise.all(observationPromises);
             const allObservations = observationResults.flat();
 
