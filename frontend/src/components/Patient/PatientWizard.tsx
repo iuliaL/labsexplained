@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { NameStep } from "./NameStep";
+import { useAuth } from "@contexts/AuthContext";
+import { adminService } from "@services/admin";
+import { authService } from "@services/auth";
+import Container from "@ui/Container";
+import { AccountStep } from "./AccountStep";
 import { DemographicsStep } from "./DemographicsStep";
+import { NameStep } from "./NameStep";
 import { UploadStep } from "./UploadStep";
 import { WelcomeStep } from "./WelcomeStep";
-import { AccountStep } from "./AccountStep";
-import Container from "../ui/Container";
-import { adminService } from "../../services/admin";
-import { authService } from "../../services/auth";
-import { useAuth } from "../../contexts/AuthContext";
 
 type Step = "welcome" | "account" | "name" | "demographics" | "upload";
 
@@ -305,8 +305,12 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
       )}
       {currentStep === "upload" && (
         <UploadStep
-          onFileSelect={(file) => setPatientData({ ...patientData, file })}
-          onDateSelect={(date) => setPatientData({ ...patientData, testDate: date })}
+          onFileSelect={(file) => {
+            setPatientData((prev) => ({ ...prev, file }));
+          }}
+          onDateSelect={(date) => {
+            setPatientData((prev) => ({ ...prev, testDate: date }));
+          }}
           onBack={fhirId ? () => navigate(`/patient/${fhirId}`) : prevStep}
           onSubmit={handleLabResultsSubmit}
           initialDate={patientData.testDate}

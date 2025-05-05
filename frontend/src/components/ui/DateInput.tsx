@@ -1,6 +1,6 @@
 import { CalendarIcon } from "@icons/CalendarIcon";
 import { formatDate, isValidDate } from "@utils/dateFormatter";
-import React from "react";
+import React, { useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -23,6 +23,23 @@ export function DateInput({
 }: DateInputProps) {
   const selectedDate = value && isValidDate(value) ? new Date(value) : null;
 
+  const handleDateChange = (date: Date | null) => {
+    if (date) {
+      // Ensure we're working with the local date
+      const formattedDate = formatDate(date.toISOString());
+      onChange(formattedDate);
+    } else {
+      onChange("");
+    }
+  };
+
+  // Sync with external value changes
+  useEffect(() => {
+    if (value && !isValidDate(value)) {
+      onChange("");
+    }
+  }, [value, onChange]);
+
   return (
     <div className="w-full">
       <label htmlFor={props.id} className="block text-sm font-medium text-gray-700 mb-1">
@@ -32,7 +49,7 @@ export function DateInput({
       <div className="relative w-full">
         <DatePicker
           selected={selectedDate}
-          onChange={(date) => onChange(date ? date.toISOString() : "")}
+          onChange={handleDateChange}
           dateFormat="dd.MM.yyyy"
           wrapperClassName="block w-full"
           className={`
