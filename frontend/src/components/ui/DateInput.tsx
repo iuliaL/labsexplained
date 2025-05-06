@@ -50,6 +50,76 @@ export function DateInput({
           maxDate={maxDate}
           dateFormat="dd.MM.yyyy"
           wrapperClassName="block w-full"
+          minDate={new Date(1900, 0, 1)}
+          renderCustomHeader={({
+            date,
+            changeYear,
+            changeMonth,
+            decreaseMonth,
+            increaseMonth,
+            prevMonthButtonDisabled,
+            nextMonthButtonDisabled,
+          }) => (
+            <div className="flex items-center justify-between px-4 py-2">
+              <button
+                onClick={decreaseMonth}
+                disabled={prevMonthButtonDisabled}
+                type="button"
+                className={`p-1 ${prevMonthButtonDisabled ? "text-gray-300" : "text-gray-700 hover:text-blue-500"}`}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <div className="flex gap-1">
+                <select
+                  value={date.getMonth()}
+                  onChange={({ target: { value } }) => changeMonth(Number(value))}
+                  className="text-sm font-semibold text-gray-700 bg-white hover:text-blue-500 cursor-pointer appearance-none border-none focus:ring-0 focus:outline-none p-1"
+                >
+                  {[
+                    "January",
+                    "February",
+                    "March",
+                    "April",
+                    "May",
+                    "June",
+                    "July",
+                    "August",
+                    "September",
+                    "October",
+                    "November",
+                    "December",
+                  ].map((month, i) => (
+                    <option key={month} value={i}>
+                      {month}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={date.getFullYear()}
+                  onChange={({ target: { value } }) => changeYear(Number(value))}
+                  className="text-sm font-semibold text-gray-700 bg-white hover:text-blue-500 cursor-pointer appearance-none border-none focus:ring-0 focus:outline-none p-1"
+                >
+                  {Array.from({ length: 126 }, (_, i) => 2025 - i).map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={increaseMonth}
+                disabled={nextMonthButtonDisabled}
+                type="button"
+                className={`p-1 ${nextMonthButtonDisabled ? "text-gray-300" : "text-gray-700 hover:text-blue-500"}`}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          )}
           className={`
             w-full
             px-3 py-2
@@ -115,11 +185,14 @@ style.textContent = `
   .react-datepicker__header {
     background-color: white;
     border-bottom: 1px solid #e5e7eb;
-    padding-top: 1rem;
+    padding: 0;
   }
   .react-datepicker__current-month {
     font-weight: 600;
     color: #1e293b;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
   }
   .react-datepicker__day-name {
     color: #64748b;
@@ -137,6 +210,65 @@ style.textContent = `
   }
   .react-datepicker__navigation:hover *::before {
     border-color: #3b82f6;
+  }
+  .react-datepicker__month-dropdown-container,
+  .react-datepicker__year-dropdown-container {
+    display: inline-block;
+    margin: 0 0.5rem;
+  }
+  .react-datepicker__month-read-view,
+  .react-datepicker__year-read-view {
+    visibility: visible !important;
+  }
+  .react-datepicker__month-read-view--down-arrow,
+  .react-datepicker__year-read-view--down-arrow {
+    border-color: #64748b;
+    top: 5px;
+  }
+  .react-datepicker__month-dropdown,
+  .react-datepicker__year-dropdown {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    padding: 0.5rem 0;
+    width: auto;
+    min-width: 120px;
+  }
+  .react-datepicker__month-option,
+  .react-datepicker__year-option {
+    padding: 0.5rem 1rem;
+    margin: 0;
+    cursor: pointer;
+    text-align: left;
+  }
+  .react-datepicker__month-option:hover,
+  .react-datepicker__year-option:hover {
+    background-color: #eff6ff;
+    color: #3b82f6;
+  }
+  .react-datepicker__month-option--selected,
+  .react-datepicker__year-option--selected {
+    background-color: #3b82f6;
+    color: white;
+    position: relative;
+  }
+  .react-datepicker__month-option--selected_month,
+  .react-datepicker__year-option--selected_year {
+    font-weight: 600;
+  }
+  .react-datepicker__navigation--years {
+    background: none;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+    padding: 0.5rem;
+    margin: 0;
+    text-decoration: none;
+  }
+  .react-datepicker__navigation--years:hover {
+    background-color: #eff6ff;
+    color: #3b82f6;
   }
 `;
 document.head.appendChild(style);
