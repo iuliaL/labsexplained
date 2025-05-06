@@ -11,7 +11,8 @@
       "@icons/*": ["components/icons/*"],
       "@contexts/*": ["contexts/*"],
       "@utils/*": ["utils/*"],
-      "@services/*": ["services/*"]
+      "@services/*": ["services/*"],
+      "@hooks/*": ["hooks/*"]
     },
     "skipLibCheck": true,
     "esModuleInterop": true,

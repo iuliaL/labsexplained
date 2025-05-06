@@ -1,4 +1,5 @@
 import { useAuth } from "@contexts/AuthContext";
+import { usePersistentWizard } from "@hooks/persistWizardState";
 import { adminService } from "@services/admin";
 import { authService } from "@services/auth";
 import Container from "@ui/Container";
@@ -9,19 +10,7 @@ import { DemographicsStep } from "./DemographicsStep";
 import { NameStep } from "./NameStep";
 import { UploadStep } from "./UploadStep";
 import { WelcomeStep } from "./WelcomeStep";
-
 type Step = "welcome" | "account" | "name" | "demographics" | "upload";
-
-interface PatientData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  gender: string;
-  file?: File;
-  testDate?: string;
-}
 
 interface ProcessingState {
   createPatient: "pending" | "loading" | "completed" | "error";
@@ -38,15 +27,9 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
   const navigate = useNavigate();
   const { fhirId } = useParams<{ fhirId: string }>();
   const { login } = useAuth();
-  const [currentStep, setCurrentStep] = useState<Step>(initialStep);
-  const [patientData, setPatientData] = useState<PatientData>({
-    email: "",
-    password: "",
-    firstName: "",
-    lastName: "",
-    dateOfBirth: "",
-    gender: "",
-  });
+
+  const { currentStep, setCurrentStep, patientData, setPatientData, clearWizardState } =
+    usePersistentWizard(initialStep);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingState, setProcessingState] = useState<ProcessingState>({
@@ -73,6 +56,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
 
   useEffect(() => {
     setCurrentStep(initialStep);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialStep]);
 
   const nextStep = () => {
@@ -192,6 +176,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
         setProcessingState((prev) => ({ ...prev, interpretResults: "loading" }));
         await adminService.interpretLabTestSet(uploadResponse.id);
         setProcessingState((prev) => ({ ...prev, interpretResults: "completed" }));
+        clearWizardState(); // Clear the wizard state (local storage) after the process is complete
 
         navigate(`/patient/${fhirId}`);
       } else {
@@ -229,6 +214,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
         setProcessingState((prev) => ({ ...prev, interpretResults: "loading" }));
         await adminService.interpretLabTestSet(uploadResponse.id);
         setProcessingState((prev) => ({ ...prev, interpretResults: "completed" }));
+        clearWizardState(); // Clear the wizard state (local storage) after the process is complete
 
         // Navigate to the patient dashboard
         navigate(`/patient/${fhir_id}`);
