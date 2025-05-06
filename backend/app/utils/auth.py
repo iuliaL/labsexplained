@@ -5,7 +5,10 @@ from app.config import SECRET_KEY, ALGORITHM
 from fastapi import HTTPException, Depends, Path
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from app.models.patient import get_patient as get_patient_from_db
+from app.models.patient import (
+    get_patient as get_patient_from_db,
+    search_patient_by_email as get_patient_from_db_by_email,
+)
 
 
 def create_access_token(
@@ -59,6 +62,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 
 def admin_required(current_user: dict = Depends(get_current_user)):
+    """Check if the current user is an admin."""
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user
@@ -68,9 +72,24 @@ def self_or_admin_required(
     fhir_id: str = Path(...),  # get path param at runtime
     current_user: dict = Depends(get_current_user),
 ):
+    """Check if the current user is an admin or the owner of the resource."""
     patient = get_patient_from_db(fhir_id)
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
     if current_user["role"] == "admin" or current_user["email"] == patient["email"]:
-        return patient
+        return current_user
     raise HTTPException(status_code=403, detail="Not authorized to access this patient")
+
+
+def get_current_user_with_patient(current_user: dict = Depends(get_current_user)):
+    """Get the current user and their patient record if they exist."""
+    # For admins, we don't need to fetch patient details
+    if current_user["role"] == "admin":
+        return current_user, None
+
+    # For patients, get their record
+    patient = get_patient_from_db_by_email(current_user["email"])
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient record not found")
+
+    return current_user, patient

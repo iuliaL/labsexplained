@@ -1,7 +1,7 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Form
+from fastapi import APIRouter, UploadFile, File, HTTPException, Form, Depends
 from datetime import datetime
 from typing import Optional
-import re
+from app.utils.auth import self_or_admin_required, get_current_user_with_patient
 from app.services.fhir import (
     send_lab_results_to_fhir,
     remove_all_observations_for_patient,
@@ -26,22 +26,27 @@ ALLOWED_MIME_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/jpg"]
 router = APIRouter()
 
 
-@router.get("/lab_set/{patient_fhir_id}")
+@router.get(
+    "/lab_set/{fhir_id}"
+)  # this reffers to the patient's FHIR ID not the lab set id
 async def get_all_patient_lab_sets(
-    patient_fhir_id: str,
+    fhir_id: str,
     include_observations: bool = False,
     page: Optional[int] = 1,
     page_size: Optional[int] = 5,
+    auth: tuple[dict, dict | None] = Depends(get_current_user_with_patient),
 ):
     """
     Retrieves all lab test sets for a specific patient with pagination.
     Lab sets are sorted by test date in descending order (newest first).
+    Only admins or the patient themselves can access their lab sets.
 
     Args:
-        patient_fhir_id (str): The patient's FHIR ID
+        fhir_id (str): The patient's FHIR ID
         include_observations (bool): If True, fetches full observation details from FHIR
         page (int): The page number (1-based)
         page_size (int): Number of items per page
+        auth: Tuple of (current_user, patient) from authentication
     """
     if page < 1:
         raise HTTPException(
@@ -51,7 +56,7 @@ async def get_all_patient_lab_sets(
         raise HTTPException(status_code=400, detail="Page size must be greater than 0")
 
     # Get all lab test sets
-    all_lab_test_sets = get_lab_test_sets_for_patient(patient_fhir_id)
+    all_lab_test_sets = get_lab_test_sets_for_patient(fhir_id)
 
     # Sort lab test sets by test date in descending order (newest first)
     all_lab_test_sets.sort(key=lambda x: x["test_date"], reverse=True)
@@ -146,21 +151,38 @@ async def upload_patient_lab_test_set(
 
 
 @router.delete("/lab_set/{lab_test_set_id}")
-async def delete_lab_test_set(lab_test_set_id: str):
+async def delete_lab_test_set(
+    lab_test_set_id: str,
+    auth: tuple[dict, dict | None] = Depends(get_current_user_with_patient),
+):
     """
     Deletes a specific lab test set and removes its observations from the FHIR server.
+    Only admins or the patient who owns the lab set can delete it.
 
     Args:
         lab_test_set_id (str): The MongoDB ID of the lab test set.
+        auth: Tuple of (current_user, patient) from authentication
 
     Returns:
         dict: Deletion result.
+
+    Raises:
+        HTTPException: 404 if not found, 403 if unauthorized
     """
+    current_user, patient = auth
+
     # Retrieve lab test set details to get the observation IDs
     lab_test_set = get_lab_test_set_by_id(lab_test_set_id)
 
     if not lab_test_set:
         raise HTTPException(status_code=404, detail="Lab test set not found.")
+
+    # Check authorization
+    if current_user["role"] != "admin":
+        if not patient or patient["fhir_id"] != lab_test_set["patient_fhir_id"]:
+            raise HTTPException(
+                status_code=403, detail="Not authorized to delete this lab test set"
+            )
 
     # Extract FHIR observation IDs from the lab test set
     observation_ids = [obs["id"] for obs in lab_test_set.get("observations", [])]
@@ -190,35 +212,107 @@ async def delete_lab_test_set(lab_test_set_id: str):
 
 
 @router.delete("/observations/{observation_id}")
-async def delete_observation(observation_id: str):
-    """Deletes a specific Observation by its ID."""
-    result = remove_fhir_observation(observation_id)
-    return result
+async def delete_observation(
+    observation_id: str,
+    auth: tuple[dict, dict | None] = Depends(get_current_user_with_patient),
+):
+    """
+    Deletes a specific Observation by its ID.
+    Only admins or the patient who owns the observation can delete it.
+
+    Args:
+        observation_id (str): The FHIR ID of the observation.
+        auth: Tuple of (current_user, patient) from authentication
+
+    Returns:
+        dict: The deletion result.
+
+    Raises:
+        HTTPException: 404 if observation not found, 403 if unauthorized
+    """
+    current_user, patient = auth
+
+    try:
+        # First get the observation to check ownership
+        observation = get_fhir_observation(observation_id)
+        if not observation:
+            raise HTTPException(status_code=404, detail="Observation not found")
+
+        # Extract patient FHIR ID from the observation's subject reference
+        # The reference format is "Patient/fhir_id"
+        observation_patient_fhir_id = (
+            observation.get("subject", {}).get("reference", "").split("/")[-1]
+        )
+
+        if not observation_patient_fhir_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid observation: no patient reference found",
+            )
+
+        # For admins, allow deletion of any observation
+        if current_user["role"] == "admin":
+            result = remove_fhir_observation(observation_id)
+            return result
+
+        # For patients, check if the observation belongs to them
+        if not patient or patient["fhir_id"] != observation_patient_fhir_id:
+            raise HTTPException(
+                status_code=403, detail="Not authorized to delete this observation"
+            )
+
+        # If authorized, proceed with deletion
+        result = remove_fhir_observation(observation_id)
+        return result
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/observations/patient/{patient_fhir_id}")
-async def delete_all_observations_for_patient(patient_fhir_id: str):
+@router.delete("/observations/patient/{fhir_id}")
+async def delete_all_observations_for_patient(
+    fhir_id: str, current_user: dict = Depends(self_or_admin_required)
+):
     """Deletes all Observations linked to a specific patient."""
-    result = remove_all_observations_for_patient(patient_fhir_id)
+    result = remove_all_observations_for_patient(fhir_id)
     return result
 
 
 @router.post("/lab_set/{lab_test_set_id}/interpret")
-def interpret_lab_test_set(lab_test_set_id: str):
+def interpret_lab_test_set(
+    lab_test_set_id: str,
+    auth: tuple[dict, dict | None] = Depends(get_current_user_with_patient),
+):
     """
     Generates an AI-based interpretation for the entire lab test set.
+    Only admins or the patient who owns the lab set can interpret it.
 
     Args:
         lab_test_set_id (str): The MongoDB ID of the lab test set.
+        auth: Tuple of (current_user, patient) from authentication
+
 
     Returns:
         dict: Updated lab test set with AI interpretation.
     """
+    current_user, patient = auth
+
     # Retrieve the lab test set
     lab_test_set = get_lab_test_set_by_id(lab_test_set_id)
 
     if not lab_test_set:
         raise HTTPException(status_code=404, detail="Lab test set not found.")
+
+    # For admins, allow viewing any observation
+    if current_user["role"] != "admin":
+        if not patient or patient["fhir_id"] != lab_test_set["patient_fhir_id"]:
+            raise HTTPException(
+                status_code=403, detail="Not authorized to interpret this lab test set"
+            )
+
+    # If authorized, proceed with interpretation
 
     # Retrieve birth date & gender from lab test set
     birth_date = lab_test_set.get("birth_date", "Unknown")
@@ -253,20 +347,58 @@ def interpret_lab_test_set(lab_test_set_id: str):
 
 
 @router.get("/observations/{observation_id}")
-async def get_observation(observation_id: str):
+async def get_observation(
+    observation_id: str,
+    auth: tuple[dict, dict | None] = Depends(get_current_user_with_patient),
+):
     """
     Retrieves a specific observation from FHIR by its ID.
+    Only admins or the patient who owns the observation can view it.
 
     Args:
         observation_id (str): The FHIR ID of the observation.
+        auth: Tuple of (current_user, patient) from authentication
 
     Returns:
         dict: The observation data.
+
+    Raises:
+        HTTPException: 404 if observation not found, 403 if unauthorized
     """
+    current_user, patient = auth
+
     try:
+        # Get the observation to check ownership
         observation = get_fhir_observation(observation_id)
         if not observation:
             raise HTTPException(status_code=404, detail="Observation not found")
+
+        # Extract patient FHIR ID from the observation's subject reference
+        # The reference format is "Patient/fhir_id"
+        observation_patient_fhir_id = (
+            observation.get("subject", {}).get("reference", "").split("/")[-1]
+        )
+
+        if not observation_patient_fhir_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid observation: no patient reference found",
+            )
+
+        # For admins, allow viewing any observation
+        if current_user["role"] == "admin":
+            return observation
+
+        # For patients, check if the observation belongs to them
+        if not patient or patient["fhir_id"] != observation_patient_fhir_id:
+            raise HTTPException(
+                status_code=403, detail="Not authorized to view this observation"
+            )
+
+        # If authorized, return the observation
         return observation
+
+    except HTTPException as he:
+        raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
