@@ -3,9 +3,9 @@ import { Select } from "../ui/Select";
 import { useState } from "react";
 
 interface DemographicsStepProps {
-  dateOfBirth: string;
+  dateOfBirth: Date | null;
   gender: string;
-  onChange: (data: { dateOfBirth: string; gender: string }) => void;
+  onChange: (data: { dateOfBirth: Date | null; gender: string }) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -44,7 +44,7 @@ export function DemographicsStep({ dateOfBirth, gender, onChange, onNext, onBack
             setTouched((prev) => ({ ...prev, dateOfBirth: true }));
             onChange({ dateOfBirth: value, gender });
           }}
-          max={new Date().toISOString().split("T")[0]}
+          maxDate={new Date()}
           required
           error={touched.dateOfBirth && !dateOfBirth ? "Date of birth is required" : undefined}
         />

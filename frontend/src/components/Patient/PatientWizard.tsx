@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@contexts/AuthContext";
 import { adminService } from "@services/admin";
 import { authService } from "@services/auth";
 import Container from "@ui/Container";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { AccountStep } from "./AccountStep";
 import { DemographicsStep } from "./DemographicsStep";
 import { NameStep } from "./NameStep";
@@ -296,9 +296,17 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
       )}
       {currentStep === "demographics" && (
         <DemographicsStep
-          dateOfBirth={patientData.dateOfBirth}
+          dateOfBirth={patientData.dateOfBirth ? new Date(patientData.dateOfBirth) : null}
           gender={patientData.gender}
-          onChange={(data) => setPatientData({ ...patientData, ...data })}
+          onChange={({ gender, dateOfBirth }) =>
+            setPatientData((prevPatientData) => {
+              return {
+                ...prevPatientData,
+                gender,
+                dateOfBirth: dateOfBirth ? dateOfBirth.toISOString() : "",
+              };
+            })
+          }
           onNext={nextStep}
           onBack={prevStep}
         />
@@ -306,14 +314,14 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
       {currentStep === "upload" && (
         <UploadStep
           onFileSelect={(file) => {
-            setPatientData((prev) => ({ ...prev, file }));
+            setPatientData((prevPatientData) => ({ ...prevPatientData, file }));
           }}
           onDateSelect={(date) => {
-            setPatientData((prev) => ({ ...prev, testDate: date }));
+            setPatientData((prevPatientData) => ({ ...prevPatientData, testDate: date ? date.toISOString() : "" }));
           }}
           onBack={fhirId ? () => navigate(`/patient/${fhirId}`) : prevStep}
           onSubmit={handleLabResultsSubmit}
-          initialDate={patientData.testDate}
+          initialDate={patientData.testDate ? new Date(patientData.testDate) : null}
           initialFile={patientData.file}
           loading={loading}
           error={error || undefined}

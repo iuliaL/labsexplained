@@ -1,15 +1,15 @@
 import { CalendarIcon } from "@icons/CalendarIcon";
-import { formatDate, isValidDate } from "@utils/dateFormatter";
-import React, { useEffect } from "react";
+import React, { useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface DateInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
   label: string;
-  value: string;
-  onChange: (value: string) => void;
+  value: Date | null;
+  onChange: (value: Date | null) => void;
   required?: boolean;
   error?: string;
+  maxDate?: Date;
 }
 
 export function DateInput({
@@ -18,27 +18,23 @@ export function DateInput({
   onChange,
   required = false,
   error,
+  maxDate,
   className = "",
   ...props
 }: DateInputProps) {
-  const selectedDate = value && isValidDate(value) ? new Date(value) : null;
+  const datePickerRef = useRef<DatePicker>(null);
 
   const handleDateChange = (date: Date | null) => {
     if (date) {
-      // Ensure we're working with the local date
-      const formattedDate = formatDate(date.toISOString());
-      onChange(formattedDate);
+      onChange(date);
     } else {
-      onChange("");
+      onChange(null);
     }
   };
 
-  // Sync with external value changes
-  useEffect(() => {
-    if (value && !isValidDate(value)) {
-      onChange("");
-    }
-  }, [value, onChange]);
+  const handleCalendarClick = () => {
+    datePickerRef.current?.setOpen(true);
+  };
 
   return (
     <div className="w-full">
@@ -48,8 +44,10 @@ export function DateInput({
       </label>
       <div className="relative w-full">
         <DatePicker
-          selected={selectedDate}
+          ref={datePickerRef}
+          selected={value}
           onChange={handleDateChange}
+          maxDate={maxDate}
           dateFormat="dd.MM.yyyy"
           wrapperClassName="block w-full"
           className={`
@@ -74,8 +72,27 @@ export function DateInput({
           required={required}
           placeholderText="DD.MM.YYYY"
           customInput={<input {...props} className="w-full" />}
+          calendarClassName="border-0 shadow-lg rounded-lg overflow-hidden"
+          dayClassName={(date) =>
+            date.toDateString() === value?.toDateString()
+              ? "bg-blue-500 text-white rounded-full hover:bg-blue-600"
+              : "hover:bg-blue-50 rounded-full"
+          }
+          popperClassName="react-datepicker-popper"
+          popperModifiers={[
+            {
+              name: "offset",
+              options: {
+                offset: [0, 8],
+              },
+              fn: (state) => state,
+            },
+          ]}
         />
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+        <div
+          className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-blue-500 transition-colors"
+          onClick={handleCalendarClick}
+        >
           <CalendarIcon className="w-5 h-5" />
         </div>
       </div>
@@ -83,3 +100,43 @@ export function DateInput({
     </div>
   );
 }
+
+// Add custom styles to the document head
+const style = document.createElement("style");
+style.textContent = `
+  .react-datepicker {
+    font-family: inherit;
+    border: 1px solid #e5e7eb;
+
+  }
+  .react-datepicker__triangle {
+    display: none;
+  }
+  .react-datepicker__header {
+    background-color: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding-top: 1rem;
+  }
+  .react-datepicker__current-month {
+    font-weight: 600;
+    color: #1e293b;
+  }
+  .react-datepicker__day-name {
+    color: #64748b;
+  }
+  .react-datepicker__day--keyboard-selected {
+    background-color: #3b82f6 !important;
+    color: white !important;
+  }
+  .react-datepicker__day--today {
+    font-weight: 600;
+    color: #3b82f6;
+  }
+  .react-datepicker__navigation-icon::before {
+    border-color: #64748b;
+  }
+  .react-datepicker__navigation:hover *::before {
+    border-color: #3b82f6;
+  }
+`;
+document.head.appendChild(style);

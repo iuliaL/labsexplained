@@ -1,12 +1,12 @@
-import React, { useState } from "react";
 import { DateInput } from "@ui/DateInput";
+import React, { useState } from "react";
 
 interface UploadStepProps {
   onFileSelect: (file: File) => void;
-  onDateSelect: (date: string) => void;
+  onDateSelect: (date: Date | null) => void;
   onBack: () => void;
   onSubmit: () => void;
-  initialDate?: string;
+  initialDate?: Date | null;
   initialFile?: File | null;
   loading?: boolean;
   error?: string;
@@ -26,15 +26,15 @@ export function UploadStep({
   onDateSelect,
   onBack,
   onSubmit,
-  initialDate = "",
   initialFile = null,
+  initialDate = null,
   loading = false,
   error = "",
   processingState,
   isUploadOnly = false,
 }: UploadStepProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(initialFile);
-  const [selectedDate, setSelectedDate] = useState<string>(initialDate);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate);
   const [isDragging, setIsDragging] = useState(false);
   const [fileSizeError, setFileSizeError] = useState<string>("");
 
@@ -270,9 +270,10 @@ export function UploadStep({
             setSelectedDate(date);
             onDateSelect(date);
           }}
-          max={new Date().toISOString().split("T")[0]}
           required
           disabled={loading}
+          maxDate={new Date()}
+          error={error}
         />
 
         {/* File upload */}
