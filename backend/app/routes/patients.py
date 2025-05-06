@@ -16,7 +16,10 @@ from app.models.patient import (
     delete_patient as delete_patient_from_db,
     search_patient_by_email,
 )
-from app.models.lab_test_set import get_lab_test_sets_for_patient
+from app.models.lab_test_set import (
+    get_lab_test_sets_for_patient,
+    remove_lab_test_set,
+)
 from app.utils.auth import admin_required, set_password, self_or_admin_required
 
 router = APIRouter()
@@ -218,6 +221,11 @@ async def delete_patient(fhir_id: str, current_user: dict = Depends(admin_requir
         raise HTTPException(
             status_code=500, detail="Failed to delete patient from FHIR"
         )
+
+    # Delete all lab test sets for this patient
+    lab_test_sets = get_lab_test_sets_for_patient(fhir_id)
+    for lab_test_set in lab_test_sets:
+        remove_lab_test_set(lab_test_set["id"])
 
     # Finally delete patient from MongoDB
     delete_patient_from_db(fhir_id)
