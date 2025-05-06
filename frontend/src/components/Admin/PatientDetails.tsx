@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { adminService, Patient, LabTestSet, Observation } from "../../services/admin";
-import { formatDate } from "../../utils/dateFormatter";
+import { adminService, LabTestSet, Observation, Patient } from "@services/admin";
+import { formatDate } from "@utils/dateFormatter";
+import AdminIcon from "@icons/AdminIcon";
+import PatientIcon from "@icons/PatientIcon";
+import { ConfirmDialog } from "@ui/ConfirmDialog";
+import { Pagination } from "@ui/Pagination";
 import { LabSet } from "./LabSet";
-import { Pagination } from "../ui/Pagination";
-import AdminIcon from "../icons/AdminIcon";
-import PatientIcon from "../icons/PatientIcon";
-import { ConfirmDialog } from "../ui/ConfirmDialog";
 
 interface PaginationMetadata {
   total: number;
@@ -253,10 +253,10 @@ export function PatientDetails() {
               <p className="text-xs sm:text-sm text-slate-500">Gender</p>
               <p className="text-xs sm:text-sm font-medium text-slate-900">{capitalize(patient.gender)}</p>
             </div>
-            <div>
-              <p className="text-xs sm:text-sm text-slate-500">FHIR ID</p>
-              <p className="text-xs sm:text-sm font-medium text-slate-900">{patient.fhir_id}</p>
-            </div>
+          </div>
+          <div className="mt-4">
+            <p className="text-xs sm:text-sm text-slate-500">FHIR ID</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-900">{patient.fhir_id}</p>
           </div>
         </div>
 
