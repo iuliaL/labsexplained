@@ -6,6 +6,8 @@ import os
 from pymongo import MongoClient
 import requests
 from app.config import MONGO_URI, FHIR_SERVER_URL
+from app.utils.csrf import CSRFMiddleware
+
 
 app = FastAPI(
     title="LabsExplained API",
@@ -21,6 +23,9 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+
+# Add CSRF middleware
+app.add_middleware(CSRFMiddleware)
 
 app.include_router(router)
 

@@ -1,7 +1,6 @@
 import { authService } from "../services/auth";
-
+import { getCookie } from "./cookies";
 const PUBLIC_ENDPOINTS = ["/auth/login", "/auth/forgot-password", "/auth/reset-password", "/auth/check-email"];
-
 
 export async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {};
@@ -10,7 +9,7 @@ export async function apiRequest<T>(url: string, options: RequestInit = {}): Pro
   const isFormData = options.body instanceof FormData;
   const isURLEncoded = options.body instanceof URLSearchParams;
 
-  if (!isFormData && !isURLEncoded) {
+  if (options.body &&!isFormData && !isURLEncoded) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -18,9 +17,17 @@ export async function apiRequest<T>(url: string, options: RequestInit = {}): Pro
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
+  // Add CSRF token for state-changing requests
+  if (options.method && options.method !== "GET") {
+    const csrfToken = getCookie("csrf_token");
+    if (csrfToken) {
+      headers["X-CSRF-Token"] = csrfToken;
+    }
+  }
 
   const response = await fetch(url, {
     ...options,
+    credentials: "include", // ✅ Needed to include cookies!
     headers: {
       ...headers,
       ...options.headers,
@@ -39,6 +46,9 @@ export async function apiRequest<T>(url: string, options: RequestInit = {}): Pro
         throw new Error(data.detail as string);
       }
       throw new Error(isPublic ? "Invalid credentials" : "Unauthorized");
+    }
+    if (response.status === 403) {
+      throw new Error("Access forbidden");
     }
     if (data && typeof data === "object" && "detail" in data) {
       throw new Error(data.detail as string);

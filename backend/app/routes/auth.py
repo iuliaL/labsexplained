@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from app.models.patient import (
     search_patient_by_email,
@@ -36,23 +37,38 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if not user or not verify_password(form_data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+    # ✅ Generate CSRF token securely
+    csrf_token = secrets.token_urlsafe(32)
+
     # Create JWT token (expires in 1 hour)
-    ACCESS_TOKEN_EXPIRATION_HOURS = 1
+    ACCESS_TOKEN_EXPIRATION_SECONDS = 3600
     # we store the email and role in the token
     token = create_access_token(
         data={
             "sub": user["email"],
             "role": "admin" if user.get("is_admin") else "patient",
         },
-        expires_delta=timedelta(hours=ACCESS_TOKEN_EXPIRATION_HOURS),
+        expires_delta=timedelta(seconds=ACCESS_TOKEN_EXPIRATION_SECONDS),
     )
-    return {
-        "message": "Login successful",
-        "access_token": token,
-        "token_type": "Bearer",
-        "fhir_id": user["fhir_id"],
-        "role": "admin" if user.get("is_admin") else "patient",
-    }
+    response = JSONResponse(
+        {
+            "message": "Login successful",
+            "access_token": token,
+            "token_type": "Bearer",
+            "fhir_id": user["fhir_id"],
+            "role": "admin" if user.get("is_admin") else "patient",
+        }
+    )
+    response.set_cookie(
+        key="csrf_token",
+        value=csrf_token,
+        httponly=False,
+        secure=True,
+        samesite="Strict",
+        max_age=ACCESS_TOKEN_EXPIRATION_SECONDS,  # expires in 1 hour, matches JWT lifespan
+        path="/",
+    )
+    return response
 
 
 @router.get("/check-email")
