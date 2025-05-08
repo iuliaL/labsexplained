@@ -86,15 +86,8 @@ export const authService = {
   removeAuthData,
 
   async checkEmailExists(email: string): Promise<boolean> {
-    const formData = new URLSearchParams();
-    formData.append("email", email);
-    const data = await apiRequest<{ exists: boolean }>(`${API_BASE_URL}/auth/check-email`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    });
+    const params = new URLSearchParams({ email });
+    const data = await apiRequest<{ exists: boolean }>(`${API_BASE_URL}/auth/check-email?${params}`);
     return data.exists;
   },
 

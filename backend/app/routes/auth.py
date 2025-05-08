@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Form
+from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from app.models.patient import (
     search_patient_by_email,
@@ -55,8 +55,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     }
 
 
-@router.post("/check-email")
-async def check_patient_exists(email: str = Form(...)):
+@router.get("/check-email")
+async def check_patient_exists(email: str = Query(...)):
     """Check if a patient exists by email."""
     existing_patient = search_patient_by_email(email)
     if existing_patient:
