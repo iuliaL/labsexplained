@@ -86,7 +86,15 @@ export const authService = {
   removeAuthData,
 
   async checkEmailExists(email: string): Promise<boolean> {
-    const data = await apiRequest<{ exists: boolean }>(`${API_BASE_URL}/auth/check-email?email=${email}`);
+    const formData = new URLSearchParams();
+    formData.append("email", email);
+    const data = await apiRequest<{ exists: boolean }>(`${API_BASE_URL}/auth/check-email`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
     return data.exists;
   },
 
@@ -100,7 +108,7 @@ export const authService = {
         body: formData,
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-        }
+        },
       });
 
       // Store all auth data in cookies

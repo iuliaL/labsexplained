@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from app.models.patient import (
     search_patient_by_email,
@@ -33,7 +33,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     # Search for patient by email
     user = search_patient_by_email(form_data.username)
 
-    # user = search_patient_by_email(credentials.email)
     if not user or not verify_password(form_data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
@@ -56,8 +55,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     }
 
 
-@router.get("/check-email")
-async def check_patient_exists(email):
+@router.post("/check-email")
+async def check_patient_exists(email: str = Form(...)):
     """Check if a patient exists by email."""
     existing_patient = search_patient_by_email(email)
     if existing_patient:
