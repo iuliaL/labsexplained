@@ -30,7 +30,8 @@ const setAuthToken = (token: string) => {
   // Set cookie to expire in 1 hour
   const expires = new Date();
   expires.setTime(expires.getTime() + 60 * 60 * 1000);
-  document.cookie = `jwt=${token}; expires=${expires.toUTCString()}; path=/`;
+  const isSecure = process.env.NODE_ENV === "production";
+  document.cookie = `jwt=${token}; expires=${expires.toUTCString()}; path=/${isSecure ? "; Secure" : ""}`;
 };
 
 // Helper function to get the auth role from cookies
@@ -71,9 +72,10 @@ const setAuthFhirId = (fhirId: string) => {
 
 // Helper function to remove all auth data from cookies
 const removeAuthData = () => {
-  document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-  document.cookie = "role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-  document.cookie = "fhir_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  const expired = "expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie = `jwt=; ${expired}`;
+  document.cookie = `role=; ${expired}`;
+  document.cookie = `fhir_id=; ${expired}`;
 };
 
 export const authService = {
