@@ -7,7 +7,7 @@ def send_password_reset_email(to_email: str, expires_hours: int, reset_link: str
     Sends a password reset email via Mailgun.
     """
     # Mailgun API endpoint for sending emails
-    url = f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages"
+    url = f"https://api.eu.mailgun.net/v3/{MAILGUN_DOMAIN}/messages"
 
     # Data to send in the POST request
     data = {
