@@ -125,7 +125,11 @@ async def forgot_password(request: ForgotPasswordRequest):
     reset_link = f"{FRONTEND_URL}/reset-password?token={reset_token}"
     try:
         # Send the reset email
-        send_password_reset_email(to_email=request.email, reset_link=reset_link)
+        send_password_reset_email(
+            to_email=request.email,
+            expires_hours=RESET_TOKEN_EXPIRATION_HOURS,
+            reset_link=reset_link,
+        )
     except Exception as e:
         # If email sending fails, raise a 500 error
         raise HTTPException(
