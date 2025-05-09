@@ -77,10 +77,6 @@ def delete_patient(fhir_id):
 
 def assign_admin(email: str):
     """Assigns admin role to a patient."""
-    patient = search_patient_by_email(email)
-    if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found")
-
     patients_collection.update_one({"email": email}, {"$set": {"is_admin": True}})
 
 

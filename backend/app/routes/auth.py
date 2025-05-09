@@ -83,9 +83,12 @@ async def check_patient_exists(email: str = Query(...)):
 @router.get("/assign-admin")
 async def assign_admin_role(email: str, current_user: dict = Depends(admin_required)):
     """Assign admin role to a patient."""
-    if current_user["role"] == "admin":
+    user = search_patient_by_email(email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user["role"] == "admin":
         raise HTTPException(
-            status_code=409, detail=f'{current_user["email"]} is already an admin'
+            status_code=409, detail=f'{user["email"]} is already an admin'
         )
 
     assign_admin(email)
