@@ -64,8 +64,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         key="csrf_token",
         value=csrf_token,
         domain=".labsexplained.com" if ENV == "production" else None,
-        httponly=False,
-        secure=True,
+        httponly=False,  # ❗ required for JS access of the cookie
+        secure=ENV == "production",
         samesite="Strict",
         max_age=ACCESS_TOKEN_EXPIRATION_SECONDS,  # expires in 1 hour, matches JWT lifespan
         path="/",
