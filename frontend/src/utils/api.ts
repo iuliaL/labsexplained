@@ -20,6 +20,8 @@ export async function apiRequest<T>(url: string, options: RequestInit = {}): Pro
   // Add CSRF token for state-changing requests
   if (options.method && options.method !== "GET") {
     const csrfToken = getCookie("csrf_token");
+    // TODO: Remove this after testing
+    console.log("csrf_token in cookies:", getCookie("csrf_token"));
     if (csrfToken) {
       headers["X-CSRF-Token"] = csrfToken;
     }

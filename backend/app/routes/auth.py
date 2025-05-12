@@ -62,6 +62,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     response.set_cookie(
         key="csrf_token",
         value=csrf_token,
+        domain=".labsexplained.com",  # 👈 key point for Cookie Domain Scope!
         httponly=False,
         secure=True,
         samesite="Strict",
