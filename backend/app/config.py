@@ -17,3 +17,5 @@ FRONTEND_URL = os.getenv("FRONTEND_URL")
 MAILGUN_API_KEY = os.getenv("MAILGUN_API_KEY")
 MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN")
 EMAIL_FROM = os.getenv("EMAIL_FROM", "noreply@yourapp.com")
+
+ENV = os.getenv("ENV", "development")

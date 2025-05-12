@@ -18,7 +18,7 @@ from app.utils.auth import (
 from app.services.email_service import send_password_reset_email
 from datetime import datetime, timedelta, timezone
 import secrets
-from app.config import FRONTEND_URL
+from app.config import FRONTEND_URL, ENV
 
 
 router = APIRouter()
@@ -59,10 +59,11 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             "role": "admin" if user.get("is_admin") else "patient",
         }
     )
+    # 🔍 Detect if we are running in production
     response.set_cookie(
         key="csrf_token",
         value=csrf_token,
-        domain=".labsexplained.com",  # 👈 key point for Cookie Domain Scope!
+        domain=".labsexplained.com" if ENV == "production" else None,
         httponly=False,
         secure=True,
         samesite="Strict",
