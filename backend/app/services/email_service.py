@@ -2,7 +2,9 @@ import requests
 from app.config import MAILGUN_DOMAIN, EMAIL_FROM, MAILGUN_API_KEY
 
 
-def send_password_reset_email(to_email: str, expires_hours: int, reset_link: str):
+def send_password_reset_email(
+    to_email: str, name: str, expires_hours: int, reset_link: str
+):
     """
     Sends a password reset email via Mailgun.
     """
@@ -15,11 +17,13 @@ def send_password_reset_email(to_email: str, expires_hours: int, reset_link: str
         "to": to_email,
         "subject": "Reset your password",
         "html": f"""
-        <p>Hello,</p>
-        <p>You requested a password reset. Click the link below to reset your password:</p>
+        <p>Hi {name},</p>
+        <p>We received a request to reset your password. Click the button below to proceed:</p>
         <p><a href="{reset_link}">Reset Password</a></p>
         <p>This link will expire in {expires_hours} hours.</p>
         <p>If you didn't request this, please ignore this email.</p>
+        <p>Best regards,</p>
+        <p>The LabsExplained Team</p>
         """,
     }
 

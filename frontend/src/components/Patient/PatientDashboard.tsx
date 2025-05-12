@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { adminService, Patient, LabTestSet } from "../../services/admin";
 import { formatDate } from "../../utils/dateFormatter";
 import { UserIcon } from "../icons/UserIcon";
-import labTestImage from "../../assets/lab-test.jpeg";
+import labTestImage from "@assets/lab-test.jpeg";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { Pagination } from "../ui/Pagination";
 import { LabSet } from "../Admin/LabSet";

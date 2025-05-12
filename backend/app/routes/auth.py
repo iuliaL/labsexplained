@@ -127,6 +127,7 @@ async def forgot_password(request: ForgotPasswordRequest):
         # Send the reset email
         send_password_reset_email(
             to_email=request.email,
+            name=patient["first_name"],
             expires_hours=RESET_TOKEN_EXPIRATION_HOURS,
             reset_link=reset_link,
         )
