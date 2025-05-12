@@ -1,5 +1,6 @@
 from fastapi import Request, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
+from app.config import ENV
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 PUBLIC_ENDPOINTS = {
@@ -14,6 +15,11 @@ class CSRFMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Skip safe methods and public endpoints
         if request.method in SAFE_METHODS or request.url.path in PUBLIC_ENDPOINTS:
+            return await call_next(request)
+
+        # ✅ Skip CSRF for Swagger UI in development only
+        referer = request.headers.get("referer", "")
+        if ENV == "development" and "/docs" in referer:
             return await call_next(request)
 
         # CSRF validation for protected routes
