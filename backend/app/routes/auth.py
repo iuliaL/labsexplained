@@ -88,7 +88,7 @@ async def assign_admin_role(email: str, current_user: dict = Depends(admin_requi
     user = search_patient_by_email(email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if user["role"] == "admin":
+    if user["is_admin"]:
         raise HTTPException(
             status_code=409, detail=f'{user["email"]} is already an admin'
         )

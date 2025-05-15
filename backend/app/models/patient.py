@@ -28,16 +28,20 @@ class Patient(BaseModel):
     email: str = None
     password: str
     is_admin: bool = False
-
-    class Config:
-        # MongoDB stores data in camelCase, but we want snake_case in the code
-        alias_generator = lambda string: string.lower()
+    created_at: datetime = None
+    updated_at: datetime = None
 
 
 def store_patient(patient: Patient):
     """Stores the patient in MongoDB, ensuring gender validation."""
     # Convert Pydantic model to dictionary for MongoDB
     patient_dict = patient.model_dump(by_alias=True)
+
+    # Add timestamps
+    now = datetime.now(timezone.utc)
+    patient_dict["created_at"] = now
+    patient_dict["updated_at"] = now
+
     result = patients_collection.insert_one(patient_dict)
 
     # Check if the insert was acknowledged
@@ -77,14 +81,18 @@ def delete_patient(fhir_id):
 
 def assign_admin(email: str):
     """Assigns admin role to a patient."""
-    patients_collection.update_one({"email": email}, {"$set": {"is_admin": True}})
+    now = datetime.now(timezone.utc)
+    patients_collection.update_one(
+        {"email": email}, {"$set": {"is_admin": True, "updated_at": now}}
+    )
 
 
 def update_password(email: str, new_password: str):
+    now = datetime.now(timezone.utc)
     patients_collection.update_one(
         {"email": email},
         {
-            "$set": {"password": new_password},
+            "$set": {"password": new_password, "updated_at": now},
             "$unset": {"reset_token": "", "reset_token_expires": ""},
         },
     )
@@ -103,7 +111,14 @@ def check_reset_token_expiration(token: str):
 
 
 def update_reset_token(email: str, reset_token: str, expires_at: datetime):
+    now = datetime.now(timezone.utc)
     patients_collection.update_one(
         {"email": email},
-        {"$set": {"reset_token": reset_token, "reset_token_expires": expires_at}},
+        {
+            "$set": {
+                "reset_token": reset_token,
+                "reset_token_expires": expires_at,
+                "updated_at": now,
+            }
+        },
     )
