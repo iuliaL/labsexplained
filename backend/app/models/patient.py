@@ -20,10 +20,10 @@ class Gender(str, Enum):
 
 # MongoDB Patient Schema
 class Patient(BaseModel):
-    first_name: str
-    last_name: str
-    birth_date: str
-    gender: Gender
+    first_name: str | None = None
+    last_name: str | None = None
+    birth_date: str | None = None
+    gender: Gender | None = None
     fhir_id: str
     email: str = None
     password: str
@@ -50,6 +50,19 @@ def store_patient(patient: Patient):
             status_code=500, detail="Failed to insert patient into the database."
         )
     return patient
+
+
+def update_patient(fhir_id: str, update_data: dict):
+    """Updates patient information in MongoDB"""
+    now = datetime.now(timezone.utc)
+    update_data["updated_at"] = now
+
+    result = patients_collection.update_one({"fhir_id": fhir_id}, {"$set": update_data})
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Patient not found in MongoDB")
+
+    return True
 
 
 def get_patients():

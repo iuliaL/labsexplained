@@ -7,14 +7,17 @@ from app.services.fhir import (
     delete_fhir_patient,
     remove_all_observations_for_patient,
     get_fhir_observations,
+    update_fhir_patient,
 )
 from app.models.patient import (
     store_patient,
     Patient,
+    Gender,
     get_patients as get_patients_from_db,
     get_patient as get_patient_from_db,
     delete_patient as delete_patient_from_db,
     search_patient_by_email,
+    update_patient as update_patient_in_db,
 )
 from app.models.lab_test_set import (
     get_lab_test_sets_for_patient,
@@ -27,10 +30,6 @@ router = APIRouter()
 
 # Define the input model for patient registration
 class PatientRegister(BaseModel):
-    first_name: str
-    last_name: str
-    birth_date: str
-    gender: Literal["male", "female", "other", "unknown"]
     email: str
     password: str  # Password will be hashed
     is_admin: Optional[bool] = False  # Default to False if not provided
@@ -46,12 +45,7 @@ async def register_patient(patient: PatientRegister):
 
     # Call the external FHIR service to create the patient and retrieve their FHIR ID
     try:
-        fhir_created_id = create_fhir_patient(
-            patient.first_name,
-            patient.last_name,
-            patient.birth_date,
-            patient.gender,
-        )
+        fhir_created_id = create_fhir_patient(patient.email)
     except HTTPException as e:
         raise HTTPException(
             status_code=e.status_code,
@@ -62,10 +56,6 @@ async def register_patient(patient: PatientRegister):
     hashed_password = set_password(patient.password)
     # Create a Pydantic Patient model instance from the data
     new_patient_data = Patient(
-        first_name=patient.first_name,
-        last_name=patient.last_name,
-        birth_date=patient.birth_date,
-        gender=patient.gender,
         fhir_id=fhir_created_id,
         email=patient.email,
         password=hashed_password,
@@ -234,3 +224,42 @@ async def delete_patient(fhir_id: str, current_user: dict = Depends(admin_requir
         "message": "Patient and all associated data deleted successfully",
         "fhir_id": fhir_id,
     }
+
+
+# Define model for patient information updates
+class PatientUpdate(BaseModel):
+    first_name: str
+    last_name: str
+    birth_date: str
+    gender: Gender
+
+
+@router.put("/{fhir_id}")
+async def update_patient(fhir_id: str, patient_update: PatientUpdate):
+    """Update patient information (name, birth date, gender) in both FHIR and MongoDB"""
+    try:
+        # First update FHIR
+        fhir_updated = update_fhir_patient(
+            fhir_id=fhir_id,
+            first_name=patient_update.first_name,
+            last_name=patient_update.last_name,
+            birth_date=patient_update.birth_date,
+            gender=patient_update.gender,
+        )
+
+        if fhir_updated:
+            # Then update MongoDB with just the fields we want to update
+            mongo_updated = update_patient_in_db(
+                fhir_id=fhir_id, update_data=patient_update.model_dump()
+            )
+            if mongo_updated:
+                return {"message": "Patient updated successfully"}
+
+        raise HTTPException(status_code=500, detail="Failed to update patient")
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

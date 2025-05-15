@@ -7,18 +7,11 @@ from app.utils.file_parser import parse_reference_range
 VALID_GENDER_VALUES = ["male", "female", "other", "unknown"]
 
 
-def create_fhir_patient(first_name: str, last_name: str, birth_date: str, gender: str):
+def create_fhir_patient(email: str):
     """Creates a new patient in FHIR and stores the FHIR ID in MongoDB"""
-    if gender.lower() not in VALID_GENDER_VALUES:
-        raise ValueError(
-            f"Invalid gender. Allowed values: {', '.join(VALID_GENDER_VALUES)}"
-        )
-
     patient_resource = {
         "resourceType": "Patient",
-        "name": [{"use": "official", "family": last_name, "given": [first_name]}],
-        "birthDate": birth_date,
-        "gender": gender.lower(),
+        "telecom": [{"system": "email", "value": email}],
     }
     response = requests.post(f"{FHIR_SERVER_URL}/Patient", json=patient_resource)
     print(f"FHIR Response {response.status_code}: {response.text}")
@@ -26,6 +19,38 @@ def create_fhir_patient(first_name: str, last_name: str, birth_date: str, gender
     if response.status_code == 201:
         fhir_id = response.json()["id"]
         return fhir_id
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail=f"FHIR server error ({response.status_code}): {response.text}",
+        )
+
+
+def update_fhir_patient(
+    fhir_id: str, first_name: str, last_name: str, birth_date: str, gender: str
+):
+    """Updates an existing patient in FHIR server"""
+    if gender.lower() not in VALID_GENDER_VALUES:
+        raise ValueError(
+            f"Invalid gender. Allowed values: {', '.join(VALID_GENDER_VALUES)}"
+        )
+
+    patient_resource = {
+        "resourceType": "Patient",
+        "id": fhir_id,
+        "name": [{"use": "official", "family": last_name, "given": [first_name]}],
+        "birthDate": birth_date,
+        "gender": gender.lower(),
+    }
+
+    response = requests.put(
+        f"{FHIR_SERVER_URL}/Patient/{fhir_id}", json=patient_resource
+    )
+    print(f"FHIR Update Response {response.status_code}: {response.text}")
+
+    if response.status_code == 200:
+        print("Success: Patient updated in FHIR")
+        return True
     else:
         raise HTTPException(
             status_code=500,
