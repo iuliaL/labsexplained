@@ -1,11 +1,9 @@
 FROM python:3.11
 
-# Install system CA certificates and required build tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
-    gcc \
-    libffi-dev \
-    libssl-dev \
+    curl \
+    gnupg \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
