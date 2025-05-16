@@ -48,7 +48,6 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <meta name="apple-mobile-web-app-title" content="LabsExplained" />
 
-
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -59,35 +58,5 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-
-    <!-- Dynamic title script -->
-    <script>
-      // Update title based on route
-      const updateTitle = () => {
-        const path = window.location.pathname;
-        let title = "LabsExplained";
-
-        // Add specific titles based on routes
-        if (path.startsWith("/wizard")) {
-          if (path === "/wizard/account") title = "Create Account | LabsExplained";
-          else if (path === "/wizard/name") title = "Patient Information | LabsExplained";
-          else if (path === "/wizard/demographics") title = "Patient Demographics | LabsExplained";
-          else if (path === "/wizard/upload") title = "Upload Lab Results | LabsExplained";
-          else title = "Welcome | LabsExplained.AI";
-        } else if (path.startsWith("/admin/patients")) {
-          if (path === "/admin/patients") title = "Admin Dashboard | LabsExplained";
-          else title = "Patient Details | LabsExplained.AI";
-        } else if (path.startsWith("/patient/")) title = "Patient Dashboard | LabsExplained";
-        else if (path === "/login") title = "Login | LabsExplained";
-        else if (path === "/reset-password") title = "Reset Password | LabsExplained";
-        else if (path === "/404") title = "Page Not Found | LabsExplained";
-
-        document.title = title;
-      };
-
-      // Update title on initial load and route changes
-      updateTitle();
-      window.addEventListener("popstate", updateTitle);
-    </script>
   </body>
 </html>
