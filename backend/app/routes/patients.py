@@ -234,7 +234,7 @@ class PatientUpdate(BaseModel):
     gender: Gender
 
 
-@router.put("/{fhir_id}")
+@router.put("/patients/{fhir_id}")
 async def update_patient(fhir_id: str, patient_update: PatientUpdate):
     """Update patient information (name, birth date, gender) in both FHIR and MongoDB"""
     try:

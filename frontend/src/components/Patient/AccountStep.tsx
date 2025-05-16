@@ -5,19 +5,13 @@ import React from "react";
 import { PasswordInput } from "../ui/PasswordInput";
 
 interface AccountStepProps {
-  email: string;
-  password: string;
-  onChange: (data: { email: string; password: string }) => void;
-  onNext: () => void;
+  onNext: (data: { email: string; password: string }) => void;
   onLogin: () => void;
   error?: string;
   loading?: boolean;
 }
 
 export const AccountStep: React.FC<AccountStepProps> = ({
-  email,
-  password,
-  onChange,
   onNext,
   onLogin,
   error,
@@ -25,6 +19,8 @@ export const AccountStep: React.FC<AccountStepProps> = ({
 }) => {
   const [showErrors, setShowErrors] = React.useState(false);
   const [privacyAccepted, setPrivacyAccepted] = React.useState(false);
+  const [email, setEmail] = React.useState<string>("");
+  const [password, setPassword] = React.useState<string>("");
 
   const emailError = showErrors && !emailRegex.test(email) ? "Please enter a valid email address" : undefined;
   const passwordError =
@@ -34,7 +30,7 @@ export const AccountStep: React.FC<AccountStepProps> = ({
 
   const handleNext = () => {
     if (isFormValid) {
-      onNext();
+      onNext({ email: email || "", password });
     } else {
       setShowErrors(true);
     }
@@ -81,7 +77,7 @@ export const AccountStep: React.FC<AccountStepProps> = ({
           label="Email"
           type="email"
           value={email}
-          onChange={(e) => onChange({ email: e.target.value, password })}
+          onChange={(e) => setEmail(() => e.target.value)}
           placeholder="Enter your email"
           required
           disabled={loading}
@@ -91,7 +87,7 @@ export const AccountStep: React.FC<AccountStepProps> = ({
           id="password"
           label="Password"
           value={password}
-          onChange={(e) => onChange({ email, password: e.target.value })}
+          onChange={(e) => setPassword(e.target.value)}
           placeholder="Create a password"
           required
           disabled={loading}
