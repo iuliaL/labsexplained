@@ -62,14 +62,21 @@ export interface PatientsResponse {
 interface CreatePatientRequest {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  gender: string;
 }
 
-interface CreatePatientResponse {
-  fhir_id: string;
+interface UpdatePatientRequest {
+  firstName?: string;
+  lastName?: string;
+  dateOfBirth?: string;
+  gender?: string;
+}
+
+  interface CreatePatientResponse {
+    fhir_id: string;
+    message: string;
+  }
+
+interface UpdatePatientResponse {
   message: string;
 }
 
@@ -112,15 +119,25 @@ export const adminService = {
       body: JSON.stringify({
         email: patientData.email,
         password: patientData.password,
-        first_name: patientData.firstName,
-        last_name: patientData.lastName,
-        birth_date: new Date(patientData.dateOfBirth).toISOString().split("T")[0], // Convert to YYYY-MM-DD
-        gender: patientData.gender,
+       
       }),
     });
   },
 
-  async uploadLabTestSet(patientFhirId: string, testDate: string, file: File): Promise<LabTestSet> {
+  async updatePatient(fhirId: string, patientData: UpdatePatientRequest): Promise<UpdatePatientResponse> {
+    const payload = {
+      ...(patientData.firstName && { first_name: patientData.firstName }),
+      ...(patientData.lastName && { last_name: patientData.lastName }),
+      ...(patientData.dateOfBirth && { birth_date: new Date(patientData.dateOfBirth).toISOString().split("T")[0] }), // Convert to YYYY-MM-DD
+      ...(patientData.gender && { gender: patientData.gender }),
+    };
+    return apiRequest<UpdatePatientResponse>(`${API_BASE_URL}/patients/${fhirId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async uploadLabTestSet(patientFhirId: string, testDate: Date, file: File): Promise<LabTestSet> {
     const formData = new FormData();
     formData.append("patient_fhir_id", patientFhirId);
     formData.append("test_date", new Date(testDate).toISOString().split("T")[0]); // Convert to YYYY-MM-DD

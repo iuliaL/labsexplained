@@ -1,19 +1,18 @@
 import { useAuth } from "@contexts/AuthContext";
-import { usePersistentWizard } from "@hooks/persistWizardState";
 import { adminService } from "@services/admin";
 import { authService } from "@services/auth";
 import Container from "@ui/Container";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AccountStep } from "./AccountStep";
 import { DemographicsStep } from "./DemographicsStep";
 import { NameStep } from "./NameStep";
 import { UploadStep } from "./UploadStep";
 import { WelcomeStep } from "./WelcomeStep";
+
 type Step = "welcome" | "account" | "name" | "demographics" | "upload";
 
 interface ProcessingState {
-  createPatient: "pending" | "loading" | "completed" | "error";
   uploadLabTest: "pending" | "loading" | "completed" | "error";
   interpretResults: "pending" | "loading" | "completed" | "error";
   error?: string;
@@ -28,38 +27,16 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
   const { fhirId } = useParams<{ fhirId: string }>();
   const { login } = useAuth();
 
-  const { currentStep, setCurrentStep, patientData, setPatientData, clearWizardState } =
-    usePersistentWizard(initialStep);
+  // const { currentStep, setCurrentStep, clearWizardState } = usePersistentWizard(initialStep);
+  const [currentStep, setCurrentStep] = useState<Step>(initialStep);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingState, setProcessingState] = useState<ProcessingState>({
-    createPatient: "pending",
     uploadLabTest: "pending",
     interpretResults: "pending",
   });
 
-  useEffect(() => {
-    // If we have a FHIR ID and we're on the upload step, fetch the patient's data
-    if (fhirId && currentStep === "upload") {
-      adminService.getPatient(fhirId).then((patient) => {
-        setPatientData({
-          ...patientData,
-          firstName: patient.first_name,
-          lastName: patient.last_name,
-          dateOfBirth: patient.birth_date,
-          gender: patient.gender,
-        });
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fhirId, currentStep]);
-
-  useEffect(() => {
-    setCurrentStep(initialStep);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialStep]);
-
-  const nextStep = () => {
+  const nextStep = (fhir_id: string) => {
     let nextPath = "/wizard/";
     let nextStepValue: Step = "welcome";
 
@@ -69,15 +46,15 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
         nextStepValue = "account";
         break;
       case "account":
-        nextPath = "/wizard/name";
+        nextPath = `/wizard/name/${fhir_id}`;
         nextStepValue = "name";
         break;
       case "name":
-        nextPath = "/wizard/demographics";
+        nextPath = `/wizard/demographics/${fhir_id}`;
         nextStepValue = "demographics";
         break;
       case "demographics":
-        nextPath = "/wizard/upload";
+        nextPath = `/wizard/upload/${fhir_id}`;
         nextStepValue = "upload";
         break;
     }
@@ -86,7 +63,7 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
     navigate(nextPath);
   };
 
-  const prevStep = () => {
+  const prevStep = (fhir_id: string) => {
     let prevPath = "/wizard/";
     let prevStepValue: Step = "welcome";
 
@@ -100,11 +77,11 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
         prevStepValue = "account";
         break;
       case "demographics":
-        prevPath = "/wizard/name";
+        prevPath = `/wizard/name/${fhir_id}`;
         prevStepValue = "name";
         break;
       case "upload":
-        prevPath = "/wizard/demographics";
+        prevPath = `/wizard/demographics/${fhir_id}`;
         prevStepValue = "demographics";
         break;
     }
@@ -128,45 +105,81 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
     }
   };
 
-  const handleEmailSubmit = async () => {
+  const handleEmailSubmit = async ({ email, password }: { email: string; password: string }) => {
     setLoading(true);
     setError(null);
-
     try {
       // Check if email exists
-      const emailExists = await authService.checkEmailExists(patientData.email);
+      const emailExists = await authService.checkEmailExists(email);
 
       if (emailExists) {
         setError("Email already exists. Please log in instead.");
       } else {
-        nextStep();
+        try {
+          const { fhir_id } = await adminService.createPatient({ email, password });
+          await login(email, password);
+          nextStep(fhir_id);
+        } catch (err) {
+          console.error("Error creating patient:", err);
+          setError("An error occurred while creating your account. Please try again.");
+        }
       }
     } catch (err) {
-      console.error("Error checking email:", err);
       setError("An error occurred while checking your email. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLabResultsSubmit = async () => {
+  const handleNameSubmit = async ({ firstName, lastName }: { firstName: string; lastName: string }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await adminService.updatePatient(fhirId!, { firstName, lastName });
+
+      nextStep(fhirId!);
+    } catch (err) {
+      setError("An error occurred while updating your patient information. Please try again.");
+      console.error("Error updating patient information:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemographicsSubmit = async ({ dateOfBirth, gender }: { dateOfBirth: Date | null; gender: string }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await adminService.updatePatient(fhirId!, {
+        dateOfBirth: dateOfBirth?.toISOString().split("T")[0], // Convert to YYYY-MM-DD
+        gender,
+      });
+      console.log("Update demographics response:", response);
+      nextStep(fhirId!);
+    } catch (err) {
+      setError("An error occurred while updating your demographics information. Please try again.");
+      console.error("Error updating demographics information:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLabResultsSubmit = async (file: File | null, testDate: Date | null) => {
     setLoading(true);
     setError(null);
     setProcessingState({
-      createPatient: fhirId ? "completed" : "loading",
       uploadLabTest: "pending",
       interpretResults: "pending",
     });
 
     try {
-      if (!patientData.file || !patientData.testDate) {
+      if (!file || !testDate) {
         throw new Error("Please select a file and test date");
       }
 
       if (fhirId) {
-        // If we have a FHIR ID, we're just uploading new lab results to an existing patient
         setProcessingState((prev) => ({ ...prev, uploadLabTest: "loading" }));
-        const uploadResponse = await adminService.uploadLabTestSet(fhirId, patientData.testDate, patientData.file);
+        const uploadResponse = await adminService.uploadLabTestSet(fhirId, testDate, file);
         setProcessingState((prev) => ({ ...prev, uploadLabTest: "completed" }));
 
         if (!uploadResponse?.id) {
@@ -176,48 +189,8 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
         setProcessingState((prev) => ({ ...prev, interpretResults: "loading" }));
         await adminService.interpretLabTestSet(uploadResponse.id);
         setProcessingState((prev) => ({ ...prev, interpretResults: "completed" }));
-        clearWizardState(); // Clear the wizard state (local storage) after the process is complete
 
         navigate(`/patient/${fhirId}`);
-      } else {
-        // Create a new patient and upload their first lab set
-        setProcessingState((prev) => ({ ...prev, createPatient: "loading" }));
-        const { fhir_id } = await adminService.createPatient({
-          email: patientData.email,
-          password: patientData.password,
-          firstName: patientData.firstName,
-          lastName: patientData.lastName,
-          dateOfBirth: patientData.dateOfBirth,
-          gender: patientData.gender,
-        });
-        setProcessingState((prev) => ({ ...prev, createPatient: "completed" }));
-
-        if (!fhir_id) {
-          throw new Error("Patient creation succeeded but no FHIR ID was returned");
-        }
-
-        // Update auth context with the new user's data
-        await login(patientData.email, patientData.password);
-
-        setProcessingState((prev) => ({ ...prev, uploadLabTest: "loading" }));
-        const uploadResponse = await adminService.uploadLabTestSet(
-          fhir_id,
-          patientData.testDate || new Date().toISOString().split("T")[0],
-          patientData.file
-        );
-        setProcessingState((prev) => ({ ...prev, uploadLabTest: "completed" }));
-
-        if (!uploadResponse?.id) {
-          throw new Error("Lab test upload succeeded but no lab set ID was returned");
-        }
-
-        setProcessingState((prev) => ({ ...prev, interpretResults: "loading" }));
-        await adminService.interpretLabTestSet(uploadResponse.id);
-        setProcessingState((prev) => ({ ...prev, interpretResults: "completed" }));
-        clearWizardState(); // Clear the wizard state (local storage) after the process is complete
-
-        // Navigate to the patient dashboard
-        navigate(`/patient/${fhir_id}`);
       }
     } catch (err) {
       console.error("Error during process:", err);
@@ -243,76 +216,49 @@ export default function PatientWizard({ initialStep = "welcome" }: PatientWizard
       {currentStep !== "welcome" && (
         <div className="mb-4 text-center">
           <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
-            {fhirId
-              ? "Upload new lab results"
-              : `Step ${
-                  currentStep === "account"
-                    ? "1"
-                    : currentStep === "name"
-                    ? "2"
-                    : currentStep === "demographics"
-                    ? "3"
-                    : "4"
-                } of 4: ${getStepTitle(currentStep)}`}
+            {`Step
+            ${
+              currentStep === "account"
+                ? "1"
+                : currentStep === "name"
+                ? "2"
+                : currentStep === "demographics"
+                ? "3"
+                : "4"
+            }
+            of 4: ${getStepTitle(currentStep)}`}
           </span>
         </div>
       )}
 
       {/* Steps */}
-      {currentStep === "welcome" && <WelcomeStep onNext={nextStep} />}
+      {currentStep === "welcome" && (
+        <WelcomeStep
+          onNext={() => {
+            navigate("/wizard/account");
+            setCurrentStep("account");
+          }}
+        />
+      )}
       {currentStep === "account" && (
         <AccountStep
-          email={patientData.email}
-          password={patientData.password}
-          onChange={(data) => setPatientData({ ...patientData, ...data })}
           onNext={handleEmailSubmit}
           onLogin={() => navigate("/login")}
           error={error || undefined}
           loading={loading}
         />
       )}
-      {currentStep === "name" && (
-        <NameStep
-          firstName={patientData.firstName}
-          lastName={patientData.lastName}
-          onChange={(data) => setPatientData({ ...patientData, ...data })}
-          onNext={nextStep}
-          onBack={prevStep}
-        />
-      )}
+      {currentStep === "name" && <NameStep onNext={handleNameSubmit} onBack={() => prevStep(fhirId!)} />}
       {currentStep === "demographics" && (
-        <DemographicsStep
-          dateOfBirth={patientData.dateOfBirth ? new Date(patientData.dateOfBirth) : null}
-          gender={patientData.gender}
-          onChange={({ gender, dateOfBirth }) =>
-            setPatientData((prevPatientData) => {
-              return {
-                ...prevPatientData,
-                gender,
-                dateOfBirth: dateOfBirth ? dateOfBirth.toISOString() : "",
-              };
-            })
-          }
-          onNext={nextStep}
-          onBack={prevStep}
-        />
+        <DemographicsStep onNext={handleDemographicsSubmit} onBack={() => prevStep(fhirId!)} />
       )}
       {currentStep === "upload" && (
         <UploadStep
-          onFileSelect={(file) => {
-            setPatientData((prevPatientData) => ({ ...prevPatientData, file }));
-          }}
-          onDateSelect={(date) => {
-            setPatientData((prevPatientData) => ({ ...prevPatientData, testDate: date ? date.toISOString() : "" }));
-          }}
-          onBack={fhirId ? () => navigate(`/patient/${fhirId}`) : prevStep}
-          onSubmit={handleLabResultsSubmit}
-          initialDate={patientData.testDate ? new Date(patientData.testDate) : null}
-          initialFile={patientData.file}
+          onBack={() => navigate(`/patient/${fhirId}`)}
+          onSubmit={(data) => handleLabResultsSubmit(data.file, data.date)}
           loading={loading}
           error={error || undefined}
           processingState={processingState}
-          isUploadOnly={!!fhirId}
         />
       )}
     </Container>

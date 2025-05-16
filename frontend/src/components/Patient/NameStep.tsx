@@ -1,14 +1,15 @@
-import { Input } from "../ui/Input";
+import { Input } from "@ui/Input";
+import { useState } from "react";
 
 interface NameStepProps {
-  firstName: string;
-  lastName: string;
-  onChange: (data: { firstName: string; lastName: string }) => void;
-  onNext: () => void;
+  onNext: (data: { firstName: string; lastName: string }) => void;
   onBack: () => void;
 }
 
-export function NameStep({ firstName, lastName, onChange, onNext, onBack }: NameStepProps) {
+export function NameStep({ onNext, onBack }: NameStepProps) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+
   return (
     <div className="space-y-6">
       {/* Explanation Card */}
@@ -35,42 +36,40 @@ export function NameStep({ firstName, lastName, onChange, onNext, onBack }: Name
           </div>
         </div>
       </div>
-
-      <div className="space-y-4">
-        <Input
-          id="firstName"
-          label="First Name"
-          value={firstName}
-          onChange={(e) => onChange({ firstName: e.target.value, lastName })}
-          placeholder="First name"
-          required
-        />
-        <Input
-          id="lastName"
-          label="Last Name"
-          value={lastName}
-          onChange={(e) => onChange({ firstName, lastName: e.target.value })}
-          placeholder="Last name"
-          required
-        />
-      </div>
-      <div className="flex space-x-4">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex-1 py-2 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Back
-        </button>
-
-        <button
-          onClick={onNext}
-          disabled={!firstName || !lastName}
-          className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400"
-        >
-          Next
-        </button>
-      </div>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onNext({ firstName, lastName });
+        }}
+      >
+        <div className="space-y-4 mb-6">
+          <Input
+            id="firstName"
+            label="First Name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="First name"
+            required
+          />
+          <Input
+            id="lastName"
+            label="Last Name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Last name"
+            required
+          />
+        </div>
+        <div className="flex space-x-4">
+          <button
+            type="submit"
+            disabled={!firstName || !lastName}
+            className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400"
+          >
+            Next
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

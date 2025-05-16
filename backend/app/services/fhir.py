@@ -26,35 +26,51 @@ def create_fhir_patient(email: str):
         )
 
 
-def update_fhir_patient(
-    fhir_id: str, first_name: str, last_name: str, birth_date: str, gender: str
-):
-    """Updates an existing patient in FHIR server"""
-    if gender.lower() not in VALID_GENDER_VALUES:
-        raise ValueError(
-            f"Invalid gender. Allowed values: {', '.join(VALID_GENDER_VALUES)}"
+def update_fhir_patient(fhir_id: str, **update_data):
+    """Updates an existing patient in FHIR server with partial updates supported"""
+    # First get the existing patient data
+    response = requests.get(f"{FHIR_SERVER_URL}/Patient/{fhir_id}")
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch existing patient data from FHIR: {response.text}",
         )
 
-    patient_resource = {
-        "resourceType": "Patient",
-        "id": fhir_id,
-        "name": [{"use": "official", "family": last_name, "given": [first_name]}],
-        "birthDate": birth_date,
-        "gender": gender.lower(),
-    }
+    current_patient = response.json()
 
-    response = requests.put(
-        f"{FHIR_SERVER_URL}/Patient/{fhir_id}", json=patient_resource
+    # Update only the provided fields
+    if "first_name" in update_data or "last_name" in update_data:
+        # Get current name or initialize if not present
+        name = current_patient.get("name", [{"use": "official"}])[0]
+        if "first_name" in update_data:
+            name["given"] = [update_data["first_name"]]
+        if "last_name" in update_data:
+            name["family"] = update_data["last_name"]
+        current_patient["name"] = [name]
+
+    if "birth_date" in update_data:
+        current_patient["birthDate"] = update_data["birth_date"]
+
+    if "gender" in update_data:
+        if update_data["gender"].lower() not in VALID_GENDER_VALUES:
+            raise ValueError(
+                f"Invalid gender. Allowed values: {', '.join(VALID_GENDER_VALUES)}"
+            )
+        current_patient["gender"] = update_data["gender"].lower()
+
+    # Send the updated resource back to FHIR
+    update_response = requests.put(
+        f"{FHIR_SERVER_URL}/Patient/{fhir_id}", json=current_patient
     )
-    print(f"FHIR Update Response {response.status_code}: {response.text}")
+    print(f"FHIR Update Response {update_response.status_code}: {update_response.text}")
 
-    if response.status_code == 200:
+    if update_response.status_code == 200:
         print("Success: Patient updated in FHIR")
         return True
     else:
         raise HTTPException(
             status_code=500,
-            detail=f"FHIR server error ({response.status_code}): {response.text}",
+            detail=f"FHIR server error ({update_response.status_code}): {update_response.text}",
         )
 
 

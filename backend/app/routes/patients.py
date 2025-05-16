@@ -228,38 +228,66 @@ async def delete_patient(fhir_id: str, current_user: dict = Depends(admin_requir
 
 # Define model for patient information updates
 class PatientUpdate(BaseModel):
-    first_name: str
-    last_name: str
-    birth_date: str
-    gender: Gender
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    birth_date: Optional[str] = None
+    gender: Optional[Gender] = None
 
 
 @router.put("/patients/{fhir_id}")
-async def update_patient(fhir_id: str, patient_update: PatientUpdate):
-    """Update patient information (name, birth date, gender) in both FHIR and MongoDB"""
+async def update_patient(
+    fhir_id: str,
+    patient_update: PatientUpdate,
+    current_user: dict = Depends(self_or_admin_required),
+):
+    """Update patient information (name, birth date, gender) in both FHIR and MongoDB. Only provided fields will be updated."""
     try:
-        # First update FHIR
-        fhir_updated = update_fhir_patient(
-            fhir_id=fhir_id,
-            first_name=patient_update.first_name,
-            last_name=patient_update.last_name,
-            birth_date=patient_update.birth_date,
-            gender=patient_update.gender,
-        )
+        # Filter out None values to only update provided fields
+        update_data = {
+            k: v for k, v in patient_update.model_dump().items() if v is not None
+        }
+
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No fields to update provided")
+
+        print(
+            f"Attempting to update FHIR patient {fhir_id} with data: {update_data}"
+        )  # Debug log
+
+        try:
+            # First update FHIR
+            fhir_updated = update_fhir_patient(fhir_id=fhir_id, **update_data)
+        except Exception as e:
+            print(f"FHIR update failed: {str(e)}")  # Debug log
+            raise HTTPException(
+                status_code=500, detail=f"Failed to update patient in FHIR: {str(e)}"
+            )
 
         if fhir_updated:
-            # Then update MongoDB with just the fields we want to update
-            mongo_updated = update_patient_in_db(
-                fhir_id=fhir_id, update_data=patient_update.model_dump()
-            )
-            if mongo_updated:
-                return {"message": "Patient updated successfully"}
+            try:
+                # Then update MongoDB with just the fields that were provided
+                mongo_updated = update_patient_in_db(
+                    fhir_id=fhir_id, update_data=update_data
+                )
+                if mongo_updated:
+                    return {"message": "Patient updated successfully"}
+                else:
+                    raise HTTPException(status_code=500, detail="MongoDB update failed")
+            except Exception as e:
+                print(f"MongoDB update failed: {str(e)}")  # Debug log
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to update patient in MongoDB: {str(e)}",
+                )
 
-        raise HTTPException(status_code=500, detail="Failed to update patient")
+        raise HTTPException(status_code=500, detail="FHIR update failed")
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except HTTPException as e:
         raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Unexpected error in update_patient: {str(e)}")  # Debug log
+        raise HTTPException(
+            status_code=500, detail=f"Unexpected error while updating patient: {str(e)}"
+        )
