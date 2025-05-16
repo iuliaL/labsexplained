@@ -18,32 +18,39 @@
 │   │   │   └── openai.py
 │   │   └── utils
 │   │       ├── auth.py
+│   │       ├── csrf.py
 │   │       └── file_parser.py
 │   └── requirements.txt
 ├── docs
-│   └── api.md
-├── fhir-server
-│   ├── Dockerfile
-│   └── application.yaml
+│   ├── api.md
+│   └── architecture.png
 ├── frontend
+│   ├── craco.config.js
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── postcss.config.js
 │   ├── public
+│   │   ├── LabsExplained-favicon.png
+│   │   ├── apple-touch-icon.png
+│   │   ├── favicon-96x96.png
 │   │   ├── favicon.ico
+│   │   ├── favicon.svg
 │   │   ├── index.html
-│   │   ├── logo192.png
-│   │   ├── logo512.png
 │   │   ├── manifest.json
-│   │   └── robots.txt
+│   │   ├── og-image.png
+│   │   ├── robots.txt
+│   │   ├── sitemap.xml
+│   │   ├── web-app-manifest-192x192.png
+│   │   └── web-app-manifest-512x512.png
 │   ├── src
 │   │   ├── App.css
 │   │   ├── App.test.tsx
 │   │   ├── App.tsx
 │   │   ├── assets
 │   │   │   ├── lab-test.jpeg
-│   │   │   ├── supawork-medic.png
-│   │   │   └── testing-tubes.jpg
+│   │   │   ├── logo.png
+│   │   │   ├── supawork-medic-logo.png
+│   │   │   └── supawork-medic.png
 │   │   ├── components
 │   │   │   ├── Admin
 │   │   │   │   ├── AdminDashboard.tsx
@@ -65,18 +72,32 @@
 │   │   │   │   └── WelcomeStep.tsx
 │   │   │   ├── ProtectedRoute.tsx
 │   │   │   ├── icons
+│   │   │   │   ├── AdminIcon.tsx
+│   │   │   │   ├── CalendarIcon.tsx
+│   │   │   │   ├── EyeIcon.tsx
+│   │   │   │   ├── EyeOffIcon.tsx
+│   │   │   │   ├── LabSetIcon.tsx
 │   │   │   │   ├── LabTestIcon.tsx
+│   │   │   │   ├── PatientIcon.tsx
 │   │   │   │   └── UserIcon.tsx
 │   │   │   └── ui
+│   │   │       ├── BrandLogo.tsx
 │   │   │       ├── ConfirmDialog.tsx
 │   │   │       ├── Container.tsx
 │   │   │       ├── DateInput.tsx
+│   │   │       ├── Footer.tsx
+│   │   │       ├── Header.tsx
 │   │   │       ├── Input.tsx
 │   │   │       ├── Pagination.tsx
+│   │   │       ├── PasswordInput.tsx
 │   │   │       ├── PasswordRequirements.tsx
-│   │   │       └── Select.tsx
+│   │   │       ├── ProtectedContainer.tsx
+│   │   │       ├── Select.tsx
+│   │   │       └── SessionExpiredOverlay.tsx
 │   │   ├── contexts
-│   │   │   └── AuthContext.tsx
+│   │   │   ├── AuthContext.tsx
+│   │   │   └── SessionContext.tsx
+│   │   ├── hooks
 │   │   ├── index.css
 │   │   ├── index.tsx
 │   │   ├── logo.svg
@@ -87,10 +108,12 @@
 │   │   │   └── auth.ts
 │   │   ├── setupTests.ts
 │   │   └── utils
+│   │       ├── api.ts
+│   │       ├── cookies.ts
 │   │       ├── dateFormatter.ts
 │   │       └── regexes.ts
 │   ├── tailwind.config.js
 │   └── tsconfig.json
 └── tree.txt
 
-22 directories, 72 files
+22 directories, 95 files
