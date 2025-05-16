@@ -1,15 +1,18 @@
-# Use a clean, TLS-compatible Python base
 FROM python:3.11-slim
 
-# Set working directory inside the container
+# Install system CA certificates and required build tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    gcc \
+    libffi-dev \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Copy contents of backend folder into the container
 COPY ./backend/ .
 
-# Install dependencies
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Run the FastAPI app with Uvicorn
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
