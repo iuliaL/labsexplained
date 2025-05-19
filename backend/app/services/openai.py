@@ -43,12 +43,23 @@ def interpret_full_lab_set(lab_tests: list, birth_date: str, gender: str):
     # ✅ Convert to JSON for AI processing
     lab_results_json = json.dumps(extracted_tests, indent=2)
 
-    patient_age = calculate_age(birth_date)
+    patient_age = calculate_age(birth_date) if birth_date else "Unknown"
+    gender_prompt = (
+        f"The following lab test results belong to a {gender.lower()} gender patient"
+        if gender
+        else ""
+    )
+    age_prompt = (
+        f"The patient is born on {birth_date} meaning they have an an approximate age of {patient_age}."
+        if birth_date
+        else ""
+    )
 
     # ✅ Define the GPT prompt
     prompt = f"""
     You are an experienced medical doctor analyzing a patient's lab test results. 
-    The following lab test results belong to a {gender.lower()} patient, born on {birth_date} meaning they hae=ve an an approximate age of {patient_age}.
+    {gender_prompt}
+    {age_prompt}
     Interpret the data considering the patient's age and gender, and provide an evidence-based medical analysis.
 
     ```json
