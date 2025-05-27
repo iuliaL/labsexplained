@@ -107,7 +107,7 @@ function DocumentTitleUpdater() {
       else if (pathname.startsWith("/wizard/name")) title = "Patient Information | LabsExplained";
       else if (pathname.startsWith("/wizard/demographics")) title = "Patient Demographics | LabsExplained";
       else if (pathname.startsWith("/wizard/upload")) title = "Upload Lab Results | LabsExplained";
-      else title = "Welcome | LabsExplained.AI";
+      else title = "Welcome | LabsExplained";
     } else if (pathname.startsWith("/admin/patients")) {
       if (pathname === "/admin/patients") title = "Admin Dashboard | LabsExplained";
       else title = "Patient Details | LabsExplained";
