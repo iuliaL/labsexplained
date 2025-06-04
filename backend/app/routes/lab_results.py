@@ -28,7 +28,7 @@ router = APIRouter()
 
 @router.get(
     "/lab_set/{fhir_id}"
-)  # this reffers to the patient's FHIR ID not the lab set id
+)  # this refers to the patient's FHIR ID not the lab set id
 async def get_all_patient_lab_sets(
     fhir_id: str,
     include_observations: bool = False,
