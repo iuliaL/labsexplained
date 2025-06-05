@@ -56,7 +56,7 @@
 ```
 
 ### Assign Admin Role
-- **PUT** `/auth/assign-admin?email={email}`
+- **GET** `/auth/assign-admin?email={email}`
 - **Description**: Assigns admin role to a user (admin only)
 - **Headers**: `Authorization: Bearer {token}`
 
